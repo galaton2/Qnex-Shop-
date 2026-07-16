@@ -3,105 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qnex admin page</title>
+    <title>Qnex Admin</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
-        /* DEFAULT THEME: DARK */
         :root {
             --bg: #000000; --text: #ffffff; --border: #ffffff;
-            --hover-bg: #ffffff; --hover-text: #000000;
-            --gray: #111111;
+            --hover-bg: #ffffff; --hover-text: #000000; --gray: #111111;
         }
         [data-theme="light"] {
             --bg: #ffffff; --text: #000000; --border: #000000;
-            --hover-bg: #000000; --hover-text: #ffffff;
-            --gray: #f9f9f9;
+            --hover-bg: #000000; --hover-text: #ffffff; --gray: #f9f9f9;
         }
 
         body {
             background-color: var(--bg); color: var(--text);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0; padding: 30px; transition: 0.3s;
+            margin: 0; padding: 20px; transition: 0.3s;
         }
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 40px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; gap: 15px;
         }
-        h1, h2, h3 { text-transform: uppercase; margin: 0; letter-spacing: 2px; }
-        .back-btn, .theme-btn {
+        h1, h2, h3 { text-transform: uppercase; margin: 0; letter-spacing: 1px; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .action-btn {
             color: var(--text); text-decoration: none; border: 1px solid var(--border);
-            padding: 10px 20px; cursor: pointer; background: transparent; transition: 0.3s;
-            text-transform: uppercase; font-size: 12px; font-weight: bold;
+            padding: 10px 15px; cursor: pointer; background: transparent; transition: 0.3s;
+            text-transform: uppercase; font-size: 12px; font-weight: bold; text-align: center;
         }
-        .back-btn:hover, .theme-btn:hover { background: var(--text); color: var(--bg); }
+        .action-btn:hover { background: var(--text); color: var(--bg); }
         
         /* Stats Grid */
         .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; margin-bottom: 50px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-bottom: 40px;
         }
-        .stat-card {
-            border: 1px solid var(--border); padding: 30px 20px; text-align: center;
-        }
-        .stat-card h3 { font-size: 14px; opacity: 0.7; }
-        .stat-num { font-size: 40px; font-weight: bold; margin-top: 15px; }
+        .stat-card { border: 1px solid var(--border); padding: 20px 10px; text-align: center; }
+        .stat-card h3 { font-size: 12px; opacity: 0.7; }
+        .stat-num { font-size: 28px; font-weight: bold; margin-top: 10px; }
+        .profit-text { color: #4CAF50; }
 
-        .grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 40px; }
+        .grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 30px; }
         @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
         
-        .panel-box { border: 1px solid var(--border); padding: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; font-size: 12px; }
+        .panel-box { border: 1px solid var(--border); padding: 20px; overflow: hidden; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; font-size: 11px; }
         input, select {
             width: 100%; padding: 12px; border: 1px solid var(--border);
             background: var(--bg); color: var(--text); box-sizing: border-box; font-family: inherit;
         }
+        
+        .crm-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; align-items: end; margin-top: 20px;}
+        @media (max-width: 600px) { .crm-form { grid-template-columns: 1fr; } }
+        
         .btn {
             background: var(--bg); color: var(--text); border: 1px solid var(--border);
-            padding: 15px; cursor: pointer; text-transform: uppercase; font-family: inherit;
-            width: 100%; transition: 0.3s; font-weight: bold; margin-top: 10px;
+            padding: 12px; cursor: pointer; text-transform: uppercase; font-family: inherit;
+            width: 100%; transition: 0.3s; font-weight: bold;
         }
         .btn:hover { background: var(--text); color: var(--bg); }
         
         /* Table */
-        .sheet-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 15px; text-align: left; }
+        .table-responsive { overflow-x: auto; margin-top: 20px; }
+        .sheet-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+        .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
         .sheet-table th { background-color: var(--text); color: var(--bg); text-transform: uppercase; letter-spacing: 1px; }
         .sheet-table tr:nth-child(even) { background-color: var(--gray); }
         .delete-btn { color: #ff4444; background: none; border: none; font-weight: bold; cursor: pointer; font-size: 16px;}
+        .contact-link { color: #3b82f6; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <header>
         <div>
-            <h1>ADMIN DASHBOARD</h1>
-            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.7;">Analytics & Store Management</p>
+            <h1>QNEX ADMIN</h1>
+            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.7;" data-i18n="subtitle">Analytics & Store Management</p>
         </div>
-        <div style="display: flex; gap: 15px;">
-            <button class="theme-btn" onclick="toggleTheme()">Invert Theme</button>
-            <a href="index.html" class="back-btn">Go to Store →</a>
+        <div class="header-actions">
+            <button class="action-btn" onclick="toggleLang()" id="lang-btn">RU</button>
+            <button class="action-btn" onclick="toggleTheme()" data-i18n="invert_theme">Invert Theme</button>
+            <a href="index.html" class="action-btn" data-i18n="go_store">Go to Store →</a>
         </div>
     </header>
 
     <!-- STATISTICS -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Orders (This Month)</h3>
+            <h3 data-i18n="stat_visits_day">Visits (Today)</h3>
+            <div class="stat-num" id="stat-visits-today">0</div>
+        </div>
+        <div class="stat-card">
+            <h3 data-i18n="stat_visits_month">Visits (Month)</h3>
+            <div class="stat-num" id="stat-visits-month">0</div>
+        </div>
+        <div class="stat-card">
+            <h3 data-i18n="stat_ord_month">Orders (Month)</h3>
             <div class="stat-num" id="stat-month-orders">0</div>
         </div>
         <div class="stat-card">
-            <h3>Revenue (This Month)</h3>
+            <h3 data-i18n="stat_rev_month">Revenue (Month)</h3>
             <div class="stat-num" id="stat-month-revenue">$0</div>
         </div>
-        <div class="stat-card">
-            <h3>Total Orders</h3>
-            <div class="stat-num" id="stat-total-orders">0</div>
+        <div class="stat-card" style="border-color: #4CAF50;">
+            <h3 data-i18n="stat_prof_month" style="color: #4CAF50;">Profit (Month)</h3>
+            <div class="stat-num profit-text" id="stat-month-profit">$0</div>
         </div>
         <div class="stat-card">
-            <h3>Total Revenue</h3>
+            <h3 data-i18n="stat_total_rev">Total Revenue</h3>
             <div class="stat-num" id="stat-total-revenue">$0</div>
         </div>
     </div>
@@ -109,42 +122,68 @@
     <div class="grid">
         <!-- ADD PRODUCT -->
         <div class="panel-box">
-            <h2>Add Product</h2>
-            <form id="product-form" style="margin-top: 30px;">
+            <h2 data-i18n="add_product">Add Product</h2>
+            <form id="product-form" style="margin-top: 20px;">
                 <div class="form-group">
-                    <label>Product Name</label>
+                    <label data-i18n="prod_name">Product Name</label>
                     <input type="text" id="p-title" required placeholder="e.g. Minimalist Hoodie">
                 </div>
                 <div class="form-group">
-                    <label>Price ($)</label>
+                    <label data-i18n="prod_price">Price ($)</label>
                     <input type="number" id="p-price" required placeholder="e.g. 50">
                 </div>
                 <div class="form-group">
-                    <label>Upload Photo</label>
-                    <input type="file" id="p-file" accept="image/*" style="padding: 10px 5px;">
-                    <p style="font-size: 11px; margin-top: 5px; opacity: 0.6;">Leave empty to use default box icon</p>
+                    <label data-i18n="prod_photo">Upload Photo</label>
+                    <input type="file" id="p-file" accept="image/*" style="padding: 8px 5px;">
                 </div>
-                <button type="submit" class="btn" id="upload-btn">Publish to Store</button>
+                <button type="submit" class="btn" id="upload-btn" data-i18n="btn_publish">Publish to Store</button>
             </form>
         </div>
 
         <!-- CRM (CLIENTS) -->
         <div class="panel-box">
-            <h2>Orders Database</h2>
-            <form id="client-form" style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
-                <input type="text" id="c-name" required placeholder="Customer Name" style="flex: 2; min-width: 150px;">
-                <input type="number" id="c-sum" required placeholder="Amount ($)" style="flex: 1; min-width: 100px;">
-                <select id="c-status" style="flex: 1; min-width: 120px;">
-                    <option value="Paid">Paid</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-                <button type="submit" class="btn" style="flex: 0; width: 60px; margin-top: 0; padding: 12px;">+</button>
+            <h2 data-i18n="crm_title">Orders Database</h2>
+            <form id="client-form" class="crm-form">
+                <div>
+                    <label data-i18n="crm_client">Client Name</label>
+                    <input type="text" id="c-name" required placeholder="Name">
+                </div>
+                <div>
+                    <label data-i18n="crm_contact">Contact (Tg/Phone)</label>
+                    <input type="text" id="c-contact" placeholder="@username or +998...">
+                </div>
+                <div>
+                    <label data-i18n="crm_price">Price ($)</label>
+                    <input type="number" id="c-sum" required placeholder="0">
+                </div>
+                <div>
+                    <label data-i18n="crm_cost">Cost/Expense ($)</label>
+                    <input type="number" id="c-cost" required placeholder="0">
+                </div>
+                <div>
+                    <label data-i18n="crm_status">Status</label>
+                    <select id="c-status">
+                        <option value="Paid">Paid</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">+</button>
             </form>
 
-            <div style="overflow-x: auto;">
+            <div class="table-responsive">
                 <table class="sheet-table">
-                    <thead><tr><th>Client</th><th>Amount</th><th>Status</th><th>Date</th><th>Del</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th data-i18n="tbl_client">Client</th>
+                            <th data-i18n="tbl_contact">Contact</th>
+                            <th data-i18n="tbl_sum">Sum</th>
+                            <th data-i18n="tbl_profit">Profit</th>
+                            <th data-i18n="tbl_status">Status</th>
+                            <th data-i18n="tbl_date">Date</th>
+                            <th>Del</th>
+                        </tr>
+                    </thead>
                     <tbody id="clients-table-body"></tbody>
                 </table>
             </div>
@@ -152,36 +191,85 @@
     </div>
 
     <script>
-        // --- THEME TOGGLE ---
+        // --- TRANSLATIONS ---
+        const translations = {
+            en: {
+                subtitle: "Analytics & Store Management", invert_theme: "Invert Theme", go_store: "Go to Store →",
+                stat_visits_day: "Visits (Today)", stat_visits_month: "Visits (Month)", stat_ord_month: "Orders (Month)",
+                stat_rev_month: "Revenue (Month)", stat_prof_month: "Profit (Month)", stat_total_rev: "Total Revenue",
+                add_product: "Add Product", prod_name: "Product Name", prod_price: "Price ($)", prod_photo: "Upload Photo",
+                btn_publish: "Publish to Store", crm_title: "Orders Database", crm_client: "Client Name", crm_contact: "Contact (Tg/Phone)",
+                crm_price: "Price ($)", crm_cost: "Cost/Expense ($)", crm_status: "Status",
+                tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date"
+            },
+            ru: {
+                subtitle: "Аналитика и Управление", invert_theme: "Сменить тему", go_store: "В магазин →",
+                stat_visits_day: "Визиты (Сегодня)", stat_visits_month: "Визиты (Месяц)", stat_ord_month: "Заказы (Месяц)",
+                stat_rev_month: "Выручка (Месяц)", stat_prof_month: "Прибыль (Месяц)", stat_total_rev: "Вся выручка",
+                add_product: "Добавить Товар", prod_name: "Название", prod_price: "Цена ($)", prod_photo: "Фото",
+                btn_publish: "Опубликовать", crm_title: "База Заказов", crm_client: "Имя клиента", crm_contact: "Контакт (Tg/Тел)",
+                crm_price: "Сумма ($)", crm_cost: "Себестоимость ($)", crm_status: "Статус",
+                tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'en';
+        document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
+
+        function updateTexts() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) el.innerHTML = translations[currentLang][key];
+            });
+            // Update Select Options
+            const statusSelect = document.getElementById('c-status');
+            statusSelect.options[0].text = currentLang === 'en' ? 'Paid' : 'Оплачен';
+            statusSelect.options[1].text = currentLang === 'en' ? 'Processing' : 'В обработке';
+            statusSelect.options[2].text = currentLang === 'en' ? 'Cancelled' : 'Отменен';
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'en' ? 'ru' : 'en';
+            localStorage.setItem('lang', currentLang);
+            document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
+            updateTexts();
+            loadCRM();
+        }
+
+        // --- THEME ---
         function toggleTheme() {
-            const currentTheme = document.body.getAttribute('data-theme') || 'dark';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
         }
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); } 
-        else { document.body.setAttribute('data-theme', 'dark'); }
+        if (localStorage.getItem('theme') === 'light') document.body.setAttribute('data-theme', 'light'); 
+        else document.body.setAttribute('data-theme', 'dark');
 
-        // --- FIREBASE CONFIG (INSERT YOURS HERE) ---
-       const firebaseConfig = {
-  apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
-  authDomain: "gifts-d8f30.firebaseapp.com",
-  databaseURL: "https://gifts-d8f30-default-rtdb.firebaseio.com",
-  projectId: "gifts-d8f30",
-  storageBucket: "gifts-d8f30.firebasestorage.app",
-  messagingSenderId: "883903383261",
-  appId: "1:883903383261:web:dad1742c009ea38bf5fd34",
-  measurementId: "G-5JFXH4YG3J"
-};
+        // --- FIREBASE INIT ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
+            authDomain: "gifts-d8f30.firebaseapp.com",
+            projectId: "gifts-d8f30",
+            storageBucket: "gifts-d8f30.firebasestorage.app"
+        };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- ADD PRODUCT (AUTO COMPRESS IMAGE) ---
+        // --- ANALYTICS SYNC ---
+        const todayStr = new Date().toISOString().split('T')[0];
+        const monthStr = todayStr.substring(0, 7);
+        db.collection("analytics").doc("visits").onSnapshot(doc => {
+            if(doc.exists) {
+                const data = doc.data();
+                document.getElementById('stat-visits-today').innerText = data[todayStr] || 0;
+                document.getElementById('stat-visits-month').innerText = data[monthStr] || 0;
+            }
+        });
+
+        // --- ADD PRODUCT ---
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn');
-            btn.innerText = 'Uploading...';
             btn.disabled = true;
 
             const title = document.getElementById('p-title').value;
@@ -194,99 +282,105 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600; 
-                        const scale = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const base64Image = canvas.toDataURL('image/jpeg', 0.6);
-                        saveProduct(title, price, base64Image);
+                        const scale = 600 / img.width;
+                        canvas.width = 600; canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        saveProduct(title, price, canvas.toDataURL('image/jpeg', 0.6));
                     }
                     img.src = e.target.result;
                 }
                 reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                saveProduct(title, price, "📦");
-            }
+            } else saveProduct(title, price, "📦");
         });
 
         function saveProduct(title, price, imgString) {
             db.collection("products").add({
-                title: title, price: price, img: imgString,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                title: title, price: price, img: imgString, createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert('Product successfully added!');
                 document.getElementById('product-form').reset();
-                document.getElementById('upload-btn').innerText = 'Publish to Store';
-                document.getElementById('upload-btn').disabled = false;
-            }).catch(err => {
-                console.error(err);
-                alert('Error uploading. Image might be too large.');
-                document.getElementById('upload-btn').innerText = 'Publish to Store';
                 document.getElementById('upload-btn').disabled = false;
             });
         }
 
-        // --- CRM (ORDERS & STATS) ---
+        // --- CRM & STATS ---
         document.getElementById('client-form').addEventListener('submit', function(e) {
             e.preventDefault();
             db.collection("sales").add({
                 name: document.getElementById('c-name').value,
+                contact: document.getElementById('c-contact').value || '-',
                 sum: Number(document.getElementById('c-sum').value),
+                cost: Number(document.getElementById('c-cost').value),
                 status: document.getElementById('c-status').value,
                 date: new Date().toLocaleDateString('en-US'),
                 timestamp: Date.now()
             }).then(() => document.getElementById('client-form').reset());
         });
 
-        db.collection("sales").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-            const tbody = document.getElementById('clients-table-body');
-            tbody.innerHTML = '';
-            
-            let totalRev = 0, totalOrd = 0, monthRev = 0, monthOrd = 0;
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const id = doc.id;
+        let currentSnapshot = null;
+        function loadCRM() {
+            if (currentSnapshot) currentSnapshot(); // unsubscribe old
+            currentSnapshot = db.collection("sales").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                const tbody = document.getElementById('clients-table-body');
+                tbody.innerHTML = '';
                 
-                if (data.status !== 'Cancelled') {
-                    totalRev += data.sum;
-                    totalOrd++;
-                    const orderDate = new Date(data.timestamp);
-                    if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
-                        monthRev += data.sum;
-                        monthOrd++;
+                let totalRev = 0, monthRev = 0, monthOrd = 0, monthProf = 0;
+                const cMonth = new Date().getMonth(); const cYear = new Date().getFullYear();
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data(); const id = doc.id;
+                    const profit = data.sum - (data.cost || 0);
+                    
+                    if (data.status !== 'Cancelled') {
+                        totalRev += data.sum;
+                        const orderDate = new Date(data.timestamp);
+                        if (orderDate.getMonth() === cMonth && orderDate.getFullYear() === cYear) {
+                            monthRev += data.sum; monthOrd++; monthProf += profit;
+                        }
                     }
-                }
 
-                let statusStyle = '';
-                if (data.status === 'Paid') statusStyle = 'color: #4CAF50; font-weight: bold;';
-                if (data.status === 'Processing') statusStyle = 'opacity: 0.7; font-style: italic;';
-                if (data.status === 'Cancelled') statusStyle = 'color: #ff4444; text-decoration: line-through;';
+                    // Parse Contact Link
+                    let contactHtml = `<span>${data.contact || '-'}</span>`;
+                    if(data.contact && data.contact.startsWith('@')) {
+                        contactHtml = `<a href="https://t.me/${data.contact.substring(1)}" target="_blank" class="contact-link">${data.contact}</a>`;
+                    } else if (data.contact && data.contact.startsWith('+')) {
+                        contactHtml = `<a href="https://wa.me/${data.contact.replace(/\D/g,'')}" target="_blank" class="contact-link">${data.contact}</a>`;
+                    }
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${data.name}</td>
-                    <td>$${data.sum}</td>
-                    <td style="${statusStyle}">${data.status}</td>
-                    <td>${data.date}</td>
-                    <td><button class="delete-btn" onclick="deleteSale('${id}')">✕</button></td>
-                `;
-                tbody.appendChild(tr);
+                    // Translate Status
+                    let displayStatus = data.status;
+                    if (currentLang === 'ru') {
+                        if (displayStatus === 'Paid') displayStatus = 'Оплачен';
+                        if (displayStatus === 'Processing') displayStatus = 'В обработке';
+                        if (displayStatus === 'Cancelled') displayStatus = 'Отменен';
+                    }
+
+                    let statusStyle = data.status === 'Paid' ? 'color: #4CAF50; font-weight: bold;' : 
+                                      data.status === 'Processing' ? 'opacity: 0.7; font-style: italic;' : 
+                                      'color: #ff4444; text-decoration: line-through;';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${data.name}</td>
+                            <td>${contactHtml}</td>
+                            <td>$${data.sum}</td>
+                            <td style="color: #4CAF50; font-weight: bold;">$${profit}</td>
+                            <td style="${statusStyle}">${displayStatus}</td>
+                            <td>${data.date}</td>
+                            <td><button class="delete-btn" onclick="deleteSale('${id}')">✕</button></td>
+                        </tr>`;
+                });
+
+                document.getElementById('stat-total-revenue').innerText = '$' + totalRev.toLocaleString();
+                document.getElementById('stat-month-orders').innerText = monthOrd;
+                document.getElementById('stat-month-revenue').innerText = '$' + monthRev.toLocaleString();
+                document.getElementById('stat-month-profit').innerText = '$' + monthProf.toLocaleString();
             });
-
-            document.getElementById('stat-total-orders').innerText = totalOrd;
-            document.getElementById('stat-total-revenue').innerText = '$' + totalRev.toLocaleString('en-US');
-            document.getElementById('stat-month-orders').innerText = monthOrd;
-            document.getElementById('stat-month-revenue').innerText = '$' + monthRev.toLocaleString('en-US');
-        });
-
-        window.deleteSale = function(id) {
-            if (confirm("Delete this record permanently?")) db.collection("sales").doc(id).delete();
         }
+
+        window.deleteSale = id => { if (confirm(currentLang === 'en' ? "Delete record?" : "Удалить запись?")) db.collection("sales").doc(id).delete(); }
+
+        updateTexts();
+        loadCRM();
     </script>
 </body>
 </html>
