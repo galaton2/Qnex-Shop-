@@ -59,7 +59,7 @@
         }
         .nav-link:hover, .action-btn:hover, .nav-link.active { opacity: 0.5; }
 
-        /* VIEWS (SPA Logic) */
+        /* VIEWS */
         .view-section { display: none; animation: fadeIn 0.5s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -84,7 +84,6 @@
         /* CATALOG VIEW */
         .catalog-header { display: flex; flex-direction: column; gap: 20px; margin-bottom: 40px; }
         
-        /* Smart Search */
         .search-container { position: relative; width: 100%; }
         .search-container i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
         .search-input {
@@ -94,7 +93,6 @@
         }
         .search-input:focus { outline: none; border-color: var(--text); box-shadow: 0 0 10px rgba(255,255,255,0.1); }
 
-        /* Categories */
         .categories-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
         .categories-scroll::-webkit-scrollbar { display: none; }
         .cat-btn {
@@ -105,11 +103,7 @@
         .cat-btn.active, .cat-btn:hover { background: var(--text); color: var(--bg); }
 
         /* Products Grid */
-        .products-grid {
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 20px;
-        }
+        .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         
         .product-card {
             border: 1px solid var(--border); padding: 15px;
@@ -120,9 +114,25 @@
         .product-img {
             width: 100%; height: 280px; display: flex; align-items: center;
             justify-content: center; border-bottom: 1px solid var(--border);
-            margin-bottom: 15px; overflow: hidden; background: var(--gray-bg);
+            margin-bottom: 15px; overflow: hidden; background: var(--gray-bg); position: relative;
         }
         .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Slider Buttons */
+        .slider-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.5); color: white; border: 1px solid white; 
+            padding: 5px 10px; cursor: pointer; transition: 0.3s;
+        }
+        .slider-btn:hover { background: white; color: black; }
+        .slider-btn.prev { left: 5px; }
+        .slider-btn.next { right: 5px; }
+        .slide-counter {
+            position: absolute; bottom: 5px; left: 5px; 
+            background: rgba(0,0,0,0.6); color: white; 
+            padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 10px;
+        }
+
         .product-title { font-size: 14px; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
         .product-price { font-size: 16px; margin-bottom: 15px; opacity: 0.8; }
         
@@ -134,19 +144,15 @@
         .buy-btn:hover { background: var(--text); color: var(--bg); }
         .no-results { grid-column: 1/-1; text-align: center; padding: 50px; opacity: 0.5; text-transform: uppercase; }
 
-        /* RESPONSIVE (MOBILE) */
-        @media (max-width: 900px) {
-            .products-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (max-width: 900px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 600px) {
             header { flex-direction: column; gap: 15px; padding: 15px; }
             nav { justify-content: center; width: 100%; gap: 15px; }
             .hero-banner h1 { font-size: 32px; }
             
-            /* СЕТКА ПО 2 ТОВАРА В РЯД */
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card { padding: 10px; }
-            .product-img { height: 180px; } 
+            .product-img { height: 200px; } 
             .product-title { font-size: 12px; }
             .product-price { font-size: 14px; margin-bottom: 10px; }
             .buy-btn { padding: 10px; font-size: 10px; }
@@ -177,7 +183,6 @@
     </header>
 
     <div class="container">
-        
         <!-- ================= HOME VIEW ================= -->
         <section id="view-home" class="view-section active">
             <div class="hero-banner">
@@ -195,15 +200,12 @@
 
         <!-- ================= CATALOG VIEW ================= -->
         <section id="view-catalog" class="view-section">
-            
             <div class="catalog-header">
-                <!-- Умный Поиск -->
                 <div class="search-container">
                     <i class="fas fa-search"></i>
                     <input type="text" class="search-input" id="search-input" data-i18n-placeholder="search_ph" placeholder="Search products...">
                 </div>
 
-                <!-- Категории -->
                 <div class="categories-scroll">
                     <button class="cat-btn active" data-cat="all" data-i18n="cat_all">All</button>
                     <button class="cat-btn" data-cat="hoodie" data-i18n="cat_hoodie">Hoodies</button>
@@ -215,7 +217,6 @@
 
             <div class="products-grid" id="catalog-products"></div>
         </section>
-
     </div>
 
     <script>
@@ -227,7 +228,7 @@
                 hero_title: "Minimalism. Refined.", 
                 hero_desc: "<strong>EST. 2021.</strong> Qnex Shop was born from a passion for monochromatic aesthetics. We strip away the noise to bring you pure, unadulterated style.",
                 btn_shop_now: "Shop Now", new_arrivals: "New Arrivals",
-                search_ph: "Search products (e.g. hoodie, black)...",
+                search_ph: "Search products...",
                 cat_all: "All", cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accs: "Accessories",
                 buy_btn: "BUY NOW", no_results: "No products found.",
                 alert_buy: "Contact us on social media to purchase!"
@@ -238,7 +239,7 @@
                 hero_title: "Минимализм. Утонченность.", 
                 hero_desc: "<strong>ОСНОВАН В 2021.</strong> Qnex Shop создан из страсти к монохромной эстетике. Мы убираем лишний шум, чтобы предложить вам чистый, неподдельный стиль.",
                 btn_shop_now: "В Каталог", new_arrivals: "Новинки",
-                search_ph: "Поиск товаров (например: худи, черная)...",
+                search_ph: "Поиск товаров...",
                 cat_all: "Все", cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accs: "Аксессуары",
                 buy_btn: "КУПИТЬ", no_results: "Товары не найдены.",
                 alert_buy: "Свяжитесь с нами в социальных сетях для оформления заказа!"
@@ -304,7 +305,7 @@
             [monthStr]: firebase.firestore.FieldValue.increment(1)
         }, { merge: true });
 
-        // --- LOAD PRODUCTS LOGIC ---
+        // --- DATA ---
         let allProducts = [];
         let activeCategory = 'all';
         let searchQuery = '';
@@ -318,20 +319,60 @@
             renderCatalog();
         });
 
-        // --- RENDER HELPERS ---
+        // --- IMAGE SLIDER LOGIC ---
+        window.changeSlide = function(productId, dir, event) {
+            event.stopPropagation(); // Чтобы не кликалась карточка товара, если на нее повесить ссылки
+            const slider = document.getElementById(`slider-${productId}`);
+            if(!slider) return;
+            const slides = slider.querySelectorAll('.slide');
+            let activeIdx = 0;
+            
+            slides.forEach((slide, idx) => {
+                if(slide.style.display === 'block') activeIdx = idx;
+                slide.style.display = 'none';
+            });
+            
+            let newIdx = activeIdx + dir;
+            if(newIdx < 0) newIdx = slides.length - 1;
+            if(newIdx >= slides.length) newIdx = 0;
+            
+            slides[newIdx].style.display = 'block';
+            
+            const counter = slider.parentElement.querySelector('.slide-counter');
+            if(counter) counter.innerText = `${newIdx + 1} / ${slides.length}`;
+        };
+
+        // --- RENDER CARDS ---
         function createCardHTML(product) {
-            // Защита от пустых значений
-            const imgStr = product.img || '';
             const titleStr = product.title || 'Без названия';
             const priceStr = product.price || '0';
+            let imagesHtml = '';
 
-            const imgContent = imgStr.length <= 5 
-                ? `<span style="font-size: 60px;">${imgStr}</span>` 
-                : `<img src="${imgStr}" alt="${titleStr}">`;
+            // Поддержка массива фото для слайдера
+            if (product.images && product.images.length > 0) {
+                imagesHtml = `<div id="slider-${product.id}" style="width:100%; height:100%;">`;
+                product.images.forEach((img, index) => {
+                    imagesHtml += `<img src="${img}" class="slide" style="display: ${index === 0 ? 'block' : 'none'};">`;
+                });
+                imagesHtml += `</div>`;
+                
+                // Добавляем кнопки, если фото больше одного
+                if (product.images.length > 1) {
+                    imagesHtml += `
+                        <button class="slider-btn prev" onclick="changeSlide('${product.id}', -1, event)">❮</button>
+                        <button class="slider-btn next" onclick="changeSlide('${product.id}', 1, event)">❯</button>
+                        <div class="slide-counter">1 / ${product.images.length}</div>
+                    `;
+                }
+            } else if (product.img) {
+                imagesHtml = `<img src="${product.img}">`;
+            } else {
+                imagesHtml = `<span style="font-size: 60px;">📦</span>`;
+            }
 
             return `
                 <div class="product-card">
-                    <div class="product-img">${imgContent}</div>
+                    <div class="product-img">${imagesHtml}</div>
                     <div class="product-title">${titleStr}</div>
                     <div class="product-price">$ ${priceStr}</div>
                     <button class="buy-btn" onclick="alert('${translations[currentLang].alert_buy}')">${translations[currentLang].buy_btn}</button>
@@ -353,13 +394,12 @@
                 const titleLower = (prod.title || '').toLowerCase();
                 const matchesSearch = titleLower.includes(searchQuery);
                 
+                // Теперь фильтрация идет жестко по базе данных (категории), а не по поиску в названии
                 let matchesCategory = true;
                 if (activeCategory !== 'all') {
-                    if (activeCategory === 'hoodie') matchesCategory = titleLower.includes('hoodie') || titleLower.includes('худи');
-                    else if (activeCategory === 't-shirt') matchesCategory = titleLower.includes('shirt') || titleLower.includes('футболка');
-                    else if (activeCategory === 'pants') matchesCategory = titleLower.includes('pant') || titleLower.includes('штаны') || titleLower.includes('джоггеры');
-                    else if (activeCategory === 'accessories') matchesCategory = titleLower.includes('cap') || titleLower.includes('bag') || titleLower.includes('кепка');
+                    matchesCategory = (prod.category === activeCategory);
                 }
+                
                 return matchesSearch && matchesCategory;
             });
 
@@ -370,13 +410,13 @@
             filtered.forEach(prod => { container.innerHTML += createCardHTML(prod); });
         }
 
-        // --- SMART SEARCH EVENT ---
+        // --- SEARCH ---
         document.getElementById('search-input').addEventListener('input', (e) => {
             searchQuery = e.target.value.toLowerCase();
             renderCatalog();
         });
 
-        // --- CATEGORY EVENT ---
+        // --- CATEGORIES ---
         document.querySelectorAll('.cat-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -386,7 +426,6 @@
             });
         });
 
-        // Инициализация текстов при загрузке
         updateTexts();
     </script>
 </body>
