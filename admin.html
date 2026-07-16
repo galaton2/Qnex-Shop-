@@ -116,6 +116,12 @@
             cursor: pointer; padding: 5px 10px; transition: 0.3s; width: 100%; text-transform: uppercase;
         }
         .delete-btn:hover { background: #ff4444; color: white; }
+        
+        .edit-btn { 
+            color: #3b82f6; background: none; border: 1px solid #3b82f6; font-weight: bold; 
+            cursor: pointer; padding: 5px 10px; transition: 0.3s; text-transform: uppercase; margin-right: 5px;
+        }
+        .edit-btn:hover { background: #3b82f6; color: white; }
 
         /* Table (Responsive mobile fix) */
         .table-responsive { width: 100%; margin-top: 20px; }
@@ -125,7 +131,7 @@
         .sheet-table tr:nth-child(even) { background-color: var(--gray); }
         .contact-link { color: #3b82f6; text-decoration: none; font-weight: bold; }
 
-        /* MOBILE TABLE CSS (No horizontal scroll) */
+        /* MOBILE TABLE CSS */
         @media (max-width: 768px) {
             .sheet-table thead { display: none; }
             .sheet-table, .sheet-table tbody, .sheet-table tr, .sheet-table td { display: block; width: 100%; box-sizing: border-box; }
@@ -141,7 +147,7 @@
 </head>
 <body>
     <script>
-        // --- 1. СИСТЕМА БЕЗОПАСНОСТИ (WHITELIST) ---
+        // --- 1. СИСТЕМА БЕЗОПАСНОСТИ ---
         const SECRET_KEY = "qnex"; 
         const urlParams = new URLSearchParams(window.location.search);
         
@@ -187,7 +193,6 @@
                     <option value="all" data-i18n="per_all">All Time</option>
                 </select>
             </div>
-
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3 data-i18n="stat_visits">Visits</h3>
@@ -217,10 +222,13 @@
                         <label data-i18n="prod_name">Product Name</label>
                         <input type="text" id="p-title" required placeholder="e.g. Minimalist Hoodie">
                     </div>
+                    <!-- Категории теперь совпадают с индексом -->
                     <div class="form-group">
                         <label data-i18n="prod_category">Category</label>
                         <select id="p-category" required>
-                            <option value="clothes" data-i18n="cat_clothes">Clothes</option>
+                            <option value="hoodie" data-i18n="cat_hoodie">Hoodies</option>
+                            <option value="t-shirt" data-i18n="cat_tshirt">T-Shirts</option>
+                            <option value="pants" data-i18n="cat_pants">Pants</option>
                             <option value="accessories" data-i18n="cat_accessories">Accessories</option>
                             <option value="other" data-i18n="cat_other">Other</option>
                         </select>
@@ -242,12 +250,10 @@
         <!-- ================= TAB 3: PRODUCTS LIST ================= -->
         <div id="tab-products" class="tab-content">
             <h2 data-i18n="tab_products" style="margin-bottom: 20px;">Products</h2>
-            <div class="products-grid" id="products-list-grid">
-                <!-- Products will load here -->
-            </div>
+            <div class="products-grid" id="products-list-grid"></div>
         </div>
 
-        <!-- ================= TAB 4: ADD ORDER (CRM) ================= -->
+        <!-- ================= TAB 4: ADD ORDER ================= -->
         <div id="tab-add-crm" class="tab-content">
             <div class="panel-box" style="max-width: 800px; margin: 0 auto;">
                 <h2 data-i18n="add_order">Add New Order</h2>
@@ -297,14 +303,51 @@
                             <th data-i18n="tbl_profit">Profit</th>
                             <th data-i18n="tbl_status">Status</th>
                             <th data-i18n="tbl_date">Date</th>
-                            <th>Del</th>
+                            <th data-i18n="tbl_action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="clients-table-body"></tbody>
                 </table>
             </div>
         </div>
+    </div>
 
+    <!-- ================= EDIT ORDER MODAL ================= -->
+    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+        <div class="panel-box" style="background:var(--bg); border:1px solid var(--border); width: 90%; max-width:600px; position:relative; padding:30px; margin: 0;">
+            <button onclick="document.getElementById('edit-modal').style.display='none'" style="position:absolute; right:15px; top:15px; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer;">✕</button>
+            <h2 data-i18n="edit_order">Edit Order</h2>
+            <form id="edit-form" class="crm-form" style="margin-top:20px;">
+                <input type="hidden" id="edit-id">
+                <div>
+                    <label data-i18n="crm_client">Client Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div>
+                    <label data-i18n="crm_contact">Contact (Tg/Phone)</label>
+                    <input type="text" id="edit-contact">
+                </div>
+                <div>
+                    <label data-i18n="crm_price">Price ($)</label>
+                    <input type="number" id="edit-sum" required>
+                </div>
+                <div>
+                    <label data-i18n="crm_cost">Cost ($)</label>
+                    <input type="number" id="edit-cost" required>
+                </div>
+                <div>
+                    <label data-i18n="crm_status">Status</label>
+                    <select id="edit-status">
+                        <option value="Paid">Paid</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:flex-end;">
+                    <button type="submit" class="btn" data-i18n="btn_save">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -324,11 +367,12 @@
                 stats_title: "Store Statistics",
                 per_today: "Today", per_week: "This Week", per_month: "This Month", per_year: "This Year", per_all: "All Time",
                 stat_visits: "Visits", stat_orders: "Orders", stat_revenue: "Revenue", stat_profit: "Net Profit",
-                add_product: "Add Product", prod_name: "Product Name", prod_category: "Category", cat_clothes: "Clothes", cat_accessories: "Accessories", cat_other: "Other",
+                add_product: "Add Product", prod_name: "Product Name", prod_category: "Category", 
+                cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accessories: "Accessories", cat_other: "Other",
                 prod_price: "Price ($)", prod_photo: "Upload Photos", photo_hint: "You can select multiple images.", btn_publish: "Publish to Store",
-                add_order: "Add New Order", btn_add_order: "Add Order",
+                add_order: "Add New Order", btn_add_order: "Add Order", edit_order: "Edit Order", btn_save: "Save Changes",
                 crm_title: "Orders Database", crm_client: "Client Name", crm_contact: "Contact (Tg/Phone)", crm_price: "Price ($)", crm_cost: "Cost ($)", crm_status: "Status",
-                tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date",
+                tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date", tbl_action: "Action",
                 del_btn: "Delete", msg_prod_added: "Product successfully added!", msg_order_added: "Order successfully added!"
             },
             ru: {
@@ -337,16 +381,17 @@
                 stats_title: "Статистика Магазина",
                 per_today: "Сегодня", per_week: "Эта неделя", per_month: "Этот месяц", per_year: "Этот год", per_all: "За все время",
                 stat_visits: "Визиты", stat_orders: "Заказы", stat_revenue: "Выручка", stat_profit: "Чистая Прибыль",
-                add_product: "Создать Товар", prod_name: "Название", prod_category: "Категория", cat_clothes: "Одежда", cat_accessories: "Аксессуары", cat_other: "Другое",
+                add_product: "Создать Товар", prod_name: "Название", prod_category: "Категория", 
+                cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accessories: "Аксессуары", cat_other: "Другое",
                 prod_price: "Цена ($)", prod_photo: "Фотографии (Можно несколько)", photo_hint: "Выделите несколько фото при выборе файлов.", btn_publish: "Опубликовать",
-                add_order: "Оформить Заказ", btn_add_order: "Добавить в базу",
+                add_order: "Оформить Заказ", btn_add_order: "Добавить в базу", edit_order: "Редактировать заказ", btn_save: "Сохранить изменения",
                 crm_title: "База Клиентов", crm_client: "Имя клиента", crm_contact: "Контакт (Tg/Тел)", crm_price: "Сумма ($)", crm_cost: "Себестоим. ($)", crm_status: "Статус",
-                tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата",
+                tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата", tbl_action: "Действие",
                 del_btn: "Удалить", msg_prod_added: "Успешно добавлено!", msg_order_added: "Заказ успешно добавлен!"
             }
         };
 
-        let currentLang = localStorage.getItem('lang') || 'ru'; // Сделал RU по умолчанию
+        let currentLang = localStorage.getItem('lang') || 'ru'; 
         document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
 
         function updateTexts() {
@@ -354,10 +399,14 @@
                 const key = el.getAttribute('data-i18n');
                 if (translations[currentLang][key]) el.innerHTML = translations[currentLang][key];
             });
-            const statusSelect = document.getElementById('c-status');
-            statusSelect.options[0].text = currentLang === 'en' ? 'Paid' : 'Оплачен';
-            statusSelect.options[1].text = currentLang === 'en' ? 'Processing' : 'В обработке';
-            statusSelect.options[2].text = currentLang === 'en' ? 'Cancelled' : 'Отменен';
+            const updateStatusOptions = (selectId) => {
+                const s = document.getElementById(selectId);
+                s.options[0].text = currentLang === 'en' ? 'Paid' : 'Оплачен';
+                s.options[1].text = currentLang === 'en' ? 'Processing' : 'В обработке';
+                s.options[2].text = currentLang === 'en' ? 'Cancelled' : 'Отменен';
+            }
+            updateStatusOptions('c-status');
+            updateStatusOptions('edit-status');
             renderTable();
             renderProductsList();
         }
@@ -404,14 +453,14 @@
             updateStats();
         });
 
-        // Fetch Products (For deleting)
+        // Fetch Products
         db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
             allProducts = [];
             snapshot.forEach(doc => { allProducts.push({ id: doc.id, ...doc.data() }); });
             renderProductsList();
         });
 
-        // --- SMART STATISTICS FILTER ---
+        // --- STATS FILTER ---
         function updateStats() {
             const period = document.getElementById('stats-period').value;
             const now = new Date();
@@ -452,7 +501,7 @@
             document.getElementById('stat-profit').innerText = '$' + prof.toLocaleString();
         }
 
-        // --- RENDER CRM TABLE (WITH DATA-LABELS FOR MOBILE) ---
+        // --- RENDER CRM TABLE ---
         function renderTable() {
             const tbody = document.getElementById('clients-table-body');
             tbody.innerHTML = '';
@@ -491,18 +540,22 @@
                         <td data-label="${lblProfit}" style="color: #4CAF50; font-weight: bold;">$${profit}</td>
                         <td data-label="${lblStatus}" style="${statusStyle}">${displayStatus}</td>
                         <td data-label="${lblDate}">${data.date}</td>
-                        <td data-label="Действие"><button class="delete-btn" style="width:auto; padding: 5px 15px;" onclick="deleteSale('${data.id}')">✕</button></td>
+                        <td data-label="Action">
+                            <div style="display:flex;">
+                                <button class="edit-btn" onclick="editSale('${data.id}')">✎</button>
+                                <button class="delete-btn" style="width:auto; padding: 5px 15px;" onclick="deleteSale('${data.id}')">✕</button>
+                            </div>
+                        </td>
                     </tr>`;
             });
         }
 
-        // --- RENDER PRODUCTS LIST ---
+        // --- RENDER PRODUCTS ---
         function renderProductsList() {
             const grid = document.getElementById('products-list-grid');
             grid.innerHTML = '';
             
             allProducts.forEach(prod => {
-                // Determine cover image (support old code where it was 'img' string, or new code where it's 'images' array)
                 let coverImg = "📦";
                 let photoCount = 0;
                 
@@ -516,7 +569,9 @@
                 
                 let catLabel = prod.category || 'other';
                 if (currentLang === 'ru') {
-                    if (catLabel === 'clothes') catLabel = 'Одежда';
+                    if (catLabel === 'hoodie') catLabel = 'Худи';
+                    if (catLabel === 't-shirt') catLabel = 'Футболки';
+                    if (catLabel === 'pants') catLabel = 'Штаны';
                     if (catLabel === 'accessories') catLabel = 'Аксессуары';
                     if (catLabel === 'other') catLabel = 'Другое';
                 }
@@ -533,7 +588,7 @@
             });
         }
 
-        // --- ADD MULTIPLE PHOTOS & PRODUCT ---
+        // --- ADD PHOTOS & PRODUCT ---
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn'); btn.disabled = true;
@@ -545,7 +600,6 @@
             const files = fileInput.files;
             
             if (files.length > 0) {
-                // Создаем массив промисов для обработки всех выбранных файлов
                 let promises = Array.from(files).map(file => {
                     return new Promise((resolve) => {
                         const reader = new FileReader();
@@ -562,28 +616,23 @@
                         reader.readAsDataURL(file);
                     });
                 });
-                
-                // Ждем пока сожмутся все картинки, потом сохраняем
                 Promise.all(promises).then(imagesArray => {
                     saveProductToDb(title, category, price, imagesArray);
                 });
             } else {
-                saveProductToDb(title, category, price, []); // Без картинок
+                saveProductToDb(title, category, price, []); 
             }
         });
 
         function saveProductToDb(title, category, price, imagesArray) {
             db.collection("products").add({ 
-                title: title, 
-                category: category,
-                price: price, 
-                images: imagesArray, // Сохраняем как массив
-                createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+                title: title, category: category, price: price, 
+                images: imagesArray, createdAt: firebase.firestore.FieldValue.serverTimestamp() 
             })
             .then(() => { 
                 document.getElementById('product-form').reset(); 
                 document.getElementById('upload-btn').disabled = false; 
-                alert(translations[currentLang].msg_prod_added); // Уведомление об успехе
+                alert(translations[currentLang].msg_prod_added);
             });
         }
 
@@ -596,7 +645,34 @@
                 status: document.getElementById('c-status').value, date: new Date().toLocaleDateString('en-US'), timestamp: Date.now()
             }).then(() => {
                 document.getElementById('client-form').reset();
-                alert(translations[currentLang].msg_order_added); // Уведомление об успехе
+                alert(translations[currentLang].msg_order_added); 
+            });
+        });
+
+        // --- EDIT ORDER ---
+        window.editSale = id => {
+            const order = allOrders.find(o => o.id === id);
+            if(!order) return;
+            document.getElementById('edit-id').value = order.id;
+            document.getElementById('edit-name').value = order.name;
+            document.getElementById('edit-contact').value = order.contact;
+            document.getElementById('edit-sum').value = order.sum;
+            document.getElementById('edit-cost').value = order.cost || 0;
+            document.getElementById('edit-status').value = order.status;
+            document.getElementById('edit-modal').style.display = 'flex';
+        };
+
+        document.getElementById('edit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            db.collection("sales").doc(id).update({
+                name: document.getElementById('edit-name').value,
+                contact: document.getElementById('edit-contact').value,
+                sum: Number(document.getElementById('edit-sum').value),
+                cost: Number(document.getElementById('edit-cost').value),
+                status: document.getElementById('edit-status').value
+            }).then(() => {
+                document.getElementById('edit-modal').style.display = 'none';
             });
         });
 
