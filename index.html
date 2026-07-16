@@ -104,10 +104,10 @@
         }
         .cat-btn.active, .cat-btn:hover { background: var(--text); color: var(--bg); }
 
-        /* Products Grid - 2 IN A ROW FOR MOBILE */
+        /* Products Grid */
         .products-grid {
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* Desktop: 4 columns */
+            grid-template-columns: repeat(4, 1fr); 
             gap: 20px;
         }
         
@@ -146,7 +146,7 @@
             /* СЕТКА ПО 2 ТОВАРА В РЯД */
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card { padding: 10px; }
-            .product-img { height: 180px; } /* Уменьшаем картинку для телефона */
+            .product-img { height: 180px; } 
             .product-title { font-size: 12px; }
             .product-price { font-size: 14px; margin-bottom: 10px; }
             .buy-btn { padding: 10px; font-size: 10px; }
@@ -190,7 +190,6 @@
             </div>
             
             <h2 style="text-align: center; text-transform: uppercase; margin: 50px 0 30px 0;" data-i18n="new_arrivals">New Arrivals</h2>
-            <!-- Тут будут последние 4 товара -->
             <div class="products-grid" id="latest-products"></div>
         </section>
 
@@ -214,7 +213,6 @@
                 </div>
             </div>
 
-            <!-- Сетка всех товаров -->
             <div class="products-grid" id="catalog-products"></div>
         </section>
 
@@ -231,7 +229,8 @@
                 btn_shop_now: "Shop Now", new_arrivals: "New Arrivals",
                 search_ph: "Search products (e.g. hoodie, black)...",
                 cat_all: "All", cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accs: "Accessories",
-                buy_btn: "BUY NOW", no_results: "No products found."
+                buy_btn: "BUY NOW", no_results: "No products found.",
+                alert_buy: "Contact us on social media to purchase!"
             },
             ru: {
                 nav_home: "Главная", nav_catalog: "Каталог",
@@ -241,7 +240,8 @@
                 btn_shop_now: "В Каталог", new_arrivals: "Новинки",
                 search_ph: "Поиск товаров (например: худи, черная)...",
                 cat_all: "Все", cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accs: "Аксессуары",
-                buy_btn: "КУПИТЬ", no_results: "Товары не найдены."
+                buy_btn: "КУПИТЬ", no_results: "Товары не найдены.",
+                alert_buy: "Свяжитесь с нами в социальных сетях для оформления заказа!"
             }
         };
 
@@ -264,7 +264,7 @@
             localStorage.setItem('lang', currentLang);
             document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
             updateTexts();
-            renderCatalog(); // Перерисовка кнопок
+            renderCatalog(); 
             renderLatest();
         }
 
@@ -277,7 +277,7 @@
         if (localStorage.getItem('theme') === 'light') document.body.setAttribute('data-theme', 'light'); 
         else document.body.setAttribute('data-theme', 'dark');
 
-        // --- SPA NAVIGATION (HOME / CATALOG) ---
+        // --- SPA NAVIGATION ---
         function switchView(viewName) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -320,13 +320,21 @@
 
         // --- RENDER HELPERS ---
         function createCardHTML(product) {
-            const imgContent = product.img.length <= 5 ? `<span style="font-size: 60px;">${product.img}</span>` : `<img src="${product.img}">`;
+            // Защита от пустых значений
+            const imgStr = product.img || '';
+            const titleStr = product.title || 'Без названия';
+            const priceStr = product.price || '0';
+
+            const imgContent = imgStr.length <= 5 
+                ? `<span style="font-size: 60px;">${imgStr}</span>` 
+                : `<img src="${imgStr}" alt="${titleStr}">`;
+
             return `
                 <div class="product-card">
                     <div class="product-img">${imgContent}</div>
-                    <div class="product-title">${product.title}</div>
-                    <div class="product-price">$ ${product.price}</div>
-                    <button class="buy-btn" onclick="alert('Contact us on social media to purchase!')">${translations[currentLang].buy_btn}</button>
+                    <div class="product-title">${titleStr}</div>
+                    <div class="product-price">$ ${priceStr}</div>
+                    <button class="buy-btn" onclick="alert('${translations[currentLang].alert_buy}')">${translations[currentLang].buy_btn}</button>
                 </div>
             `;
         }
@@ -334,7 +342,6 @@
         function renderLatest() {
             const container = document.getElementById('latest-products');
             container.innerHTML = '';
-            // Показываем первые 4 товара на главной
             allProducts.slice(0, 4).forEach(prod => { container.innerHTML += createCardHTML(prod); });
         }
 
@@ -342,12 +349,10 @@
             const container = document.getElementById('catalog-products');
             container.innerHTML = '';
 
-            // Умный поиск (Фильтрация по тексту и категории)
             const filtered = allProducts.filter(prod => {
-                const titleLower = prod.title.toLowerCase();
+                const titleLower = (prod.title || '').toLowerCase();
                 const matchesSearch = titleLower.includes(searchQuery);
                 
-                // Простая эмуляция категорий через ключевые слова в названии
                 let matchesCategory = true;
                 if (activeCategory !== 'all') {
                     if (activeCategory === 'hoodie') matchesCategory = titleLower.includes('hoodie') || titleLower.includes('худи');
@@ -374,15 +379,14 @@
         // --- CATEGORY EVENT ---
         document.querySelectorAll('.cat-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Убираем активный класс у всех
                 document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                // Добавляем нажатому
                 e.target.classList.add('active');
                 activeCategory = e.target.getAttribute('data-cat');
                 renderCatalog();
             });
         });
 
+        // Инициализация текстов при загрузке
         updateTexts();
     </script>
 </body>
