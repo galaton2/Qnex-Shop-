@@ -7,13 +7,11 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --bg: #000000; --text: #ffffff; --border: #ffffff;
             --hover-bg: #ffffff; --hover-text: #000000; --gray: #111111;
-            --success: #4CAF50; --danger: #ff4444;
         }
         [data-theme="light"] {
             --bg: #ffffff; --text: #000000; --border: #000000;
@@ -26,7 +24,7 @@
             margin: 0; padding: 0; transition: 0.3s;
         }
         
-        .container { padding: 20px; max-width: 1600px; margin: 0 auto; }
+        .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
         header {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
@@ -44,13 +42,13 @@
 
         /* TABS NAV */
         .tabs-nav {
-            display: flex; gap: 15px; margin-bottom: 30px;
-            border-bottom: 1px solid var(--gray); padding-bottom: 10px; flex-wrap: wrap;
+            display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;
+            border-bottom: 1px solid var(--gray); padding-bottom: 10px;
         }
         .tab-btn {
             background: none; border: none; color: var(--text); opacity: 0.5;
-            font-size: 16px; text-transform: uppercase; font-weight: bold;
-            cursor: pointer; padding: 10px 0; transition: 0.3s;
+            font-size: 14px; text-transform: uppercase; font-weight: bold;
+            cursor: pointer; padding: 10px 5px; transition: 0.3s;
         }
         .tab-btn.active, .tab-btn:hover { opacity: 1; border-bottom: 2px solid var(--text); }
         
@@ -63,22 +61,22 @@
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 20px; flex-wrap: wrap; gap: 15px;
         }
-        select {
+        select.period-select {
             padding: 10px; background: var(--bg); color: var(--text); border: 1px solid var(--border);
             text-transform: uppercase; font-weight: bold; font-size: 14px; cursor: pointer;
         }
 
-        /* Stats & Products Grid */
+        /* Stats Grid */
         .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; margin-bottom: 40px;
         }
-        .stat-card { border: 1px solid var(--border); padding: 25px 15px; text-align: center; display: flex; flex-direction: column; justify-content: center;}
+        .stat-card { border: 1px solid var(--border); padding: 25px 15px; text-align: center; }
         .stat-card h3 { font-size: 14px; opacity: 0.7; }
         .stat-num { font-size: 32px; font-weight: bold; margin-top: 15px; }
-        .profit-text { color: var(--success); }
+        .profit-text { color: #4CAF50; }
 
-        .panel-box { border: 1px solid var(--border); padding: 30px; margin-bottom: 30px; width: 100%; box-sizing: border-box; }
+        .panel-box { border: 1px solid var(--border); padding: 30px; margin-bottom: 30px;}
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; font-size: 12px; }
         input, select {
@@ -86,45 +84,70 @@
             background: var(--bg); color: var(--text); box-sizing: border-box; font-family: inherit;
         }
         
-        .crm-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; align-items: end; margin-top: 20px;}
+        .crm-form { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media(min-width: 768px) { .crm-form { grid-template-columns: repeat(2, 1fr); } }
+        
         .btn {
             background: var(--bg); color: var(--text); border: 1px solid var(--border);
             padding: 12px; cursor: pointer; text-transform: uppercase; font-family: inherit;
-            width: 100%; transition: 0.3s; font-weight: bold;
+            width: 100%; transition: 0.3s; font-weight: bold; margin-top: 10px;
         }
         .btn:hover { background: var(--text); color: var(--bg); }
-        .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); margin-top: auto; }
-        .btn-danger:hover { background: #cc0000; border-color: #cc0000; color: #fff; }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;
+        }
+        .product-card {
+            border: 1px solid var(--border); padding: 15px; position: relative; display: flex; flex-direction: column;
+        }
+        .product-card .img-preview {
+            width: 100%; height: 200px; object-fit: cover; margin-bottom: 15px; background: var(--gray);
+        }
+        .product-card .photos-count {
+            position: absolute; top: 25px; left: 25px; background: var(--text); color: var(--bg); 
+            padding: 2px 8px; font-size: 10px; font-weight: bold; border-radius: 10px;
+        }
+        .product-card h3 { font-size: 16px; margin-bottom: 5px; }
+        .product-card p { margin: 0; opacity: 0.7; font-size: 14px; margin-bottom: 15px;}
+        
+        .delete-btn { 
+            color: #ff4444; background: none; border: 1px solid #ff4444; font-weight: bold; 
+            cursor: pointer; padding: 5px 10px; transition: 0.3s; width: 100%; text-transform: uppercase;
+        }
+        .delete-btn:hover { background: #ff4444; color: white; }
 
-        /* Table */
-        .table-responsive { overflow-x: auto; margin-top: 20px; width: 100%; }
-        .sheet-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 1000px; white-space: nowrap; }
+        /* Table (Responsive mobile fix) */
+        .table-responsive { width: 100%; margin-top: 20px; }
+        .sheet-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 15px; text-align: left; }
         .sheet-table th { background-color: var(--text); color: var(--bg); text-transform: uppercase; letter-spacing: 1px; }
         .sheet-table tr:nth-child(even) { background-color: var(--gray); }
-        .delete-btn { color: var(--danger); background: none; border: none; font-weight: bold; cursor: pointer; font-size: 16px;}
         .contact-link { color: #3b82f6; text-decoration: none; font-weight: bold; }
 
-        /* Toast Notification */
-        .toast {
-            visibility: hidden; min-width: 250px; background-color: var(--success); color: #fff;
-            text-align: center; border-radius: 4px; padding: 16px; position: fixed;
-            z-index: 1000; left: 50%; bottom: -50px; transform: translateX(-50%);
-            font-size: 16px; font-weight: bold; text-transform: uppercase;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.5); transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        /* MOBILE TABLE CSS (No horizontal scroll) */
+        @media (max-width: 768px) {
+            .sheet-table thead { display: none; }
+            .sheet-table, .sheet-table tbody, .sheet-table tr, .sheet-table td { display: block; width: 100%; box-sizing: border-box; }
+            .sheet-table tr { margin-bottom: 20px; border: 2px solid var(--border); }
+            .sheet-table td { text-align: right; padding-left: 45%; position: relative; border: none; border-bottom: 1px solid var(--gray); }
+            .sheet-table td:last-child { border-bottom: none; }
+            .sheet-table td::before { 
+                content: attr(data-label); position: absolute; left: 15px; width: 40%; 
+                text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px;
+            }
         }
-        .toast.show { visibility: visible; bottom: 30px; }
     </style>
 </head>
 <body>
     <script>
-        // СИСТЕМА БЕЗОПАСНОСТИ
+        // --- 1. СИСТЕМА БЕЗОПАСНОСТИ (WHITELIST) ---
         const SECRET_KEY = "qnex"; 
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.get('key') === SECRET_KEY) {
             localStorage.setItem('qnex_admin_access', SECRET_KEY);
-            window.history.replaceState({}, document.title, window.location.pathname);
+            window.history.replaceState({}, document.title, window.location.pathname); 
         } else if (localStorage.getItem('qnex_admin_access') !== SECRET_KEY) {
             alert("Access Denied! Device not whitelisted.");
             window.location.href = "index.html";
@@ -144,18 +167,19 @@
             </div>
         </header>
 
-        <!-- TABS NAV -->
         <div class="tabs-nav">
             <button class="tab-btn active" id="btn-tab-dashboard" onclick="openTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
+            <button class="tab-btn" id="btn-tab-add-product" onclick="openTab('add-product')" data-i18n="tab_add_product">Add Product</button>
             <button class="tab-btn" id="btn-tab-products" onclick="openTab('products')" data-i18n="tab_products">Products</button>
-            <button class="tab-btn" id="btn-tab-crm" onclick="openTab('crm')" data-i18n="tab_crm">Orders (CRM)</button>
+            <button class="tab-btn" id="btn-tab-add-crm" onclick="openTab('add-crm')" data-i18n="tab_add_crm">Add Order</button>
+            <button class="tab-btn" id="btn-tab-crm" onclick="openTab('crm')" data-i18n="tab_crm">Orders DB</button>
         </div>
 
-        <!-- ================= TAB: DASHBOARD ================= -->
+        <!-- ================= TAB 1: DASHBOARD ================= -->
         <div id="tab-dashboard" class="tab-content active">
             <div class="stats-header">
                 <h2 data-i18n="stats_title">Store Statistics</h2>
-                <select id="stats-period" onchange="updateStats()">
+                <select class="period-select" id="stats-period" onchange="updateStats()">
                     <option value="today" data-i18n="per_today">Today</option>
                     <option value="week" data-i18n="per_week">This Week</option>
                     <option value="month" selected data-i18n="per_month">This Month</option>
@@ -177,63 +201,57 @@
                     <h3 data-i18n="stat_revenue">Revenue</h3>
                     <div class="stat-num" id="stat-revenue">$0</div>
                 </div>
-                <div class="stat-card" style="border-color: var(--success);">
-                    <h3 data-i18n="stat_profit" style="color: var(--success);">Net Profit</h3>
+                <div class="stat-card" style="border-color: #4CAF50;">
+                    <h3 data-i18n="stat_profit" style="color: #4CAF50;">Net Profit</h3>
                     <div class="stat-num profit-text" id="stat-profit">$0</div>
                 </div>
             </div>
         </div>
 
-        <!-- ================= TAB: PRODUCTS ================= -->
-        <div id="tab-products" class="tab-content">
-            <div class="panel-box" style="max-width: 800px;">
+        <!-- ================= TAB 2: ADD PRODUCT ================= -->
+        <div id="tab-add-product" class="tab-content">
+            <div class="panel-box" style="max-width: 600px; margin: 0 auto;">
                 <h2 data-i18n="add_product">Add Product</h2>
                 <form id="product-form" style="margin-top: 20px;">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                        <div class="form-group">
-                            <label data-i18n="prod_name">Product Name</label>
-                            <input type="text" id="p-title" required placeholder="e.g. Minimalist Hoodie">
-                        </div>
-                        <div class="form-group">
-                            <label data-i18n="prod_price">Price ($)</label>
-                            <input type="number" id="p-price" required placeholder="e.g. 50">
-                        </div>
+                    <div class="form-group">
+                        <label data-i18n="prod_name">Product Name</label>
+                        <input type="text" id="p-title" required placeholder="e.g. Minimalist Hoodie">
                     </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                        <div class="form-group">
-                            <label data-i18n="prod_cat">Category</label>
-                            <select id="p-category">
-                                <option value="Clothes">Clothes / Одежда</option>
-                                <option value="Shoes">Shoes / Обувь</option>
-                                <option value="Electronics">Electronics / Электроника</option>
-                                <option value="Accessories">Accessories / Аксессуары</option>
-                                <option value="Other">Other / Другое</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label data-i18n="prod_photo">Upload Photo(s)</label>
-                            <!-- Добавлен атрибут multiple для загрузки нескольких фото -->
-                            <input type="file" id="p-file" accept="image/*" multiple style="padding: 8px 5px;">
-                        </div>
+                    <div class="form-group">
+                        <label data-i18n="prod_category">Category</label>
+                        <select id="p-category" required>
+                            <option value="clothes" data-i18n="cat_clothes">Clothes</option>
+                            <option value="accessories" data-i18n="cat_accessories">Accessories</option>
+                            <option value="other" data-i18n="cat_other">Other</option>
+                        </select>
                     </div>
-
+                    <div class="form-group">
+                        <label data-i18n="prod_price">Price ($)</label>
+                        <input type="number" id="p-price" required placeholder="e.g. 50">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="prod_photo">Upload Photos (Multiple)</label>
+                        <input type="file" id="p-file" accept="image/*" multiple style="padding: 8px 5px;">
+                        <p style="font-size: 11px; opacity: 0.7; margin-top: 5px;" data-i18n="photo_hint">You can select multiple images.</p>
+                    </div>
                     <button type="submit" class="btn" id="upload-btn" data-i18n="btn_publish">Publish to Store</button>
                 </form>
             </div>
+        </div>
 
-            <h2 style="margin: 40px 0 20px 0;" data-i18n="all_products">All Products</h2>
-            <div class="stats-grid" id="products-list">
-                <!-- Сюда будут загружаться товары -->
+        <!-- ================= TAB 3: PRODUCTS LIST ================= -->
+        <div id="tab-products" class="tab-content">
+            <h2 data-i18n="tab_products" style="margin-bottom: 20px;">Products</h2>
+            <div class="products-grid" id="products-list-grid">
+                <!-- Products will load here -->
             </div>
         </div>
 
-        <!-- ================= TAB: CRM (ORDERS) ================= -->
-        <div id="tab-crm" class="tab-content">
-            <div class="panel-box">
-                <h2 data-i18n="crm_title">Orders Database</h2>
-                
-                <form id="client-form" class="crm-form">
+        <!-- ================= TAB 4: ADD ORDER (CRM) ================= -->
+        <div id="tab-add-crm" class="tab-content">
+            <div class="panel-box" style="max-width: 800px; margin: 0 auto;">
+                <h2 data-i18n="add_order">Add New Order</h2>
+                <form id="client-form" class="crm-form" style="margin-top: 20px;">
                     <div>
                         <label data-i18n="crm_client">Client Name</label>
                         <input type="text" id="c-name" required placeholder="Name">
@@ -258,32 +276,36 @@
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn">+</button>
+                    <div style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn" data-i18n="btn_add_order">Add Order</button>
+                    </div>
                 </form>
-
-                <div class="table-responsive">
-                    <table class="sheet-table">
-                        <thead>
-                            <tr>
-                                <th data-i18n="tbl_client">Client</th>
-                                <th data-i18n="tbl_contact">Contact</th>
-                                <th data-i18n="tbl_sum">Sum</th>
-                                <th data-i18n="tbl_cost">Cost</th>
-                                <th data-i18n="tbl_profit">Profit</th>
-                                <th data-i18n="tbl_status">Status</th>
-                                <th data-i18n="tbl_date">Date</th>
-                                <th>Del</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clients-table-body"></tbody>
-                    </table>
-                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Всплывающее уведомление (Toast) -->
-    <div id="toast" class="toast">Successfully Added!</div>
+        <!-- ================= TAB 5: ORDERS DB ================= -->
+        <div id="tab-crm" class="tab-content">
+            <h2 data-i18n="crm_title">Orders Database</h2>
+            <div class="table-responsive">
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="tbl_client">Client</th>
+                            <th data-i18n="tbl_contact">Contact</th>
+                            <th data-i18n="tbl_sum">Sum</th>
+                            <th data-i18n="tbl_cost">Cost</th>
+                            <th data-i18n="tbl_profit">Profit</th>
+                            <th data-i18n="tbl_status">Status</th>
+                            <th data-i18n="tbl_date">Date</th>
+                            <th>Del</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 
     <script>
         // --- TABS LOGIC ---
@@ -294,41 +316,37 @@
             document.getElementById(`btn-tab-${tabId}`).classList.add('active');
         }
 
-        // --- TOAST NOTIFICATION ---
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.classList.add("show");
-            setTimeout(() => { toast.classList.remove("show"); }, 3000);
-        }
-
         // --- TRANSLATIONS ---
         const translations = {
             en: {
                 subtitle: "Analytics & Store Management", invert_theme: "Invert Theme", go_store: "Go to Store →",
-                tab_dashboard: "Dashboard", tab_products: "Products", tab_crm: "Orders (CRM)", stats_title: "Store Statistics",
+                tab_dashboard: "Dashboard", tab_add_product: "Add Product", tab_products: "Products", tab_add_crm: "Add Order", tab_crm: "Orders List",
+                stats_title: "Store Statistics",
                 per_today: "Today", per_week: "This Week", per_month: "This Month", per_year: "This Year", per_all: "All Time",
                 stat_visits: "Visits", stat_orders: "Orders", stat_revenue: "Revenue", stat_profit: "Net Profit",
-                add_product: "Add Product", prod_name: "Product Name", prod_price: "Price ($)", prod_cat: "Category", prod_photo: "Upload Photo(s)", btn_publish: "Publish to Store",
-                all_products: "All Products", btn_delete: "Delete",
+                add_product: "Add Product", prod_name: "Product Name", prod_category: "Category", cat_clothes: "Clothes", cat_accessories: "Accessories", cat_other: "Other",
+                prod_price: "Price ($)", prod_photo: "Upload Photos", photo_hint: "You can select multiple images.", btn_publish: "Publish to Store",
+                add_order: "Add New Order", btn_add_order: "Add Order",
                 crm_title: "Orders Database", crm_client: "Client Name", crm_contact: "Contact (Tg/Phone)", crm_price: "Price ($)", crm_cost: "Cost ($)", crm_status: "Status",
                 tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date",
-                toast_added: "Successfully added!"
+                del_btn: "Delete", msg_prod_added: "Product successfully added!", msg_order_added: "Order successfully added!"
             },
             ru: {
                 subtitle: "Аналитика и Управление", invert_theme: "Сменить тему", go_store: "В магазин →",
-                tab_dashboard: "Дашборд", tab_products: "Товары", tab_crm: "База Клиентов", stats_title: "Статистика Магазина",
+                tab_dashboard: "Дашборд", tab_add_product: "Добавить Товар", tab_products: "Товары", tab_add_crm: "Добавить заказ", tab_crm: "База Заказов",
+                stats_title: "Статистика Магазина",
                 per_today: "Сегодня", per_week: "Эта неделя", per_month: "Этот месяц", per_year: "Этот год", per_all: "За все время",
                 stat_visits: "Визиты", stat_orders: "Заказы", stat_revenue: "Выручка", stat_profit: "Чистая Прибыль",
-                add_product: "Добавить Товар", prod_name: "Название", prod_price: "Цена ($)", prod_cat: "Категория", prod_photo: "Загрузить фото", btn_publish: "Опубликовать",
-                all_products: "Все товары", btn_delete: "Удалить",
+                add_product: "Создать Товар", prod_name: "Название", prod_category: "Категория", cat_clothes: "Одежда", cat_accessories: "Аксессуары", cat_other: "Другое",
+                prod_price: "Цена ($)", prod_photo: "Фотографии (Можно несколько)", photo_hint: "Выделите несколько фото при выборе файлов.", btn_publish: "Опубликовать",
+                add_order: "Оформить Заказ", btn_add_order: "Добавить в базу",
                 crm_title: "База Клиентов", crm_client: "Имя клиента", crm_contact: "Контакт (Tg/Тел)", crm_price: "Сумма ($)", crm_cost: "Себестоим. ($)", crm_status: "Статус",
                 tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата",
-                toast_added: "Успешно добавлено!"
+                del_btn: "Удалить", msg_prod_added: "Успешно добавлено!", msg_order_added: "Заказ успешно добавлен!"
             }
         };
 
-        let currentLang = localStorage.getItem('lang') || 'en';
+        let currentLang = localStorage.getItem('lang') || 'ru'; // Сделал RU по умолчанию
         document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
 
         function updateTexts() {
@@ -341,7 +359,7 @@
             statusSelect.options[1].text = currentLang === 'en' ? 'Processing' : 'В обработке';
             statusSelect.options[2].text = currentLang === 'en' ? 'Cancelled' : 'Отменен';
             renderTable();
-            renderProducts(); // Перевод кнопок в товарах
+            renderProductsList();
         }
 
         function toggleLang() {
@@ -368,7 +386,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- DATA STORAGE ---
+        // --- DATA ARRAYS ---
         let allOrders = [];
         let allProducts = [];
         let visitsData = {};
@@ -378,7 +396,7 @@
             if(doc.exists) { visitsData = doc.data(); updateStats(); }
         });
 
-        // Fetch CRM
+        // Fetch CRM Orders
         db.collection("sales").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
             allOrders = [];
             snapshot.forEach(doc => { allOrders.push({ id: doc.id, ...doc.data() }); });
@@ -386,18 +404,17 @@
             updateStats();
         });
 
-        // Fetch Products
+        // Fetch Products (For deleting)
         db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
             allProducts = [];
             snapshot.forEach(doc => { allProducts.push({ id: doc.id, ...doc.data() }); });
-            renderProducts();
+            renderProductsList();
         });
 
-        // --- STATISTICS ---
+        // --- SMART STATISTICS FILTER ---
         function updateStats() {
             const period = document.getElementById('stats-period').value;
             const now = new Date();
-            
             let startTime = 0; 
             if (period === 'today') startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             else if (period === 'week') {
@@ -435,41 +452,18 @@
             document.getElementById('stat-profit').innerText = '$' + prof.toLocaleString();
         }
 
-        // --- RENDER PRODUCTS ---
-        function renderProducts() {
-            const list = document.getElementById('products-list');
-            list.innerHTML = '';
-            
-            allProducts.forEach(data => {
-                // Поддержка и старого одиночного фото и нового массива
-                let coverImage = '📦';
-                if (data.images && data.images.length > 0) coverImage = data.images[0];
-                else if (data.img) coverImage = data.img;
-
-                let imgHtml = coverImage !== '📦' 
-                    ? `<img src="${coverImage}" style="width:100%; height:180px; object-fit:cover; border-bottom: 1px solid var(--border); margin-bottom: 15px;">` 
-                    : `<div style="height:180px; display:flex; align-items:center; justify-content:center; font-size:40px; border-bottom: 1px solid var(--border); margin-bottom: 15px;">📦</div>`;
-                
-                let photoCountHtml = (data.images && data.images.length > 1) ? `<span style="font-size:10px; background:var(--text); color:var(--bg); padding:2px 5px; border-radius:3px;">+${data.images.length - 1} photo</span>` : '';
-
-                list.innerHTML += `
-                    <div class="stat-card" style="padding: 0; overflow: hidden; justify-content: space-between;">
-                        <div>
-                            ${imgHtml}
-                            <h3 style="margin: 0 15px 5px 15px; font-size: 16px; opacity: 1;">${data.title} ${photoCountHtml}</h3>
-                            <p style="margin: 0 15px 15px 15px; font-size: 13px; opacity: 0.7;">$${data.price} • ${data.category || 'Other'}</p>
-                        </div>
-                        <div style="padding: 15px;">
-                            <button class="btn btn-danger" onclick="deleteProduct('${data.id}')">${translations[currentLang].btn_delete}</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // --- RENDER CRM TABLE ---
+        // --- RENDER CRM TABLE (WITH DATA-LABELS FOR MOBILE) ---
         function renderTable() {
             const tbody = document.getElementById('clients-table-body');
             tbody.innerHTML = '';
+            
+            const lblClient = translations[currentLang].tbl_client;
+            const lblContact = translations[currentLang].tbl_contact;
+            const lblSum = translations[currentLang].tbl_sum;
+            const lblCost = translations[currentLang].tbl_cost;
+            const lblProfit = translations[currentLang].tbl_profit;
+            const lblStatus = translations[currentLang].tbl_status;
+            const lblDate = translations[currentLang].tbl_date;
             
             allOrders.forEach(data => {
                 const profit = data.sum - (data.cost || 0);
@@ -484,45 +478,82 @@
                     if (displayStatus === 'Processing') displayStatus = 'В обработке';
                     if (displayStatus === 'Cancelled') displayStatus = 'Отменен';
                 }
-                let statusStyle = data.status === 'Paid' ? 'color: var(--success); font-weight: bold;' : 
+                let statusStyle = data.status === 'Paid' ? 'color: #4CAF50; font-weight: bold;' : 
                                   data.status === 'Processing' ? 'opacity: 0.7; font-style: italic;' : 
-                                  'color: var(--danger); text-decoration: line-through;';
+                                  'color: #ff4444; text-decoration: line-through;';
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${data.name}</strong></td>
-                        <td>${contactHtml}</td>
-                        <td>$${data.sum}</td>
-                        <td style="opacity: 0.7;">$${data.cost || 0}</td>
-                        <td style="color: var(--success); font-weight: bold;">$${profit}</td>
-                        <td style="${statusStyle}">${displayStatus}</td>
-                        <td>${data.date}</td>
-                        <td style="text-align:center;"><button class="delete-btn" onclick="deleteSale('${data.id}')">✕</button></td>
+                        <td data-label="${lblClient}">${data.name}</td>
+                        <td data-label="${lblContact}">${contactHtml}</td>
+                        <td data-label="${lblSum}">$${data.sum}</td>
+                        <td data-label="${lblCost}" style="opacity: 0.7;">$${data.cost || 0}</td>
+                        <td data-label="${lblProfit}" style="color: #4CAF50; font-weight: bold;">$${profit}</td>
+                        <td data-label="${lblStatus}" style="${statusStyle}">${displayStatus}</td>
+                        <td data-label="${lblDate}">${data.date}</td>
+                        <td data-label="Действие"><button class="delete-btn" style="width:auto; padding: 5px 15px;" onclick="deleteSale('${data.id}')">✕</button></td>
                     </tr>`;
             });
         }
 
-        // --- ADD PRODUCT WITH MULTIPLE IMAGES ---
+        // --- RENDER PRODUCTS LIST ---
+        function renderProductsList() {
+            const grid = document.getElementById('products-list-grid');
+            grid.innerHTML = '';
+            
+            allProducts.forEach(prod => {
+                // Determine cover image (support old code where it was 'img' string, or new code where it's 'images' array)
+                let coverImg = "📦";
+                let photoCount = 0;
+                
+                if (prod.images && Array.isArray(prod.images) && prod.images.length > 0) {
+                    coverImg = prod.images[0];
+                    photoCount = prod.images.length;
+                } else if (prod.img) {
+                    coverImg = prod.img;
+                    photoCount = 1;
+                }
+                
+                let catLabel = prod.category || 'other';
+                if (currentLang === 'ru') {
+                    if (catLabel === 'clothes') catLabel = 'Одежда';
+                    if (catLabel === 'accessories') catLabel = 'Аксессуары';
+                    if (catLabel === 'other') catLabel = 'Другое';
+                }
+
+                grid.innerHTML += `
+                    <div class="product-card">
+                        ${photoCount > 1 ? `<div class="photos-count">${photoCount} Фото</div>` : ''}
+                        ${coverImg.startsWith('data:') ? `<img src="${coverImg}" class="img-preview">` : `<div class="img-preview" style="display:flex; align-items:center; justify-content:center; font-size:40px;">${coverImg}</div>`}
+                        <h3>${prod.title}</h3>
+                        <p>$${prod.price} • ${catLabel}</p>
+                        <button class="delete-btn" onclick="deleteProduct('${prod.id}')">${translations[currentLang].del_btn}</button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- ADD MULTIPLE PHOTOS & PRODUCT ---
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn'); btn.disabled = true;
             const title = document.getElementById('p-title').value;
-            const price = document.getElementById('p-price').value;
             const category = document.getElementById('p-category').value;
+            const price = document.getElementById('p-price').value;
             const fileInput = document.getElementById('p-file');
 
-            if (fileInput.files && fileInput.files.length > 0) {
-                // Обрабатываем сразу несколько файлов
-                let promises = Array.from(fileInput.files).map(file => {
+            const files = fileInput.files;
+            
+            if (files.length > 0) {
+                // Создаем массив промисов для обработки всех выбранных файлов
+                let promises = Array.from(files).map(file => {
                     return new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const img = new Image();
                             img.onload = function() {
-                                const canvas = document.createElement('canvas'); 
-                                const scale = 600 / img.width;
-                                canvas.width = 600; 
-                                canvas.height = img.height * scale;
+                                const canvas = document.createElement('canvas'); const scale = 600 / img.width;
+                                canvas.width = 600; canvas.height = img.height * scale;
                                 canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                                 resolve(canvas.toDataURL('image/jpeg', 0.6));
                             }
@@ -531,34 +562,29 @@
                         reader.readAsDataURL(file);
                     });
                 });
-
+                
+                // Ждем пока сожмутся все картинки, потом сохраняем
                 Promise.all(promises).then(imagesArray => {
-                    saveProduct(title, price, category, imagesArray);
+                    saveProductToDb(title, category, price, imagesArray);
                 });
             } else {
-                saveProduct(title, price, category, []);
+                saveProductToDb(title, category, price, []); // Без картинок
             }
         });
 
-        function saveProduct(title, price, category, imagesArray) {
+        function saveProductToDb(title, category, price, imagesArray) {
             db.collection("products").add({ 
                 title: title, 
-                price: price, 
                 category: category,
+                price: price, 
                 images: imagesArray, // Сохраняем как массив
                 createdAt: firebase.firestore.FieldValue.serverTimestamp() 
-            }).then(() => { 
+            })
+            .then(() => { 
                 document.getElementById('product-form').reset(); 
                 document.getElementById('upload-btn').disabled = false; 
-                showToast(translations[currentLang].toast_added); // Красивый Toast вместо alert
+                alert(translations[currentLang].msg_prod_added); // Уведомление об успехе
             });
-        }
-
-        // --- DELETE PRODUCT ---
-        window.deleteProduct = id => { 
-            if (confirm(currentLang === 'en' ? "Delete this product?" : "Удалить этот товар?")) {
-                db.collection("products").doc(id).delete(); 
-            }
         }
 
         // --- ADD ORDER ---
@@ -568,10 +594,15 @@
                 name: document.getElementById('c-name').value, contact: document.getElementById('c-contact').value || '-',
                 sum: Number(document.getElementById('c-sum').value), cost: Number(document.getElementById('c-cost').value),
                 status: document.getElementById('c-status').value, date: new Date().toLocaleDateString('en-US'), timestamp: Date.now()
-            }).then(() => document.getElementById('client-form').reset());
+            }).then(() => {
+                document.getElementById('client-form').reset();
+                alert(translations[currentLang].msg_order_added); // Уведомление об успехе
+            });
         });
 
+        // --- DELETIONS ---
         window.deleteSale = id => { if (confirm(currentLang === 'en' ? "Delete record?" : "Удалить запись?")) db.collection("sales").doc(id).delete(); }
+        window.deleteProduct = id => { if (confirm(currentLang === 'en' ? "Delete product?" : "Удалить товар?")) db.collection("products").doc(id).delete(); }
 
         updateTexts();
     </script>
