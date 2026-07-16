@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B&W ADMIN</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg: #ffffff; --text: #000000; --border: #000000;
+            --hover-bg: #000000; --hover-text: #ffffff;
+            --gray: #f9f9f9; --dark-gray: #333;
+        }
+        [data-theme="dark"] {
+            --bg: #000000; --text: #ffffff; --border: #ffffff;
+            --hover-bg: #ffffff; --hover-text: #000000;
+            --gray: #111111; --dark-gray: #ccc;
+        }
+
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Courier New', Courier, monospace, sans-serif;
+            margin: 0; padding: 20px; transition: 0.3s;
+        }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 30px;
+        }
+        h1, h2, h3 { text-transform: uppercase; margin: 0; }
+        .back-btn, .theme-btn {
+            color: var(--text); text-decoration: none; border: 1px solid var(--border);
+            padding: 8px 15px; cursor: pointer; background: transparent; transition: 0.3s; font-family: inherit;
+        }
+        .back-btn:hover, .theme-btn:hover { background: var(--hover-bg); color: var(--hover-text); }
+        
+        /* Блок статистики */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 40px;
+        }
+        .stat-card {
+            border: 2px solid var(--border); padding: 20px; text-align: center;
+        }
+        .stat-num { font-size: 32px; font-weight: bold; margin-top: 10px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        
+        .panel-box { border: 2px solid var(--border); padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
+        input, select {
+            width: 100%; padding: 10px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); box-sizing: border-box; font-family: inherit;
+        }
+        .btn {
+            background: var(--text); color: var(--bg); border: 1px solid var(--border);
+            padding: 12px 20px; cursor: pointer; text-transform: uppercase; font-family: inherit;
+            width: 100%; transition: 0.3s; font-weight: bold;
+        }
+        .btn:hover { background: var(--bg); color: var(--text); }
+        
+        /* Таблица */
+        .sheet-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+        .sheet-table th { background-color: var(--text); color: var(--bg); text-transform: uppercase; }
+        .sheet-table tr:nth-child(even) { background-color: var(--gray); }
+        .delete-btn { color: red; background: none; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>ADMIN DASHBOARD</h1>
+            <p style="margin: 5px 0 0 0; font-size: 12px;">Статистика и управление</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="theme-btn" onclick="toggleTheme()">Инверсия Цвета</button>
+            <a href="index.html" class="back-btn">На сайт →</a>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Заказы (Месяц)</h3>
+            <div class="stat-num" id="stat-month-orders">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Выручка (Месяц)</h3>
+            <div class="stat-num" id="stat-month-revenue">0 ₽</div>
+        </div>
+        <div class="stat-card">
+            <h3>Всего заказов</h3>
+            <div class="stat-num" id="stat-total-orders">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Общая выручка</h3>
+            <div class="stat-num" id="stat-total-revenue">0 ₽</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="panel-box">
+            <h2>Добавить товар</h2>
+            <form id="product-form" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>Название</label>
+                    <input type="text" id="p-title" required>
+                </div>
+                <div class="form-group">
+                    <label>Цена (₽)</label>
+                    <input type="number" id="p-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Загрузить фото</label>
+                    <input type="file" id="p-file" accept="image/*" style="padding: 5px;">
+                    <p style="font-size: 11px; margin-top: 5px;">Или оставьте пустым для 📦</p>
+                </div>
+                <button type="submit" class="btn" id="upload-btn">Опубликовать</button>
+            </form>
+        </div>
+
+        <div class="panel-box">
+            <h2>Учет заказов</h2>
+            <form id="client-form" style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                <input type="text" id="c-name" required placeholder="ФИО" style="flex: 2; min-width: 150px;">
+                <input type="number" id="c-sum" required placeholder="Сумма (₽)" style="flex: 1; min-width: 100px;">
+                <select id="c-status" style="flex: 1; min-width: 120px;">
+                    <option value="Оплачен">Оплачен</option>
+                    <option value="В обработке">В обработке</option>
+                    <option value="Отменен">Отменен</option>
+                </select>
+                <button type="submit" class="btn" style="flex: 0; width: 60px;">+</button>
+            </form>
+
+            <div style="overflow-x: auto;">
+                <table class="sheet-table">
+                    <thead><tr><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th><th>Del</th></tr></thead>
+                    <tbody id="clients-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- СМЕНА ТЕМЫ ---
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        if (localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+        // --- ВАШ FIREBASE КОНФИГ (Точно такой же, как в index.html) ---
+        const firebaseConfig = {
+            apiKey: "ТВОЙ_API_KEY",
+            authDomain: "ТВОЙ_PROJECT_ID.firebaseapp.com",
+            projectId: "ТВОЙ_PROJECT_ID",
+            storageBucket: "ТВОЙ_PROJECT_ID.appspot.com",
+            messagingSenderId: "ТВОЙ_SENDER_ID",
+            appId: "ТВОЙ_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- ЗАГРУЗКА ФОТО СО СЖАТИЕМ (ЧЕРЕЗ CANVAS) И СОХРАНЕНИЕ ТОВАРА ---
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('upload-btn');
+            btn.innerText = 'Загрузка...';
+            btn.disabled = true;
+
+            const title = document.getElementById('p-title').value;
+            const price = document.getElementById('p-price').value;
+            const fileInput = document.getElementById('p-file');
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600; // Сжимаем до 600px ширины
+                        const scale = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scale;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Получаем сжатую base64 строку
+                        const base64Image = canvas.toDataURL('image/jpeg', 0.6);
+                        saveProduct(title, price, base64Image);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveProduct(title, price, "📦");
+            }
+        });
+
+        function saveProduct(title, price, imgString) {
+            db.collection("products").add({
+                title: title, price: price, img: imgString,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert('Товар добавлен!');
+                document.getElementById('product-form').reset();
+                document.getElementById('upload-btn').innerText = 'Опубликовать';
+                document.getElementById('upload-btn').disabled = false;
+            }).catch(err => {
+                console.error(err);
+                alert('Ошибка. Возможно картинка слишком большая.');
+                document.getElementById('upload-btn').innerText = 'Опубликовать';
+                document.getElementById('upload-btn').disabled = false;
+            });
+        }
+
+        // --- КЛИЕНТЫ И СТАТИСТИКА ---
+        document.getElementById('client-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            db.collection("sales").add({
+                name: document.getElementById('c-name').value,
+                sum: Number(document.getElementById('c-sum').value),
+                status: document.getElementById('c-status').value,
+                date: new Date().toLocaleDateString('ru-RU'),
+                timestamp: Date.now() // Сохраняем точное время для статистики
+            }).then(() => document.getElementById('client-form').reset());
+        });
+
+        db.collection("sales").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+            const tbody = document.getElementById('clients-table-body');
+            tbody.innerHTML = '';
+            
+            let totalRev = 0, totalOrd = 0, monthRev = 0, monthOrd = 0;
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const id = doc.id;
+                
+                // Считаем статистику (только для оплаченных/обработанных)
+                if (data.status !== 'Отменен') {
+                    totalRev += data.sum;
+                    totalOrd++;
+                    
+                    const orderDate = new Date(data.timestamp);
+                    if (orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear) {
+                        monthRev += data.sum;
+                        monthOrd++;
+                    }
+                }
+
+                // Рендер таблицы
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${data.name}</td>
+                    <td>${data.sum} ₽</td>
+                    <td>${data.status}</td>
+                    <td>${data.date}</td>
+                    <td><button class="delete-btn" onclick="deleteSale('${id}')">✕</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Обновляем карточки статистики на странице
+            document.getElementById('stat-total-orders').innerText = totalOrd;
+            document.getElementById('stat-total-revenue').innerText = totalRev.toLocaleString('ru-RU') + ' ₽';
+            document.getElementById('stat-month-orders').innerText = monthOrd;
+            document.getElementById('stat-month-revenue').innerText = monthRev.toLocaleString('ru-RU') + ' ₽';
+        });
+
+        window.deleteSale = function(id) {
+            if (confirm("Удалить запись?")) db.collection("sales").doc(id).delete();
+        }
+    </script>
+</body>
+</html>
