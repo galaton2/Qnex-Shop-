@@ -31,6 +31,18 @@
             margin: 0; padding: 0; transition: background-color 0.4s, color 0.4s;
         }
 
+        /* LOADER */
+        #global-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 9999; display: flex;
+            align-items: center; justify-content: center; transition: opacity 0.5s;
+        }
+        .spinner {
+            border: 4px solid var(--border); border-top: 4px solid var(--text);
+            border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* MARQUEE */
         .marquee-wrapper {
             width: 100%; overflow: hidden; border-bottom: 1px solid var(--border);
@@ -44,20 +56,44 @@
         .marquee-content i { margin-right: 8px; }
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        /* HEADER */
+        /* HEADER & MENU */
         header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 5%; border-bottom: 1px solid var(--border);
             position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .menu-btn { font-size: 24px; cursor: pointer; color: var(--text); background: none; border: none; }
         .logo { font-size: 24px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer;}
         nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+        
         .nav-link, .action-btn {
             color: var(--text); text-decoration: none; font-size: 14px;
             font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
             background: none; border: none; cursor: pointer; transition: 0.3s;
         }
         .nav-link:hover, .action-btn:hover, .nav-link.active { opacity: 0.5; }
+
+        /* SIDE MENU */
+        .side-menu {
+            position: fixed; top: 0; left: -100%; width: 320px; height: 100%;
+            background: var(--bg); border-right: 1px solid var(--border);
+            z-index: 1001; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 30px 20px; display: flex; flex-direction: column; gap: 25px;
+        }
+        .side-menu.open { left: 0; }
+        .menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; display: none;
+        }
+        .menu-overlay.open { display: block; }
+        .close-menu { align-self: flex-end; font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text); }
+        .side-menu-link {
+            color: var(--text); text-decoration: none; font-size: 16px;
+            font-weight: bold; text-transform: uppercase; border-bottom: 1px solid var(--border);
+            padding-bottom: 10px; cursor: pointer; background: none; text-align: left;
+        }
+        .side-menu-link small { display: block; font-size: 11px; opacity: 0.5; margin-top: 5px; font-weight: normal; }
 
         /* VIEWS */
         .view-section { display: none; animation: fadeIn 0.5s ease; }
@@ -68,12 +104,21 @@
 
         /* HOME VIEW */
         .hero-banner {
-            text-align: center; padding: 100px 20px; 
+            text-align: center; padding: 80px 20px; 
             border: 1px solid var(--border); margin-bottom: 40px;
             background: var(--gray-bg);
         }
+        .slogan { font-size: 24px; letter-spacing: 3px; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
         .hero-banner h1 { font-size: 48px; letter-spacing: 5px; margin-bottom: 20px; text-transform: uppercase; }
-        .hero-banner p { max-width: 700px; margin: 0 auto 30px auto; font-size: 16px; line-height: 1.8; opacity: 0.8; }
+        .hero-banner p { max-width: 700px; margin: 0 auto 20px auto; font-size: 16px; line-height: 1.8; opacity: 0.8; }
+        
+        .uzb-flag {
+            display: inline-block; padding: 10px 20px; border: 1px solid var(--border);
+            font-size: 14px; font-weight: bold; text-transform: uppercase;
+            margin-bottom: 30px; letter-spacing: 1px;
+        }
+        .uzb-flag span { font-size: 18px; vertical-align: middle; margin-left: 8px; }
+
         .shop-now-btn {
             display: inline-block; padding: 15px 40px; background: var(--text); color: var(--bg);
             text-transform: uppercase; font-weight: bold; letter-spacing: 2px;
@@ -108,30 +153,15 @@
         .product-card {
             border: 1px solid var(--border); padding: 15px;
             display: flex; flex-direction: column; transition: transform 0.3s;
-            background: var(--bg);
+            background: var(--bg); cursor: pointer;
         }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .product-img {
             width: 100%; height: 280px; display: flex; align-items: center;
             justify-content: center; border-bottom: 1px solid var(--border);
-            margin-bottom: 15px; overflow: hidden; background: var(--gray-bg); position: relative;
+            margin-bottom: 15px; overflow: hidden; background: var(--gray-bg);
         }
         .product-img img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Slider Buttons */
-        .slider-btn {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            background: rgba(0,0,0,0.5); color: white; border: 1px solid white; 
-            padding: 5px 10px; cursor: pointer; transition: 0.3s;
-        }
-        .slider-btn:hover { background: white; color: black; }
-        .slider-btn.prev { left: 5px; }
-        .slider-btn.next { right: 5px; }
-        .slide-counter {
-            position: absolute; bottom: 5px; left: 5px; 
-            background: rgba(0,0,0,0.6); color: white; 
-            padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 10px;
-        }
 
         .product-title { font-size: 14px; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
         .product-price { font-size: 16px; margin-bottom: 15px; opacity: 0.8; }
@@ -144,12 +174,41 @@
         .buy-btn:hover { background: var(--text); color: var(--bg); }
         .no-results { grid-column: 1/-1; text-align: center; padding: 50px; opacity: 0.5; text-transform: uppercase; }
 
+        /* PRODUCT MODAL (SWIPE) */
+        .product-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 2000; display: none; overflow-y: auto;
+            padding: 0; align-items: flex-start; justify-content: center;
+        }
+        .product-modal.active { display: flex; animation: fadeIn 0.3s; }
+        .modal-content { width: 100%; max-width: 600px; background: var(--bg); min-height: 100vh; position: relative; }
+        
+        .modal-header {
+            display: flex; justify-content: space-between; padding: 20px;
+            position: sticky; top: 0; background: var(--bg); z-index: 10; border-bottom: 1px solid var(--border);
+        }
+        .modal-close { font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text); }
+        
+        .swipe-gallery {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: none; width: 100%; height: 500px; background: var(--gray-bg);
+        }
+        .swipe-gallery::-webkit-scrollbar { display: none; }
+        .swipe-gallery img {
+            min-width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start;
+        }
+        .swipe-hint { text-align: center; font-size: 12px; opacity: 0.5; padding: 10px; text-transform: uppercase; }
+        
+        .modal-info { padding: 20px; }
+        .modal-title { font-size: 24px; text-transform: uppercase; margin-bottom: 10px; }
+        .modal-price { font-size: 20px; font-weight: bold; margin-bottom: 20px; opacity: 0.8; }
+
         @media (max-width: 900px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 600px) {
-            header { flex-direction: column; gap: 15px; padding: 15px; }
-            nav { justify-content: center; width: 100%; gap: 15px; }
+            header { padding: 15px; }
+            nav { display: none; } /* Скрываем основное навигационное меню на мобилках, оставляем бургер */
             .hero-banner h1 { font-size: 32px; }
-            
+            .swipe-gallery { height: 400px; }
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card { padding: 10px; }
             .product-img { height: 200px; } 
@@ -161,6 +220,12 @@
 </head>
 <body>
 
+    <!-- LOADER -->
+    <div id="global-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- MARQUEE -->
     <div class="marquee-wrapper">
         <div class="marquee-content">
             <a href="#" target="_blank"><i class="fab fa-telegram-plane"></i> <span data-i18n="join_tg">JOIN TELEGRAM</span></a>
@@ -172,8 +237,12 @@
         </div>
     </div>
 
+    <!-- HEADER -->
     <header>
-        <div class="logo" onclick="switchView('home')">QNEX SHOP</div>
+        <div class="header-left">
+            <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+            <div class="logo" onclick="switchView('home')">QNEX SHOP</div>
+        </div>
         <nav>
             <button class="nav-link active" id="nav-home" onclick="switchView('home')" data-i18n="nav_home">Home</button>
             <button class="nav-link" id="nav-catalog" onclick="switchView('catalog')" data-i18n="nav_catalog">Catalog</button>
@@ -182,15 +251,35 @@
         </nav>
     </header>
 
+    <!-- SIDE MENU -->
+    <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="side-menu">
+        <button class="close-menu" onclick="toggleMenu()"><i class="fas fa-times"></i></button>
+        <button class="side-menu-link" onclick="switchView('home'); toggleMenu();" data-i18n="nav_home">Home</button>
+        <button class="side-menu-link" onclick="switchView('catalog'); toggleMenu();" data-i18n="nav_catalog">Catalog</button>
+        <button class="side-menu-link" onclick="alertDelivery()" data-i18n="menu_delivery">Delivery</button>
+        <button class="side-menu-link" onclick="alertDev()" data-i18n="menu_outfit">
+            Create Custom Outfit <small data-i18n="menu_dev">(In development)</small>
+        </button>
+        <button class="side-menu-link" onclick="toggleLang(); toggleMenu();" id="lang-btn-side">RU / EN</button>
+        <button class="side-menu-link" onclick="toggleTheme(); toggleMenu();"><i class="fas fa-adjust"></i> Theme</button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
     <div class="container">
         <!-- ================= HOME VIEW ================= -->
         <section id="view-home" class="view-section active">
             <div class="hero-banner">
+                <div class="slogan" data-i18n="slogan">Build your wish</div>
                 <h1 data-i18n="hero_title">Minimalism. Refined.</h1>
                 <p data-i18n="hero_desc">
                     <strong>EST. 2021.</strong> Qnex Shop was born from a passion for monochromatic aesthetics. 
                     We strip away the noise to bring you pure, unadulterated style. 
                 </p>
+                <div class="uzb-flag">
+                    <span data-i18n="founded_uzb">Founded in UZB</span> <span>🇺🇿</span>
+                </div>
+                <br>
                 <button class="shop-now-btn" onclick="switchView('catalog')" data-i18n="btn_shop_now">Shop Now</button>
             </div>
             
@@ -219,37 +308,61 @@
         </section>
     </div>
 
+    <!-- ================= PRODUCT MODAL (SWIPE VIEW) ================= -->
+    <div class="product-modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 2px;">Qnex Item</h3>
+                <button class="modal-close" onclick="closeProduct()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <!-- Галерея со свайпом -->
+            <div class="swipe-gallery" id="modal-gallery"></div>
+            <div class="swipe-hint" data-i18n="swipe_hint">Swipe for more photos ↔</div>
+            
+            <div class="modal-info">
+                <div class="modal-title" id="modal-title">Name</div>
+                <div class="modal-price" id="modal-price">$ 0</div>
+                <button class="buy-btn" style="font-size: 14px; padding: 15px;" onclick="alertBuy()" data-i18n="buy_btn">BUY NOW</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- TRANSLATIONS ---
         const translations = {
             en: {
-                nav_home: "Home", nav_catalog: "Catalog",
+                nav_home: "Home", nav_catalog: "Catalog", slogan: "Build your wish",
                 join_tg: "JOIN TELEGRAM", join_ig: "FOLLOW INSTAGRAM", join_tt: "WATCH TIKTOK",
                 hero_title: "Minimalism. Refined.", 
                 hero_desc: "<strong>EST. 2021.</strong> Qnex Shop was born from a passion for monochromatic aesthetics. We strip away the noise to bring you pure, unadulterated style.",
+                founded_uzb: "Founded in Uzbekistan",
                 btn_shop_now: "Shop Now", new_arrivals: "New Arrivals",
-                search_ph: "Search products...",
+                menu_delivery: "Delivery", menu_outfit: "Create Custom Outfit", menu_dev: "(In development)",
+                search_ph: "Search products...", swipe_hint: "Swipe for more photos ↔",
                 cat_all: "All", cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accs: "Accessories",
                 buy_btn: "BUY NOW", no_results: "No products found.",
-                alert_buy: "Contact us on social media to purchase!"
+                alert_buy: "Contact us on social media to purchase!", alert_dev: "Feature is currently in development."
             },
             ru: {
-                nav_home: "Главная", nav_catalog: "Каталог",
+                nav_home: "Главная", nav_catalog: "Каталог", slogan: "Build your wish",
                 join_tg: "МЫ В TELEGRAM", join_ig: "МЫ В INSTAGRAM", join_tt: "МЫ В TIKTOK",
                 hero_title: "Минимализм. Утонченность.", 
                 hero_desc: "<strong>ОСНОВАН В 2021.</strong> Qnex Shop создан из страсти к монохромной эстетике. Мы убираем лишний шум, чтобы предложить вам чистый, неподдельный стиль.",
+                founded_uzb: "Основан в Узбекистане",
                 btn_shop_now: "В Каталог", new_arrivals: "Новинки",
-                search_ph: "Поиск товаров...",
+                menu_delivery: "Доставка", menu_outfit: "Создать собственный аутфит", menu_dev: "(Пока в разработке)",
+                search_ph: "Поиск товаров...", swipe_hint: "Свайпните для просмотра фото ↔",
                 cat_all: "Все", cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accs: "Аксессуары",
                 buy_btn: "КУПИТЬ", no_results: "Товары не найдены.",
-                alert_buy: "Свяжитесь с нами в социальных сетях для оформления заказа!"
+                alert_buy: "Свяжитесь с нами в социальных сетях для оформления заказа!", alert_dev: "Функция пока в разработке."
             }
         };
 
         let currentLang = localStorage.getItem('lang') || 'en';
-        document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
-
+        
         function updateTexts() {
+            document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[currentLang][key]) el.innerHTML = translations[currentLang][key];
@@ -263,11 +376,20 @@
         function toggleLang() {
             currentLang = currentLang === 'en' ? 'ru' : 'en';
             localStorage.setItem('lang', currentLang);
-            document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
             updateTexts();
             renderCatalog(); 
             renderLatest();
         }
+
+        // --- MENU LOGIC ---
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('menu-overlay').classList.toggle('open');
+        }
+
+        function alertDelivery() { alert(currentLang === 'en' ? 'Worldwide delivery info...' : 'Информация о доставке...'); }
+        function alertDev() { alert(translations[currentLang].alert_dev); }
+        function alertBuy() { alert(translations[currentLang].alert_buy); }
 
         // --- THEME ---
         function toggleTheme() {
@@ -284,7 +406,9 @@
             document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
             
             document.getElementById(`view-${viewName}`).classList.add('active');
-            document.getElementById(`nav-${viewName}`).classList.add('active');
+            if(document.getElementById(`nav-${viewName}`)) {
+                document.getElementById(`nav-${viewName}`).classList.add('active');
+            }
             window.scrollTo(0,0);
         }
 
@@ -305,96 +429,79 @@
             [monthStr]: firebase.firestore.FieldValue.increment(1)
         }, { merge: true });
 
-        // --- DATA ---
+        // --- DATA & CACHING ---
         let allProducts = [];
         let activeCategory = 'all';
         let searchQuery = '';
+        
+        // 1. Попытка загрузить из КЭШа сразу (чтобы не было белого экрана)
+        const cachedData = localStorage.getItem('qnexProducts');
+        if (cachedData) {
+            allProducts = JSON.parse(cachedData);
+            renderLatest();
+            renderCatalog();
+            setTimeout(() => { document.getElementById('global-loader').style.opacity = '0'; 
+                               setTimeout(() => document.getElementById('global-loader').style.display = 'none', 500); }, 300);
+        }
 
+        // 2. Слушаем Firebase для актуальных данных
         db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
             allProducts = [];
             snapshot.forEach((doc) => {
                 allProducts.push({ id: doc.id, ...doc.data() });
             });
+            // Обновляем КЭШ
+            localStorage.setItem('qnexProducts', JSON.stringify(allProducts));
+            
             renderLatest();
             renderCatalog();
+            
+            // Скрываем Loader, если он еще не скрыт
+            document.getElementById('global-loader').style.opacity = '0';
+            setTimeout(() => document.getElementById('global-loader').style.display = 'none', 500);
         });
 
-        // --- IMAGE SLIDER LOGIC ---
-        window.changeSlide = function(productId, dir, event) {
-            event.stopPropagation(); // Чтобы не кликалась карточка товара, если на нее повесить ссылки
-            const slider = document.getElementById(`slider-${productId}`);
-            if(!slider) return;
-            const slides = slider.querySelectorAll('.slide');
-            let activeIdx = 0;
-            
-            slides.forEach((slide, idx) => {
-                if(slide.style.display === 'block') activeIdx = idx;
-                slide.style.display = 'none';
-            });
-            
-            let newIdx = activeIdx + dir;
-            if(newIdx < 0) newIdx = slides.length - 1;
-            if(newIdx >= slides.length) newIdx = 0;
-            
-            slides[newIdx].style.display = 'block';
-            
-            const counter = slider.parentElement.querySelector('.slide-counter');
-            if(counter) counter.innerText = `${newIdx + 1} / ${slides.length}`;
-        };
-
-        // --- RENDER CARDS ---
+        // --- RENDER CARDS (ТОЛЬКО 1 ФОТО) ---
         function createCardHTML(product) {
             const titleStr = product.title || 'Без названия';
             const priceStr = product.price || '0';
-            let imagesHtml = '';
+            let firstImgHtml = '';
 
-            // Поддержка массива фото для слайдера
+            // Берем только первое фото для карточки
             if (product.images && product.images.length > 0) {
-                imagesHtml = `<div id="slider-${product.id}" style="width:100%; height:100%;">`;
-                product.images.forEach((img, index) => {
-                    imagesHtml += `<img src="${img}" class="slide" style="display: ${index === 0 ? 'block' : 'none'};">`;
-                });
-                imagesHtml += `</div>`;
-                
-                // Добавляем кнопки, если фото больше одного
-                if (product.images.length > 1) {
-                    imagesHtml += `
-                        <button class="slider-btn prev" onclick="changeSlide('${product.id}', -1, event)">❮</button>
-                        <button class="slider-btn next" onclick="changeSlide('${product.id}', 1, event)">❯</button>
-                        <div class="slide-counter">1 / ${product.images.length}</div>
-                    `;
-                }
+                firstImgHtml = `<img src="${product.images[0]}" loading="lazy">`;
             } else if (product.img) {
-                imagesHtml = `<img src="${product.img}">`;
+                firstImgHtml = `<img src="${product.img}" loading="lazy">`;
             } else {
-                imagesHtml = `<span style="font-size: 60px;">📦</span>`;
+                firstImgHtml = `<span style="font-size: 60px;">📦</span>`;
             }
 
             return `
-                <div class="product-card">
-                    <div class="product-img">${imagesHtml}</div>
+                <div class="product-card" onclick="openProduct('${product.id}')">
+                    <div class="product-img">${firstImgHtml}</div>
                     <div class="product-title">${titleStr}</div>
                     <div class="product-price">$ ${priceStr}</div>
-                    <button class="buy-btn" onclick="alert('${translations[currentLang].alert_buy}')">${translations[currentLang].buy_btn}</button>
+                    <button class="buy-btn" onclick="event.stopPropagation(); alertBuy()">${translations[currentLang].buy_btn}</button>
                 </div>
             `;
         }
 
         function renderLatest() {
             const container = document.getElementById('latest-products');
+            if(!container) return;
             container.innerHTML = '';
             allProducts.slice(0, 4).forEach(prod => { container.innerHTML += createCardHTML(prod); });
         }
 
         function renderCatalog() {
             const container = document.getElementById('catalog-products');
+            if(!container) return;
             container.innerHTML = '';
 
             const filtered = allProducts.filter(prod => {
                 const titleLower = (prod.title || '').toLowerCase();
                 const matchesSearch = titleLower.includes(searchQuery);
                 
-                // Теперь фильтрация идет жестко по базе данных (категории), а не по поиску в названии
                 let matchesCategory = true;
                 if (activeCategory !== 'all') {
                     matchesCategory = (prod.category === activeCategory);
@@ -408,6 +515,38 @@
                 return;
             }
             filtered.forEach(prod => { container.innerHTML += createCardHTML(prod); });
+        }
+        
+        // --- PRODUCT MODAL (ОТКРЫТЬ ТОВАР) ---
+        function openProduct(id) {
+            const prod = allProducts.find(p => p.id === id);
+            if (!prod) return;
+            
+            let galleryHtml = '';
+            
+            // Если открываем товар — грузим все фото
+            if (prod.images && Array.isArray(prod.images) && prod.images.length > 0) {
+                prod.images.forEach(img => {
+                    galleryHtml += `<img src="${img}">`;
+                });
+            } else if (prod.img) {
+                galleryHtml += `<img src="${prod.img}">`;
+            } else {
+                galleryHtml += `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:60px;">📦</div>`;
+            }
+            
+            document.getElementById('modal-gallery').innerHTML = galleryHtml;
+            document.getElementById('modal-title').innerText = prod.title || 'Без названия';
+            document.getElementById('modal-price').innerText = '$ ' + (prod.price || '0');
+            
+            document.getElementById('product-modal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Запрет прокрутки сайта на фоне
+        }
+        
+        function closeProduct() {
+            document.getElementById('product-modal').classList.remove('active');
+            document.getElementById('modal-gallery').innerHTML = ''; // Очищаем память
+            document.body.style.overflow = 'auto'; // Возвращаем прокрутку
         }
 
         // --- SEARCH ---
