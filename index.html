@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>Qnex Shop</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -24,11 +24,12 @@
         }
 
         * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; touch-action: manipulation; }
         body {
             background-color: var(--bg); color: var(--text);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0; padding: 0; transition: background-color 0.4s, color 0.4s;
+            touch-action: manipulation;
         }
 
         /* MARQUEE */
@@ -314,12 +315,8 @@
                     <input type="text" class="search-input" id="search-input" data-i18n-placeholder="search_ph" placeholder="Search products...">
                 </div>
 
-                <div class="categories-scroll">
+                <div class="categories-scroll" id="categories-scroll">
                     <button class="cat-btn active" data-cat="all" data-i18n="cat_all">All</button>
-                    <button class="cat-btn" data-cat="hoodie" data-i18n="cat_hoodie">Hoodies</button>
-                    <button class="cat-btn" data-cat="t-shirt" data-i18n="cat_tshirt">T-Shirts</button>
-                    <button class="cat-btn" data-cat="pants" data-i18n="cat_pants">Pants</button>
-                    <button class="cat-btn" data-cat="accessories" data-i18n="cat_accs">Accessories</button>
                 </div>
             </div>
 
