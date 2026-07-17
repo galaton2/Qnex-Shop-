@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <title>Qnex Admin</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Chart.js for stats line graph -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     
     <style>
         :root {
@@ -18,10 +20,12 @@
             --hover-bg: #000000; --hover-text: #ffffff; --gray: #f9f9f9;
         }
 
+        html { touch-action: manipulation; }
         body {
             background-color: var(--bg); color: var(--text);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0; padding: 0; transition: 0.3s;
+            touch-action: manipulation;
         }
         
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -123,7 +127,59 @@
         }
         .edit-btn:hover { background: #3b82f6; color: white; }
 
-        /* Table (Responsive mobile fix) */
+        /* CHART */
+        .chart-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .chart-box { border: 1px solid var(--border); padding: 25px; margin-bottom: 40px; }
+        .chart-canvas-wrap { position: relative; height: 280px; margin-top: 15px; }
+
+        /* CATEGORY CHIPS */
+        .cat-chip-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .cat-chip {
+            display: flex; align-items: center; gap: 10px; border: 1px solid var(--border);
+            padding: 8px 8px 8px 15px; font-size: 13px; font-weight: bold; text-transform: uppercase;
+        }
+        .cat-chip .default-tag { opacity: 0.4; font-size: 10px; font-weight: normal; text-transform: none; }
+        .cat-chip .chip-del {
+            background: none; border: none; color: #ff4444; cursor: pointer; font-size: 14px;
+            padding: 2px 6px; font-weight: bold;
+        }
+        .cat-chip .chip-del:hover { background: #ff4444; color: white; }
+        .cat-chip .chip-del:disabled { opacity: 0.25; cursor: not-allowed; }
+        .cat-chip .chip-del:disabled:hover { background: none; color: #ff4444; }
+
+        /* IMAGE THUMB GRID (edit modal) */
+        .thumb-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .thumb-item { position: relative; width: 80px; height: 80px; }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--border); }
+        .thumb-item .thumb-del {
+            position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; border-radius: 50%;
+            background: #ff4444; color: white; border: none; cursor: pointer; font-size: 12px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; line-height: 1;
+        }
+        .size-hint { font-size: 11px; opacity: 0.6; margin-top: 6px; }
+        .size-hint.warn { color: #ffb020; opacity: 1; font-weight: bold; }
+
+        /* CRM FILTERS */
+        .crm-filters { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 5px; align-items: center; }
+        .crm-filters input, .crm-filters select { width: auto; min-width: 180px; flex: 1; }
+        .crm-count { font-size: 12px; opacity: 0.6; text-transform: uppercase; font-weight: bold; white-space: nowrap; }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: bold;
+            text-transform: uppercase; border: 1px solid currentColor; border-radius: 3px;
+        }
+        .st-Processing { color: #f0ad4e; }
+        .st-Paid { color: #4CAF50; }
+        .st-AwaitingGoods { color: #3b82f6; }
+        .st-Shipped { color: #a855f7; }
+        .st-Completed { color: #14b8a6; }
+        .st-Cancelled { color: #ff4444; text-decoration: line-through; }
+
+        .modal-overlay-x { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; overflow-y:auto; padding: 20px 0;}
+        .modal-scroll-inner { max-height: 85vh; overflow-y: auto; }
+
+
         .table-responsive { width: 100%; margin-top: 20px; }
         .sheet-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 15px; text-align: left; }
@@ -177,6 +233,7 @@
             <button class="tab-btn active" id="btn-tab-dashboard" onclick="openTab('dashboard')" data-i18n="tab_dashboard">Dashboard</button>
             <button class="tab-btn" id="btn-tab-add-product" onclick="openTab('add-product')" data-i18n="tab_add_product">Add Product</button>
             <button class="tab-btn" id="btn-tab-products" onclick="openTab('products')" data-i18n="tab_products">Products</button>
+            <button class="tab-btn" id="btn-tab-categories" onclick="openTab('categories')" data-i18n="tab_categories">Categories</button>
             <button class="tab-btn" id="btn-tab-add-crm" onclick="openTab('add-crm')" data-i18n="tab_add_crm">Add Order</button>
             <button class="tab-btn" id="btn-tab-crm" onclick="openTab('crm')" data-i18n="tab_crm">Orders DB</button>
         </div>
@@ -185,13 +242,21 @@
         <div id="tab-dashboard" class="tab-content active">
             <div class="stats-header">
                 <h2 data-i18n="stats_title">Store Statistics</h2>
-                <select class="period-select" id="stats-period" onchange="updateStats()">
-                    <option value="today" data-i18n="per_today">Today</option>
-                    <option value="week" data-i18n="per_week">This Week</option>
-                    <option value="month" selected data-i18n="per_month">This Month</option>
-                    <option value="year" data-i18n="per_year">This Year</option>
-                    <option value="all" data-i18n="per_all">All Time</option>
-                </select>
+                <div class="chart-controls">
+                    <select class="period-select" id="chart-metric" onchange="updateChart()">
+                        <option value="revenue" data-i18n="stat_revenue">Revenue</option>
+                        <option value="profit" data-i18n="stat_profit">Net Profit</option>
+                        <option value="orders" data-i18n="stat_orders">Orders</option>
+                        <option value="visits" data-i18n="stat_visits">Visits</option>
+                    </select>
+                    <select class="period-select" id="stats-period" onchange="updateStats(); updateChart();">
+                        <option value="today" data-i18n="per_today">Today</option>
+                        <option value="week" data-i18n="per_week">This Week</option>
+                        <option value="month" selected data-i18n="per_month">This Month</option>
+                        <option value="year" data-i18n="per_year">This Year</option>
+                        <option value="all" data-i18n="per_all">All Time</option>
+                    </select>
+                </div>
             </div>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -211,6 +276,10 @@
                     <div class="stat-num profit-text" id="stat-profit">$0</div>
                 </div>
             </div>
+            <div class="chart-box">
+                <h3 data-i18n="chart_title" style="margin-bottom: 5px;">Trend</h3>
+                <div class="chart-canvas-wrap"><canvas id="stats-chart"></canvas></div>
+            </div>
         </div>
 
         <!-- ================= TAB 2: ADD PRODUCT ================= -->
@@ -222,16 +291,9 @@
                         <label data-i18n="prod_name">Product Name</label>
                         <input type="text" id="p-title" required placeholder="e.g. Minimalist Hoodie">
                     </div>
-                    <!-- Категории теперь совпадают с индексом -->
                     <div class="form-group">
                         <label data-i18n="prod_category">Category</label>
-                        <select id="p-category" required>
-                            <option value="hoodie" data-i18n="cat_hoodie">Hoodies</option>
-                            <option value="t-shirt" data-i18n="cat_tshirt">T-Shirts</option>
-                            <option value="pants" data-i18n="cat_pants">Pants</option>
-                            <option value="accessories" data-i18n="cat_accessories">Accessories</option>
-                            <option value="other" data-i18n="cat_other">Other</option>
-                        </select>
+                        <select id="p-category" required></select>
                     </div>
                     <div class="form-group">
                         <label data-i18n="prod_price">Price ($)</label>
@@ -241,6 +303,7 @@
                         <label data-i18n="prod_photo">Upload Photos (Multiple)</label>
                         <input type="file" id="p-file" accept="image/*" multiple style="padding: 8px 5px;">
                         <p style="font-size: 11px; opacity: 0.7; margin-top: 5px;" data-i18n="photo_hint">You can select multiple images.</p>
+                        <p class="size-hint" id="p-size-hint"></p>
                     </div>
                     <button type="submit" class="btn" id="upload-btn" data-i18n="btn_publish">Publish to Store</button>
                 </form>
@@ -251,6 +314,28 @@
         <div id="tab-products" class="tab-content">
             <h2 data-i18n="tab_products" style="margin-bottom: 20px;">Products</h2>
             <div class="products-grid" id="products-list-grid"></div>
+        </div>
+
+        <!-- ================= TAB: CATEGORIES ================= -->
+        <div id="tab-categories" class="tab-content">
+            <div class="panel-box" style="max-width: 700px; margin: 0 auto;">
+                <h2 data-i18n="tab_categories">Categories</h2>
+                <p style="font-size:12px; opacity:0.7; margin-top:10px;" data-i18n="cat_hint">Custom categories appear automatically in the admin form and on the store site.</p>
+                <form id="category-form" style="margin-top: 20px;" class="crm-form">
+                    <div>
+                        <label data-i18n="cat_name_ru">Name (RU)</label>
+                        <input type="text" id="cat-name-ru" required placeholder="Например: Куртки">
+                    </div>
+                    <div>
+                        <label data-i18n="cat_name_en">Name (EN)</label>
+                        <input type="text" id="cat-name-en" required placeholder="e.g. Jackets">
+                    </div>
+                    <div style="grid-column: 1/-1;">
+                        <button type="submit" class="btn" data-i18n="btn_add_category">Add Category</button>
+                    </div>
+                </form>
+                <div class="cat-chip-list" id="cat-chip-list"></div>
+            </div>
         </div>
 
         <!-- ================= TAB 4: ADD ORDER ================= -->
@@ -277,8 +362,11 @@
                     <div>
                         <label data-i18n="crm_status">Status</label>
                         <select id="c-status">
-                            <option value="Paid">Paid</option>
                             <option value="Processing">Processing</option>
+                            <option value="Paid">Paid</option>
+                            <option value="AwaitingGoods">Awaiting Goods</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
                     </div>
@@ -292,6 +380,19 @@
         <!-- ================= TAB 5: ORDERS DB ================= -->
         <div id="tab-crm" class="tab-content">
             <h2 data-i18n="crm_title">Orders Database</h2>
+            <div class="crm-filters">
+                <input type="text" id="crm-search" data-i18n-placeholder="crm_search_ph" placeholder="Search by name or contact...">
+                <select id="crm-status-filter">
+                    <option value="all" data-i18n="crm_filter_all">All Statuses</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Paid">Paid</option>
+                    <option value="AwaitingGoods">Awaiting Goods</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <span class="crm-count" id="crm-count"></span>
+            </div>
             <div class="table-responsive">
                 <table class="sheet-table">
                     <thead>
@@ -338,14 +439,50 @@
                 <div>
                     <label data-i18n="crm_status">Status</label>
                     <select id="edit-status">
-                        <option value="Paid">Paid</option>
                         <option value="Processing">Processing</option>
+                        <option value="Paid">Paid</option>
+                        <option value="AwaitingGoods">Awaiting Goods</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Completed">Completed</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
                 </div>
                 <div style="display:flex; align-items:flex-end;">
                     <button type="submit" class="btn" data-i18n="btn_save">Save Changes</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= EDIT PRODUCT MODAL ================= -->
+    <div id="edit-product-modal" class="modal-overlay-x">
+        <div class="panel-box modal-scroll-inner" style="background:var(--bg); border:1px solid var(--border); width: 90%; max-width:600px; position:relative; padding:30px; margin: 0;">
+            <button onclick="document.getElementById('edit-product-modal').style.display='none'" style="position:absolute; right:15px; top:15px; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer;">✕</button>
+            <h2 data-i18n="edit_product">Edit Product</h2>
+            <form id="edit-product-form" style="margin-top:20px;">
+                <input type="hidden" id="ep-id">
+                <div class="form-group">
+                    <label data-i18n="prod_name">Product Name</label>
+                    <input type="text" id="ep-title" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="prod_category">Category</label>
+                    <select id="ep-category" required></select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="prod_price">Price ($)</label>
+                    <input type="number" id="ep-price" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="prod_current_photos">Current Photos</label>
+                    <div class="thumb-grid" id="ep-thumb-grid"></div>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="prod_add_photo">Add More Photos</label>
+                    <input type="file" id="ep-file" accept="image/*" multiple style="padding: 8px 5px;">
+                    <p class="size-hint" id="ep-size-hint"></p>
+                </div>
+                <button type="submit" class="btn" id="ep-save-btn" data-i18n="btn_save">Save Changes</button>
             </form>
         </div>
     </div>
@@ -357,37 +494,52 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
             document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+            if (tabId === 'dashboard') setTimeout(updateChart, 0);
         }
 
         // --- TRANSLATIONS ---
         const translations = {
             en: {
                 subtitle: "Analytics & Store Management", invert_theme: "Invert Theme", go_store: "Go to Store →",
-                tab_dashboard: "Dashboard", tab_add_product: "Add Product", tab_products: "Products", tab_add_crm: "Add Order", tab_crm: "Orders List",
-                stats_title: "Store Statistics",
+                tab_dashboard: "Dashboard", tab_add_product: "Add Product", tab_products: "Products", tab_categories: "Categories", tab_add_crm: "Add Order", tab_crm: "Orders List",
+                stats_title: "Store Statistics", chart_title: "Trend",
                 per_today: "Today", per_week: "This Week", per_month: "This Month", per_year: "This Year", per_all: "All Time",
                 stat_visits: "Visits", stat_orders: "Orders", stat_revenue: "Revenue", stat_profit: "Net Profit",
                 add_product: "Add Product", prod_name: "Product Name", prod_category: "Category", 
                 cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accessories: "Accessories", cat_other: "Other",
                 prod_price: "Price ($)", prod_photo: "Upload Photos", photo_hint: "You can select multiple images.", btn_publish: "Publish to Store",
+                prod_current_photos: "Current Photos", prod_add_photo: "Add More Photos", edit_product: "Edit Product",
+                cat_hint: "Custom categories appear automatically in the admin form and on the store site.",
+                cat_name_ru: "Name (RU)", cat_name_en: "Name (EN)", btn_add_category: "Add Category", default_tag: "default",
+                msg_cat_added: "Category added!", confirm_del_cat: "Delete this category?",
                 add_order: "Add New Order", btn_add_order: "Add Order", edit_order: "Edit Order", btn_save: "Save Changes",
                 crm_title: "Orders Database", crm_client: "Client Name", crm_contact: "Contact (Tg/Phone)", crm_price: "Price ($)", crm_cost: "Cost ($)", crm_status: "Status",
+                crm_search_ph: "Search by name or contact...", crm_filter_all: "All Statuses", crm_count_label: "orders",
                 tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date", tbl_action: "Action",
-                del_btn: "Delete", msg_prod_added: "Product successfully added!", msg_order_added: "Order successfully added!"
+                st_Processing: "Processing", st_Paid: "Paid", st_AwaitingGoods: "Awaiting Goods", st_Shipped: "Shipped", st_Completed: "Completed", st_Cancelled: "Cancelled",
+                del_btn: "Delete", edit_btn: "Edit", msg_prod_added: "Product successfully added!", msg_order_added: "Order successfully added!", msg_prod_updated: "Product updated!",
+                size_hint_ok: "images", size_hint_warn: "Large payload — consider fewer/smaller photos"
             },
             ru: {
                 subtitle: "Аналитика и Управление", invert_theme: "Сменить тему", go_store: "В магазин →",
-                tab_dashboard: "Дашборд", tab_add_product: "Добавить Товар", tab_products: "Товары", tab_add_crm: "Добавить заказ", tab_crm: "База Заказов",
-                stats_title: "Статистика Магазина",
+                tab_dashboard: "Дашборд", tab_add_product: "Добавить Товар", tab_products: "Товары", tab_categories: "Категории", tab_add_crm: "Добавить заказ", tab_crm: "База Заказов",
+                stats_title: "Статистика Магазина", chart_title: "Динамика",
                 per_today: "Сегодня", per_week: "Эта неделя", per_month: "Этот месяц", per_year: "Этот год", per_all: "За все время",
                 stat_visits: "Визиты", stat_orders: "Заказы", stat_revenue: "Выручка", stat_profit: "Чистая Прибыль",
                 add_product: "Создать Товар", prod_name: "Название", prod_category: "Категория", 
                 cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accessories: "Аксессуары", cat_other: "Другое",
                 prod_price: "Цена ($)", prod_photo: "Фотографии (Можно несколько)", photo_hint: "Выделите несколько фото при выборе файлов.", btn_publish: "Опубликовать",
+                prod_current_photos: "Текущие фото", prod_add_photo: "Добавить ещё фото", edit_product: "Редактировать товар",
+                cat_hint: "Кастомные категории автоматически появляются в форме добавления и на сайте магазина.",
+                cat_name_ru: "Название (RU)", cat_name_en: "Название (EN)", btn_add_category: "Добавить категорию", default_tag: "стандартная",
+                msg_cat_added: "Категория добавлена!", confirm_del_cat: "Удалить эту категорию?",
                 add_order: "Оформить Заказ", btn_add_order: "Добавить в базу", edit_order: "Редактировать заказ", btn_save: "Сохранить изменения",
                 crm_title: "База Клиентов", crm_client: "Имя клиента", crm_contact: "Контакт (Tg/Тел)", crm_price: "Сумма ($)", crm_cost: "Себестоим. ($)", crm_status: "Статус",
+                crm_search_ph: "Поиск по имени или контакту...", crm_filter_all: "Все статусы", crm_count_label: "заказов",
                 tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата", tbl_action: "Действие",
-                del_btn: "Удалить", msg_prod_added: "Успешно добавлено!", msg_order_added: "Заказ успешно добавлен!"
+                st_Processing: "В обработке", st_Paid: "Оплачен", st_AwaitingGoods: "Ждёт товар", st_Shipped: "Отправлен", st_Completed: "Завершён", st_Cancelled: "Отменён",
+                del_btn: "Удалить", edit_btn: "Изменить", msg_prod_added: "Успешно добавлено!", msg_order_added: "Заказ успешно добавлен!", msg_prod_updated: "Товар обновлён!",
+                size_hint_ok: "фото", size_hint_warn: "Большой объём — добавьте меньше/легче фото"
             }
         };
 
@@ -401,12 +553,17 @@
             });
             const updateStatusOptions = (selectId) => {
                 const s = document.getElementById(selectId);
-                s.options[0].text = currentLang === 'en' ? 'Paid' : 'Оплачен';
-                s.options[1].text = currentLang === 'en' ? 'Processing' : 'В обработке';
-                s.options[2].text = currentLang === 'en' ? 'Cancelled' : 'Отменен';
+                Array.from(s.options).forEach(opt => {
+                    if (opt.value === 'all') { opt.text = translations[currentLang].crm_filter_all; return; }
+                    const key = 'st_' + opt.value;
+                    if (translations[currentLang][key]) opt.text = translations[currentLang][key];
+                });
             }
             updateStatusOptions('c-status');
             updateStatusOptions('edit-status');
+            updateStatusOptions('crm-status-filter');
+            renderCategoryOptions();
+            renderCategoryChips();
             renderTable();
             renderProductsList();
         }
@@ -416,12 +573,14 @@
             localStorage.setItem('lang', currentLang);
             document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
             updateTexts();
+            updateChart();
         }
 
         function toggleTheme() {
             const newTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            updateChart();
         }
         if (localStorage.getItem('theme') === 'light') document.body.setAttribute('data-theme', 'light'); 
 
@@ -438,11 +597,83 @@
         // --- DATA ARRAYS ---
         let allOrders = [];
         let allProducts = [];
+        let allCategories = [];
         let visitsData = {};
+
+        // Default (built-in) categories — always available, cannot be deleted
+        const DEFAULT_CATEGORIES = [
+            { key: 'hoodie', ru: 'Худи', en: 'Hoodies', isDefault: true },
+            { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts', isDefault: true },
+            { key: 'pants', ru: 'Штаны', en: 'Pants', isDefault: true },
+            { key: 'accessories', ru: 'Аксессуары', en: 'Accessories', isDefault: true },
+            { key: 'other', ru: 'Другое', en: 'Other', isDefault: true }
+        ];
+
+        function getAllCategories() {
+            return [...DEFAULT_CATEGORIES, ...allCategories];
+        }
+        function catLabel(cat) {
+            const found = getAllCategories().find(c => c.key === cat);
+            if (!found) return cat || '-';
+            return currentLang === 'ru' ? found.ru : found.en;
+        }
+        function slugify(str) {
+            const translit = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
+            return str.toLowerCase().split('').map(ch => translit[ch] !== undefined ? translit[ch] : ch).join('')
+                .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || ('cat-' + Date.now());
+        }
+
+        function renderCategoryOptions() {
+            const cats = getAllCategories();
+            [document.getElementById('p-category'), document.getElementById('ep-category')].forEach(sel => {
+                if (!sel) return;
+                const prevVal = sel.value;
+                sel.innerHTML = cats.map(c => `<option value="${c.key}">${currentLang === 'ru' ? c.ru : c.en}</option>`).join('');
+                if (prevVal && cats.some(c => c.key === prevVal)) sel.value = prevVal;
+            });
+        }
+
+        function renderCategoryChips() {
+            const list = document.getElementById('cat-chip-list');
+            if (!list) return;
+            list.innerHTML = getAllCategories().map(c => `
+                <div class="cat-chip">
+                    <span>${currentLang === 'ru' ? c.ru : c.en}</span>
+                    ${c.isDefault ? `<span class="default-tag">(${translations[currentLang].default_tag})</span>` : ''}
+                    <button class="chip-del" ${c.isDefault ? 'disabled' : ''} onclick="deleteCategory('${c.id || ''}')">✕</button>
+                </div>`).join('');
+        }
+
+        document.getElementById('category-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const ru = document.getElementById('cat-name-ru').value.trim();
+            const en = document.getElementById('cat-name-en').value.trim();
+            if (!ru || !en) return;
+            const key = slugify(en) || slugify(ru);
+            db.collection("categories").add({ key, ru, en, createdAt: firebase.firestore.FieldValue.serverTimestamp() })
+                .then(() => {
+                    document.getElementById('category-form').reset();
+                    alert(translations[currentLang].msg_cat_added);
+                });
+        });
+
+        window.deleteCategory = id => {
+            if (!id) return;
+            if (confirm(translations[currentLang].confirm_del_cat)) db.collection("categories").doc(id).delete();
+        };
+
+        // Fetch Categories
+        db.collection("categories").orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+            allCategories = [];
+            snapshot.forEach(doc => { allCategories.push({ id: doc.id, ...doc.data() }); });
+            renderCategoryOptions();
+            renderCategoryChips();
+            renderProductsList();
+        });
 
         // Fetch Visits
         db.collection("analytics").doc("visits").onSnapshot(doc => {
-            if(doc.exists) { visitsData = doc.data(); updateStats(); }
+            if(doc.exists) { visitsData = doc.data(); updateStats(); updateChart(); }
         });
 
         // Fetch CRM Orders
@@ -451,6 +682,7 @@
             snapshot.forEach(doc => { allOrders.push({ id: doc.id, ...doc.data() }); });
             renderTable();
             updateStats();
+            updateChart();
         });
 
         // Fetch Products
@@ -461,17 +693,21 @@
         });
 
         // --- STATS FILTER ---
+        function computeStartTime(period) {
+            const now = new Date();
+            if (period === 'today') return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            if (period === 'week') {
+                const day = now.getDay() || 7;
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1).getTime();
+            }
+            if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            if (period === 'year') return new Date(now.getFullYear(), 0, 1).getTime();
+            return 0;
+        }
+
         function updateStats() {
             const period = document.getElementById('stats-period').value;
-            const now = new Date();
-            let startTime = 0; 
-            if (period === 'today') startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-            else if (period === 'week') {
-                const day = now.getDay() || 7; 
-                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1).getTime();
-            }
-            else if (period === 'month') startTime = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            else if (period === 'year') startTime = new Date(now.getFullYear(), 0, 1).getTime();
+            const startTime = computeStartTime(period);
 
             let ordCount = 0, rev = 0, prof = 0;
             allOrders.forEach(order => {
@@ -501,11 +737,86 @@
             document.getElementById('stat-profit').innerText = '$' + prof.toLocaleString();
         }
 
+        // --- CHART (line graph, configurable metric + period) ---
+        let statsChart = null;
+        function dateKey(d) {
+            const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+            return `${y}-${m}-${day}`;
+        }
+        function updateChart() {
+            const canvas = document.getElementById('stats-chart');
+            if (!canvas || typeof Chart === 'undefined') return;
+            const period = document.getElementById('stats-period').value;
+            const metric = document.getElementById('chart-metric').value;
+            const startTime = computeStartTime(period);
+            const now = new Date();
+
+            // Build list of day buckets from startTime (or 30 days back for 'all') to today
+            let startDate = startTime ? new Date(startTime) : new Date(now.getTime() - 29*24*60*60*1000);
+            const days = [];
+            const cursor = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            while (cursor.getTime() <= todayZero.getTime()) {
+                days.push(new Date(cursor));
+                cursor.setDate(cursor.getDate() + 1);
+            }
+            // Cap to last 60 points so the "all time" view stays readable
+            const trimmed = days.length > 60 ? days.slice(days.length - 60) : days;
+
+            const buckets = {};
+            trimmed.forEach(d => { buckets[dateKey(d)] = 0; });
+
+            if (metric === 'visits') {
+                Object.keys(visitsData).forEach(k => {
+                    if (k.length === 10 && buckets.hasOwnProperty(k)) buckets[k] += visitsData[k];
+                });
+            } else {
+                allOrders.forEach(order => {
+                    if (order.status === 'Cancelled') return;
+                    const k = dateKey(new Date(order.timestamp));
+                    if (!buckets.hasOwnProperty(k)) return;
+                    if (metric === 'orders') buckets[k] += 1;
+                    else if (metric === 'revenue') buckets[k] += order.sum;
+                    else if (metric === 'profit') buckets[k] += (order.sum - (order.cost || 0));
+                });
+            }
+
+            const labels = trimmed.map(d => d.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: '2-digit' }));
+            const dataPoints = trimmed.map(d => buckets[dateKey(d)]);
+            const metricColors = { revenue: '#4CAF50', profit: '#4CAF50', orders: '#3b82f6', visits: '#a855f7' };
+            const lineColor = metricColors[metric] || '#4CAF50';
+            const gridColor = document.body.getAttribute('data-theme') === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+            const textColor = document.body.getAttribute('data-theme') === 'light' ? '#000000' : '#ffffff';
+
+            if (statsChart) statsChart.destroy();
+            statsChart = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: translations[currentLang]['stat_' + metric],
+                        data: dataPoints,
+                        borderColor: lineColor,
+                        backgroundColor: lineColor + '33',
+                        tension: 0.3, fill: true, pointRadius: 2, borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: textColor, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: gridColor } },
+                        y: { ticks: { color: textColor, precision: 0 }, grid: { color: gridColor }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
         // --- RENDER CRM TABLE ---
         function renderTable() {
             const tbody = document.getElementById('clients-table-body');
             tbody.innerHTML = '';
-            
+
             const lblClient = translations[currentLang].tbl_client;
             const lblContact = translations[currentLang].tbl_contact;
             const lblSum = translations[currentLang].tbl_sum;
@@ -513,23 +824,38 @@
             const lblProfit = translations[currentLang].tbl_profit;
             const lblStatus = translations[currentLang].tbl_status;
             const lblDate = translations[currentLang].tbl_date;
-            
-            allOrders.forEach(data => {
+
+            const searchEl = document.getElementById('crm-search');
+            const statusEl = document.getElementById('crm-status-filter');
+            const searchQuery = searchEl ? searchEl.value.trim().toLowerCase() : '';
+            const statusFilter = statusEl ? statusEl.value : 'all';
+
+            const filtered = allOrders.filter(data => {
+                const matchesStatus = statusFilter === 'all' || data.status === statusFilter;
+                if (!matchesStatus) return false;
+                if (!searchQuery) return true;
+                const haystack = `${data.name || ''} ${data.contact || ''}`.toLowerCase();
+                return haystack.includes(searchQuery);
+            });
+
+            const countEl = document.getElementById('crm-count');
+            if (countEl) countEl.innerText = `${filtered.length} / ${allOrders.length} ${translations[currentLang].crm_count_label}`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:30px;">—</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(data => {
                 const profit = data.sum - (data.cost || 0);
-                
+
                 let contactHtml = `<span>${data.contact || '-'}</span>`;
                 if(data.contact && data.contact.startsWith('@')) contactHtml = `<a href="https://t.me/${data.contact.substring(1)}" target="_blank" class="contact-link">${data.contact}</a>`;
                 else if (data.contact && data.contact.startsWith('+')) contactHtml = `<a href="https://wa.me/${data.contact.replace(/\D/g,'')}" target="_blank" class="contact-link">${data.contact}</a>`;
 
-                let displayStatus = data.status;
-                if (currentLang === 'ru') {
-                    if (displayStatus === 'Paid') displayStatus = 'Оплачен';
-                    if (displayStatus === 'Processing') displayStatus = 'В обработке';
-                    if (displayStatus === 'Cancelled') displayStatus = 'Отменен';
-                }
-                let statusStyle = data.status === 'Paid' ? 'color: #4CAF50; font-weight: bold;' : 
-                                  data.status === 'Processing' ? 'opacity: 0.7; font-style: italic;' : 
-                                  'color: #ff4444; text-decoration: line-through;';
+                const statusKey = 'st_' + data.status;
+                const displayStatus = translations[currentLang][statusKey] || data.status;
+                const badgeClass = 'st-' + (data.status || 'Processing');
 
                 tbody.innerHTML += `
                     <tr>
@@ -538,7 +864,7 @@
                         <td data-label="${lblSum}">$${data.sum}</td>
                         <td data-label="${lblCost}" style="opacity: 0.7;">$${data.cost || 0}</td>
                         <td data-label="${lblProfit}" style="color: #4CAF50; font-weight: bold;">$${profit}</td>
-                        <td data-label="${lblStatus}" style="${statusStyle}">${displayStatus}</td>
+                        <td data-label="${lblStatus}"><span class="status-badge ${badgeClass}">${displayStatus}</span></td>
                         <td data-label="${lblDate}">${data.date}</td>
                         <td data-label="Action">
                             <div style="display:flex;">
@@ -549,6 +875,9 @@
                     </tr>`;
             });
         }
+
+        document.getElementById('crm-search').addEventListener('input', renderTable);
+        document.getElementById('crm-status-filter').addEventListener('change', renderTable);
 
         // --- RENDER PRODUCTS ---
         function renderProductsList() {
@@ -566,62 +895,85 @@
                     coverImg = prod.img;
                     photoCount = 1;
                 }
-                
-                let catLabel = prod.category || 'other';
-                if (currentLang === 'ru') {
-                    if (catLabel === 'hoodie') catLabel = 'Худи';
-                    if (catLabel === 't-shirt') catLabel = 'Футболки';
-                    if (catLabel === 'pants') catLabel = 'Штаны';
-                    if (catLabel === 'accessories') catLabel = 'Аксессуары';
-                    if (catLabel === 'other') catLabel = 'Другое';
-                }
+
+                const catLbl = catLabel(prod.category);
+                const photoWord = currentLang === 'ru' ? 'Фото' : 'Photos';
 
                 grid.innerHTML += `
                     <div class="product-card">
-                        ${photoCount > 1 ? `<div class="photos-count">${photoCount} Фото</div>` : ''}
-                        ${coverImg.startsWith('data:') ? `<img src="${coverImg}" class="img-preview">` : `<div class="img-preview" style="display:flex; align-items:center; justify-content:center; font-size:40px;">${coverImg}</div>`}
+                        ${photoCount > 1 ? `<div class="photos-count">${photoCount} ${photoWord}</div>` : ''}
+                        ${coverImg.startsWith('data:') ? `<img src="${coverImg}" class="img-preview" loading="lazy">` : `<div class="img-preview" style="display:flex; align-items:center; justify-content:center; font-size:40px;">${coverImg}</div>`}
                         <h3>${prod.title}</h3>
-                        <p>$${prod.price} • ${catLabel}</p>
-                        <button class="delete-btn" onclick="deleteProduct('${prod.id}')">${translations[currentLang].del_btn}</button>
+                        <p>$${prod.price} • ${catLbl}</p>
+                        <div style="display:flex; gap:5px;">
+                            <button class="edit-btn" style="flex:1;" onclick="editProduct('${prod.id}')">✎ ${translations[currentLang].edit_btn}</button>
+                            <button class="delete-btn" style="flex:1;" onclick="deleteProduct('${prod.id}')">${translations[currentLang].del_btn}</button>
+                        </div>
                     </div>
                 `;
             });
         }
 
+        // --- IMAGE COMPRESSION (shared helper — keeps Firestore docs lightweight) ---
+        const IMG_MAX_DIM = 640;   // longer side capped (never upscaled)
+        const IMG_QUALITY = 0.55;  // jpeg quality
+        const SIZE_WARN_KB = 850;  // Firestore doc hard limit is ~1MB, warn before hitting it
+
+        function compressImageFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const scale = Math.min(1, IMG_MAX_DIM / Math.max(img.width, img.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.round(img.width * scale);
+                        canvas.height = Math.round(img.height * scale);
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', IMG_QUALITY));
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        function compressFileList(fileList) {
+            if (!fileList || fileList.length === 0) return Promise.resolve([]);
+            return Promise.all(Array.from(fileList).map(compressImageFile));
+        }
+        function dataUrlsSizeKB(urls) {
+            const totalChars = urls.reduce((sum, u) => sum + (u ? u.length : 0), 0);
+            return Math.round(totalChars * 0.75 / 1024); // base64 -> approx bytes
+        }
+        function updateSizeHint(hintElId, urls) {
+            const el = document.getElementById(hintElId);
+            if (!el) return;
+            if (urls.length === 0) { el.innerText = ''; el.classList.remove('warn'); return; }
+            const kb = dataUrlsSizeKB(urls);
+            el.innerText = `~${kb} KB • ${urls.length} ${translations[currentLang].size_hint_ok}`;
+            const isHeavy = kb > SIZE_WARN_KB;
+            el.classList.toggle('warn', isHeavy);
+            if (isHeavy) el.innerText += ' — ' + translations[currentLang].size_hint_warn;
+        }
+
         // --- ADD PHOTOS & PRODUCT ---
+        let pendingNewImages = [];
+        document.getElementById('p-file').addEventListener('change', async function() {
+            const hint = document.getElementById('p-size-hint');
+            hint.innerText = currentLang === 'ru' ? 'Обработка фото...' : 'Processing photos...';
+            pendingNewImages = await compressFileList(this.files);
+            updateSizeHint('p-size-hint', pendingNewImages);
+        });
+
         document.getElementById('product-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn'); btn.disabled = true;
             const title = document.getElementById('p-title').value;
             const category = document.getElementById('p-category').value;
             const price = document.getElementById('p-price').value;
-            const fileInput = document.getElementById('p-file');
-
-            const files = fileInput.files;
-            
-            if (files.length > 0) {
-                let promises = Array.from(files).map(file => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const img = new Image();
-                            img.onload = function() {
-                                const canvas = document.createElement('canvas'); const scale = 600 / img.width;
-                                canvas.width = 600; canvas.height = img.height * scale;
-                                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                                resolve(canvas.toDataURL('image/jpeg', 0.6));
-                            }
-                            img.src = e.target.result;
-                        }
-                        reader.readAsDataURL(file);
-                    });
-                });
-                Promise.all(promises).then(imagesArray => {
-                    saveProductToDb(title, category, price, imagesArray);
-                });
-            } else {
-                saveProductToDb(title, category, price, []); 
-            }
+            saveProductToDb(title, category, price, pendingNewImages);
         });
 
         function saveProductToDb(title, category, price, imagesArray) {
@@ -632,9 +984,69 @@
             .then(() => { 
                 document.getElementById('product-form').reset(); 
                 document.getElementById('upload-btn').disabled = false; 
+                document.getElementById('p-size-hint').innerText = '';
+                pendingNewImages = [];
                 alert(translations[currentLang].msg_prod_added);
             });
         }
+
+        // --- EDIT PRODUCT ---
+        let editExistingImages = [];
+        let editNewImages = [];
+
+        window.editProduct = id => {
+            const prod = allProducts.find(p => p.id === id);
+            if (!prod) return;
+            document.getElementById('ep-id').value = prod.id;
+            document.getElementById('ep-title').value = prod.title;
+            renderCategoryOptions();
+            document.getElementById('ep-category').value = prod.category || 'other';
+            document.getElementById('ep-price').value = prod.price;
+            editExistingImages = (prod.images && prod.images.length) ? [...prod.images] : (prod.img ? [prod.img] : []);
+            editNewImages = [];
+            document.getElementById('ep-file').value = '';
+            renderEditThumbs();
+            document.getElementById('edit-product-modal').style.display = 'flex';
+        };
+
+        function renderEditThumbs() {
+            const grid = document.getElementById('ep-thumb-grid');
+            grid.innerHTML = editExistingImages.map((url, idx) => `
+                <div class="thumb-item">
+                    <img src="${url}">
+                    <button type="button" class="thumb-del" onclick="removeEditImage(${idx})">✕</button>
+                </div>`).join('');
+            updateSizeHint('ep-size-hint', [...editExistingImages, ...editNewImages]);
+        }
+        window.removeEditImage = idx => {
+            editExistingImages.splice(idx, 1);
+            renderEditThumbs();
+        };
+
+        document.getElementById('ep-file').addEventListener('change', async function() {
+            const hint = document.getElementById('ep-size-hint');
+            hint.innerText = currentLang === 'ru' ? 'Обработка фото...' : 'Processing photos...';
+            editNewImages = await compressFileList(this.files);
+            updateSizeHint('ep-size-hint', [...editExistingImages, ...editNewImages]);
+        });
+
+        document.getElementById('edit-product-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('ep-id').value;
+            const saveBtn = document.getElementById('ep-save-btn'); saveBtn.disabled = true;
+            const finalImages = [...editExistingImages, ...editNewImages];
+            db.collection("products").doc(id).update({
+                title: document.getElementById('ep-title').value,
+                category: document.getElementById('ep-category').value,
+                price: document.getElementById('ep-price').value,
+                images: finalImages,
+                img: firebase.firestore.FieldValue.delete()
+            }).then(() => {
+                saveBtn.disabled = false;
+                document.getElementById('edit-product-modal').style.display = 'none';
+                alert(translations[currentLang].msg_prod_updated);
+            });
+        });
 
         // --- ADD ORDER ---
         document.getElementById('client-form').addEventListener('submit', function(e) {
@@ -681,6 +1093,7 @@
         window.deleteProduct = id => { if (confirm(currentLang === 'en' ? "Delete product?" : "Удалить товар?")) db.collection("products").doc(id).delete(); }
 
         updateTexts();
+        updateChart();
     </script>
 </body>
 </html>
