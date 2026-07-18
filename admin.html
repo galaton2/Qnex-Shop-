@@ -9,36 +9,40 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- Chart.js for stats line graph -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <!-- Fonts: Space Grotesk (display/UI) + Inter (body text) — matches storefront -->
+
+    <!-- Fonts: Unbounded (display) + Manrope (body/UI) — same pairing as the storefront -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #000000; --text: #ffffff; --border: #ffffff;
-            --hover-bg: #ffffff; --hover-text: #000000; --gray: #111111;
+            --bg: #0a0a0a; --text: #f5f5f3; --border: #f5f5f3;
+            --hover-bg: #f5f5f3; --hover-text: #0a0a0a; --gray: #131313;
+            --font-display: 'Unbounded', sans-serif; --font-body: 'Manrope', sans-serif;
         }
         [data-theme="light"] {
-            --bg: #ffffff; --text: #000000; --border: #000000;
-            --hover-bg: #000000; --hover-text: #ffffff; --gray: #f9f9f9;
+            --bg: #fafaf8; --text: #0a0a0a; --border: #0a0a0a;
+            --hover-bg: #0a0a0a; --hover-text: #fafaf8; --gray: #f0efec;
         }
 
         html { touch-action: manipulation; }
         body {
             background-color: var(--bg); color: var(--text);
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: var(--font-body);
             margin: 0; padding: 0; transition: 0.3s;
             touch-action: manipulation;
         }
         
+        button, input, select, textarea { font-family: inherit; }
+
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
         header {
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
             border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 20px; gap: 15px;
         }
-        h1, h2, h3 { text-transform: uppercase; margin: 0; letter-spacing: 1px; }
+        h1, h2, h3 { font-family: var(--font-display); text-transform: uppercase; margin: 0; letter-spacing: 1px; font-weight: 700; }
         .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         
         .action-btn {
@@ -597,6 +601,9 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+            console.warn('Firestore persistence unavailable:', err.code);
+        });
 
         // --- DATA ARRAYS ---
         let allOrders = [];
@@ -673,12 +680,12 @@
             renderCategoryOptions();
             renderCategoryChips();
             renderProductsList();
-        });
+        }, (err) => console.warn('Categories listener error:', err));
 
         // Fetch Visits
         db.collection("analytics").doc("visits").onSnapshot(doc => {
             if(doc.exists) { visitsData = doc.data(); updateStats(); updateChart(); }
-        });
+        }, (err) => console.warn('Visits listener error:', err));
 
         // Fetch CRM Orders
         db.collection("sales").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
@@ -687,14 +694,14 @@
             renderTable();
             updateStats();
             updateChart();
-        });
+        }, (err) => console.warn('Orders listener error:', err));
 
         // Fetch Products
         db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
             allProducts = [];
             snapshot.forEach(doc => { allProducts.push({ id: doc.id, ...doc.data() }); });
             renderProductsList();
-        });
+        }, (err) => console.warn('Products listener error:', err));
 
         // --- STATS FILTER ---
         function computeStartTime(period) {
@@ -919,9 +926,9 @@
         }
 
         // --- IMAGE COMPRESSION (shared helper — keeps Firestore docs lightweight) ---
-        const IMG_MAX_DIM = 640;   // longer side capped (never upscaled)
-        const IMG_QUALITY = 0.55;  // jpeg quality
-        const SIZE_WARN_KB = 850;  // Firestore doc hard limit is ~1MB, warn before hitting it
+        const IMG_MAX_DIM = 560;   // longer side capped (never upscaled) — smaller = faster storefront loads
+        const IMG_QUALITY = 0.5;   // jpeg quality
+        const SIZE_WARN_KB = 700;  // Firestore doc hard limit is ~1MB, warn earlier so photos keep loading fast
 
         function compressImageFile(file) {
             return new Promise((resolve, reject) => {
