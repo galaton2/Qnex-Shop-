@@ -129,10 +129,10 @@
 
   /* СЛОИ ОДЕЖДЫ */
   .clothing-layers { position: relative; width: min(340px, 70vw); height: 100%; max-height: 850px; margin: 0 auto; }
-  .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15)); }
+  /* Тени убраны по вашей просьбе */
+  .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; }
   .animate-pop { animation: clothPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-  #layer-head { z-index: 4; top: 0%; height: 20%; }
   #layer-top { z-index: 3; top: 16%; height: 40%; }
   #layer-bottom { z-index: 2; top: 50%; height: 34%; }
   #layer-shoes { z-index: 1; top: 86%; height: 22%; }
@@ -142,15 +142,16 @@
 
   /* ПОЛОСА ТОВАРОВ */
   .thumb-strip { 
-    display: flex; gap: 16px; 
+    display: flex; 
+    gap: 32px; /* Расстояние увеличено */
     overflow-x: auto; padding: 12px 4px 24px; -webkit-overflow-scrolling: touch; 
-    scrollbar-width: none; /* скрываем скроллбар для эстетики */
+    scrollbar-width: none;
   }
   .thumb-strip::-webkit-scrollbar { display: none; }
   
   .thumb {
-    width: 72px; height: 72px; 
-    border-radius: 16px; 
+    width: 56px; height: 56px; /* Товары стали меньше */
+    border-radius: 12px; 
     background-size: cover; background-position: center; cursor: pointer;
     background-color: #f4f5f7; flex-shrink: 0; 
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -162,7 +163,7 @@
     opacity: 1; filter: grayscale(0%);
     border-color: var(--ink); 
     transform: scale(1.05) translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+    /* Тени убраны по вашей просьбе */
   }
 
   /* ПАНЕЛЬ АДМИНА */
@@ -215,7 +216,6 @@
   .btn-order.disabled { opacity: 0.4; pointer-events: none; }
   .catalog-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); text-align: center; margin-top: 16px; line-height: 1.6; }
 
-
   /* АДАПТИВ */
   @media (max-width: 992px) {
     .stage-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -228,7 +228,7 @@
     .stage-card, .admin-card { padding: 24px; border-radius: 20px; }
     
     .stage { min-height: 550px; height: 65vh; max-height: 750px; padding: 10px; margin-bottom: 24px; }
-    .thumb { width: 64px; height: 64px; }
+    .thumb { width: 50px; height: 50px; }
     
     .btn-group { flex-direction: column; }
     .btn-randomize { padding: 14px 24px; font-size: 13px; }
@@ -258,25 +258,20 @@
       <div class="stage-container">
         <div class="stage" id="stage">
           
-          <div class="layer-controls" style="top: 10%;">
-            <button onclick="cycle('head', -1)">‹</button>
-            <button onclick="cycle('head', 1)">›</button>
-          </div>
-          <div class="layer-controls" style="top: 35%;">
+          <div class="layer-controls" style="top: 25%;">
             <button onclick="cycle('top', -1)">‹</button>
             <button onclick="cycle('top', 1)">›</button>
           </div>
-          <div class="layer-controls" style="top: 65%;">
+          <div class="layer-controls" style="top: 55%;">
             <button onclick="cycle('bottom', -1)">‹</button>
             <button onclick="cycle('bottom', 1)">›</button>
           </div>
-          <div class="layer-controls" style="top: 90%;">
+          <div class="layer-controls" style="top: 85%;">
             <button onclick="cycle('shoes', -1)">‹</button>
             <button onclick="cycle('shoes', 1)">›</button>
           </div>
 
           <div class="clothing-layers" id="clothingLayers">
-              <img id="layer-head" class="clothing-layer" src="" alt="Голова">
               <img id="layer-top" class="clothing-layer" src="" alt="Верх">
               <img id="layer-bottom" class="clothing-layer" src="" alt="Низ">
               <img id="layer-shoes" class="clothing-layer" src="" alt="Обувь">
@@ -318,59 +313,59 @@ const db = firebase.firestore();
 const TELEGRAM_USERNAME = 'qnex_shop';
 
 // ================= СЛОТЫ МАНЕКЕНА =================
+// Аксессуары убраны
 const CATEGORIES = [
-  { key: 'head',   label: 'Голова' },
   { key: 'top',    label: 'Верх' },
   { key: 'bottom', label: 'Низ' },
   { key: 'shoes',  label: 'Обувь' },
 ];
 const NONE_IMG = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 const EMPTY_ITEMS = () => ({
-  head:   [{ id: 'h0', name: 'Без головного убора', image: NONE_IMG }],
   top:    [{ id: 't0', name: 'Без верха',            image: NONE_IMG }],
   bottom: [{ id: 'b0', name: 'Без низа',              image: NONE_IMG }],
   shoes:  [{ id: 's0', name: 'Без обуви',             image: NONE_IMG }]
 });
 
-// Категории каталога по умолчанию (совпадают с index.html) — нужны, чтобы читать русские/английские названия кастомных категорий
+// Категории каталога
 const DEFAULT_CATALOG_CATEGORIES = [
   { key: 'hoodie', ru: 'Худи', en: 'Hoodies' },
   { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts' },
-  { key: 'pants', ru: 'Штаны', en: 'Pants' },
-  { key: 'accessories', ru: 'Аксессуары', en: 'Accessories' },
-  { key: 'other', ru: 'Другое', en: 'Other' }
+  { key: 'pants', ru: 'Штаны', en: 'Pants' }
 ];
 let customCatalogCategories = [];
 function getAllCatalogCategories() { return [...DEFAULT_CATALOG_CATEGORIES, ...customCatalogCategories]; }
 
 // ============================================================================
-// КАРТА "категория каталога -> слот манекена" по ключевым словам.
-// Если в каталоге появится новая категория, допишите нужные слова сюда.
+// УЛУЧШЕННАЯ КАРТА "категория каталога/название -> слот манекена"
 // ============================================================================
 const SLOT_KEYWORDS = {
-  head:   ['аксессуар', 'accessor', 'кепк', 'шапк', 'панам', 'hat', 'cap', 'убор'],
-  shoes:  ['обув', 'shoe', 'кроссов', 'sneaker', 'ботин', 'boot', 'туфл'],
-  bottom: ['штан', 'pant', 'джинс', 'jean', 'шорт', 'short', 'брюк', 'юбк', 'skirt'],
-  top:    ['худи', 'hoodie', 'футбол', 't-shirt', 'рубаш', 'shirt', 'куртк', 'jacket', 'свитш', 'sweat', 'верх']
+  shoes:  ['обув', 'shoe', 'кроссов', 'sneaker', 'ботин', 'boot', 'туфл', 'кед'],
+  bottom: ['штан', 'pant', 'джинс', 'jean', 'шорт', 'short', 'брюк', 'юбк', 'skirt', 'джоггер', 'треник'],
+  top:    ['худи', 'hoodie', 'футбол', 't-shirt', 'рубаш', 'shirt', 'куртк', 'jacket', 'свитш', 'sweat', 'верх', 'лонгслив', 'зип', 'свитер', 'толстовк']
 };
-function detectSlot(categoryKey) {
+
+function detectSlot(categoryKey, title = '') {
   const cat = getAllCatalogCategories().find(c => c.key === categoryKey);
-  const haystack = [categoryKey || '', cat ? cat.ru : '', cat ? cat.en : ''].join(' ').toLowerCase();
+  // Проверяем и категорию, и само название вещи
+  const haystack = [categoryKey || '', cat ? cat.ru : '', cat ? cat.en : '', title || ''].join(' ').toLowerCase();
+  
   for (const slot of Object.keys(SLOT_KEYWORDS)) {
     if (SLOT_KEYWORDS[slot].some(kw => haystack.includes(kw))) return slot;
   }
-  return 'top'; // товары без явного совпадения попадают в "Верх"
+  
+  // Если товар не подошел ни под одну категорию верха, низа или обуви (например, это брелок) — он отбрасывается
+  return null; 
 }
 
 let ITEMS = EMPTY_ITEMS();
-let selected = { head: 0, top: 0, bottom: 0, shoes: 0 };
+let selected = { top: 0, bottom: 0, shoes: 0 };
 let active = 'top';
 let dataLoaded = false;
 let latestProducts = [];
 
 const $ = (sel) => document.querySelector(sel);
 
-// --- ЛОКАЛЬНЫЙ КЭШ (тот же ключ, что в каталоге — для мгновенной загрузки) ---
+// --- ЛОКАЛЬНЫЙ КЭШ ---
 const CACHE_KEY = 'qnex_products_cache_v1';
 function loadProductsCache() {
   try { const raw = localStorage.getItem(CACHE_KEY); if (raw) return JSON.parse(raw); }
@@ -383,9 +378,16 @@ function rebuildItemsFromProducts(products) {
   products.forEach(p => {
     const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || null);
     if (!img) return;
-    const slot = detectSlot(p.category);
-    base[slot].push({ id: p.id, name: p.title || 'Без названия', image: img, price: p.price || '0' });
+    
+    // Получаем слот, проверяя также название товара
+    const slot = detectSlot(p.category, p.title);
+    
+    // Добавляем только если товар был четко распознан
+    if (slot && base[slot]) {
+      base[slot].push({ id: p.id, name: p.title || 'Без названия', image: img, price: p.price || '0' });
+    }
   });
+  
   ITEMS = base;
   Object.keys(selected).forEach(k => { if (selected[k] >= ITEMS[k].length) selected[k] = 0; });
 }
@@ -484,7 +486,7 @@ function renderLookPanel() {
   }
 }
 
-// --- ЗАГРУЗКА ИЗ FIRESTORE (та же коллекция products, что и в каталоге) ---
+// --- ЗАГРУЗКА ИЗ FIRESTORE ---
 const cachedProducts = loadProductsCache();
 if (cachedProducts && cachedProducts.length) {
   latestProducts = cachedProducts;
