@@ -9,11 +9,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- Chart.js for stats line graph -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg: #000000; --text: #ffffff; --border: #ffffff;
             --hover-bg: #ffffff; --hover-text: #000000; --gray: #111111;
+            --font-display: 'Bebas Neue', 'Helvetica Neue', sans-serif;
+            --font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         [data-theme="light"] {
             --bg: #ffffff; --text: #000000; --border: #000000;
@@ -23,10 +29,11 @@
         html { touch-action: manipulation; }
         body {
             background-color: var(--bg); color: var(--text);
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: var(--font-body);
             margin: 0; padding: 0; transition: 0.3s;
             touch-action: manipulation;
         }
+        h1, h2, h3 { font-family: var(--font-display); letter-spacing: 1.5px; }
         
         .container { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
@@ -593,6 +600,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
         // --- DATA ARRAYS ---
         let allOrders = [];
@@ -987,6 +995,10 @@
                 document.getElementById('p-size-hint').innerText = '';
                 pendingNewImages = [];
                 alert(translations[currentLang].msg_prod_added);
+            })
+            .catch(err => {
+                document.getElementById('upload-btn').disabled = false;
+                alert((currentLang === 'ru' ? 'Ошибка сохранения: ' : 'Save failed: ') + err.message);
             });
         }
 
@@ -1045,6 +1057,9 @@
                 saveBtn.disabled = false;
                 document.getElementById('edit-product-modal').style.display = 'none';
                 alert(translations[currentLang].msg_prod_updated);
+            }).catch(err => {
+                saveBtn.disabled = false;
+                alert((currentLang === 'ru' ? 'Ошибка сохранения: ' : 'Save failed: ') + err.message);
             });
         });
 
