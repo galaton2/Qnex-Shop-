@@ -11,12 +11,13 @@
 
 <style>
   :root {
-    --bg: #ffffff; 
+    --bg: #f4f5f7; 
     --bg-panel: #ffffff;
-    --ink: #000000;
-    --ink-soft: #666666;
-    --line: #eaeaea; 
-    --danger: #e53935;
+    --ink: #111111;
+    --ink-soft: #888888;
+    --line: #e2e4e8; 
+    --danger: #ff4757;
+    --accent: #2f3542;
     
     --font-display: 'Bebas Neue', sans-serif;
     --font-mono: 'Space Mono', monospace;
@@ -35,31 +36,62 @@
     min-height: 100vh;
   }
   
-  .app { max-width: 1200px; margin: 0 auto; }
+  .app { max-width: 1100px; margin: 0 auto; animation: fadeUp 0.6s ease-out; }
+
+  /* АНИМАЦИИ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes clothPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); opacity: 1; }
+  }
 
   /* ШАПКА */
-  .tag-bar { text-align: center; margin-bottom: 48px; display: flex; flex-direction: column; align-items: center; gap: 16px;}
+  .tag-bar { text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 20px;}
   .tag-bar h1 { font-family: var(--font-display); font-size: clamp(40px, 8vw, 72px); margin: 0; letter-spacing: 2px; }
 
-  .top-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: center; }
-  .btn-action { 
-    padding: 10px 20px; background: transparent; border: 1px solid var(--ink); color: var(--ink);
-    border-radius: 8px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; transition: 0.2s; text-transform: uppercase;
+  /* УЛУЧШЕННАЯ КНОПКА */
+  .btn-randomize { 
+    background: linear-gradient(135deg, var(--ink), var(--accent));
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 10px 20px rgba(17, 17, 17, 0.2);
   }
-  .btn-action:hover { background: var(--ink); color: #fff; }
+  .btn-randomize:hover { 
+    transform: translateY(-4px) scale(1.02); 
+    box-shadow: 0 15px 25px rgba(17, 17, 17, 0.3);
+  }
+  .btn-randomize:active {
+    transform: translateY(2px) scale(0.98);
+    box-shadow: 0 5px 10px rgba(17, 17, 17, 0.2);
+  }
 
   /* СЕТКА */
-  .stage-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: start; }
+  .stage-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; align-items: start; }
 
   /* КАРТОЧКИ */
-  .stage-card, .receipt-card, .admin-card {
+  .stage-card, .admin-card {
     background: var(--bg-panel);
-    border-radius: 16px;
+    border-radius: 24px;
     padding: 32px;
-    border: 1px solid var(--line);
-    margin-bottom: 32px;
-    width: 100%;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.03); 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.04); 
+    border: 1px solid rgba(255,255,255,0.5);
   }
 
   /* ЗОНА МАНЕКЕНА */
@@ -67,115 +99,130 @@
 
   .stage {
     display: flex; align-items: center; justify-content: center;
-    /* УВЕЛИЧЕННАЯ ВЫСОТА */
-    min-height: 1000px; height: 75vh; max-height: 950px; 
+    min-height: 900px; height: 75vh; max-height: 950px; 
     position: relative;
-    background: #fff;
-    border-radius: 12px; border: 1px solid var(--line); margin-bottom: 32px;
-    padding: 20px; overflow: hidden;
+    background-color: #fafafa;
+    /* Сетка на фоне для стиля "конструктора" */
+    background-image: radial-gradient(var(--line) 2px, transparent 2px);
+    background-size: 24px 24px;
+    border-radius: 16px; 
+    margin-bottom: 24px;
+    padding: 20px; 
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.02);
   }
 
   /* СТРЕЛКИ УПРАВЛЕНИЯ */
   .layer-controls {
     position: absolute; width: 100%; display: flex; justify-content: space-between;
-    padding: 0 20px; z-index: 10; pointer-events: none;
+    padding: 0 16px; z-index: 10; pointer-events: none;
   }
   .layer-controls button {
-    pointer-events: auto; width: 44px; height: 44px; border-radius: 50%;
-    border: 1px solid var(--line); background: #ffffff; color: var(--ink);
+    pointer-events: auto; width: 48px; height: 48px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.9); color: var(--ink);
     font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.2s; box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    backdrop-filter: blur(4px);
   }
-  .layer-controls button:hover { background: var(--ink); color: #fff; transform: scale(1.1); }
+  .layer-controls button:hover { 
+    background: var(--ink); color: #fff; 
+    transform: scale(1.15); 
+  }
+  .layer-controls button:active { transform: scale(0.95); }
 
   /* СЛОИ ОДЕЖДЫ */
-  .clothing-layers { position: relative; width: min(340px, 70vw); height: 100%; max-height: 850px; margin: 0 auto; transition: transform 0.2s; }
-  .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; }
+  .clothing-layers { position: relative; width: min(340px, 70vw); height: 100%; max-height: 850px; margin: 0 auto; }
+  .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15)); }
+  .animate-pop { animation: clothPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-  /* ПРОПОРЦИИ: Обувь крупнее, расстояние сохранено */
   #layer-head { z-index: 4; top: 0%; height: 20%; }
   #layer-top { z-index: 3; top: 16%; height: 40%; }
   #layer-bottom { z-index: 2; top: 50%; height: 34%; }
   #layer-shoes { z-index: 1; top: 86%; height: 22%; }
 
-  .current-item { text-align: center; font-family: var(--font-mono); font-size: 15px; color: var(--ink-soft); margin: 24px 0; }
-  .current-item b { color: var(--ink); font-weight: 700; font-size: 16px; }
+  .current-item { text-align: center; font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); margin: 24px 0; background: #f4f5f7; padding: 12px; border-radius: 12px; }
+  .current-item b { color: var(--ink); font-weight: 700; font-size: 15px; }
 
   /* ПОЛОСА ТОВАРОВ */
   .thumb-strip { 
-    display: flex; gap: 24px; 
-    overflow-x: auto; padding: 12px 4px 24px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; 
+    display: flex; gap: 16px; 
+    overflow-x: auto; padding: 12px 4px 24px; -webkit-overflow-scrolling: touch; 
+    scrollbar-width: none; /* скрываем скроллбар для эстетики */
   }
+  .thumb-strip::-webkit-scrollbar { display: none; }
+  
   .thumb {
-    width: 76px; height: 76px; 
-    border-radius: 12px; border: 2px solid var(--line);
+    width: 72px; height: 72px; 
+    border-radius: 16px; 
     background-size: cover; background-position: center; cursor: pointer;
-    background-color: #ffffff; flex-shrink: 0; transition: all 0.2s;
+    background-color: #f4f5f7; flex-shrink: 0; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: 0.6; filter: grayscale(50%);
+    border: 2px solid transparent;
   }
-  .thumb:hover { border-color: var(--ink-soft); transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-  .thumb.selected { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ink) inset; }
-
-  /* ЧЕК-ЛИСТ (БЕЗ ЦЕН) */
-  .receipt-head { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 20px; font-family: var(--font-display); font-size: 28px; letter-spacing: 1.5px;}
-  .receipt-lines { list-style: none; margin: 0; padding: 0; font-family: var(--font-mono); font-size: 14px; }
-  .receipt-lines li { padding: 16px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 16px; }
-  .receipt-lines li span:first-child { color: var(--ink-soft); }
-  .receipt-lines li span.item-name { font-weight: bold; flex: 1; text-align: right; color: var(--ink); }
+  .thumb:hover { opacity: 1; filter: grayscale(0%); transform: translateY(-4px); }
+  .thumb.selected { 
+    opacity: 1; filter: grayscale(0%);
+    border-color: var(--ink); 
+    transform: scale(1.05) translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+  }
 
   /* ПАНЕЛЬ АДМИНА */
-  .admin-card h3 { font-family: var(--font-display); font-size: 28px; margin-top: 0; letter-spacing: 1.5px; margin-bottom: 8px;}
-  .admin-desc { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); margin-bottom: 24px; }
+  .admin-card { position: sticky; top: 40px; }
+  .admin-card h3 { font-family: var(--font-display); font-size: 32px; margin-top: 0; letter-spacing: 1.5px; margin-bottom: 8px;}
+  .admin-desc { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); margin-bottom: 32px; }
   .admin-form { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-mono); font-size: 14px; }
   
   .admin-form input, .admin-form select { 
-    padding: 16px; background: #ffffff; border: 1px solid var(--line); color: var(--ink);
-    border-radius: 8px; width: 100%; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;
+    padding: 16px 20px; background: #f8f9fa; border: 1px solid var(--line); color: var(--ink);
+    border-radius: 12px; width: 100%; font-family: inherit; font-size: 14px; outline: none; transition: 0.3s;
   }
-  .admin-form input:focus, .admin-form select:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+  .admin-form input:focus, .admin-form select:focus { 
+    background: #ffffff;
+    border-color: var(--ink); 
+    box-shadow: 0 0 0 4px rgba(17,17,17,0.05); 
+  }
   
-  .btn-group { display: flex; gap: 16px; }
+  .btn-group { display: flex; gap: 12px; margin-top: 8px; }
   .admin-form button { 
-    padding: 16px; border: none; border-radius: 8px; cursor: pointer; 
-    font-family: inherit; font-weight: bold; font-size: 13px; text-transform: uppercase; flex: 1; transition: 0.2s;
+    padding: 16px; border: none; border-radius: 12px; cursor: pointer; 
+    font-family: inherit; font-weight: bold; font-size: 13px; text-transform: uppercase; flex: 1; 
+    transition: all 0.2s;
   }
   .btn-primary { background: var(--ink); color: #fff; }
-  .btn-primary:hover { background: #333; transform: translateY(-2px); }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
   
   .btn-secondary { background: transparent; color: var(--ink); border: 2px solid var(--ink) !important; padding: 14px; }
-  .btn-secondary:hover { background: #fafafa; }
+  .btn-secondary:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
 
-  .btn-danger { background: rgba(229, 57, 53, 0.05); color: var(--danger); border: 1px solid var(--danger) !important; margin-top: 8px; }
-  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-danger { background: rgba(255, 71, 87, 0.05); color: var(--danger); border: 1px dashed var(--danger) !important; margin-top: 8px; }
+  .btn-danger:hover { background: var(--danger); color: #fff; border-style: solid !important;}
 
 
   /* АДАПТИВ */
-  @media (max-width: 1024px) {
-    .stage-grid { gap: 32px; grid-template-columns: 1.2fr 1fr; }
-    .stage { min-height: 650px; }
+  @media (max-width: 992px) {
+    .stage-grid { grid-template-columns: 1fr; gap: 32px; }
+    .admin-card { position: static; }
+    .stage { min-height: 700px; }
   }
 
   @media (max-width: 768px) {
     body { padding: 24px 12px 60px; }
-    .stage-grid { grid-template-columns: 1fr; gap: 32px; }
-    .stage-card, .receipt-card, .admin-card { padding: 20px; border-radius: 12px; }
+    .stage-card, .admin-card { padding: 24px; border-radius: 20px; }
     
     .stage { min-height: 550px; height: 65vh; max-height: 750px; padding: 10px; margin-bottom: 24px; }
-    .thumb-strip { gap: 16px; padding-bottom: 16px; }
     .thumb { width: 64px; height: 64px; }
     
-    .btn-group { flex-direction: column; gap: 12px; }
-    .top-actions { gap: 10px; }
-    .btn-action { padding: 8px 12px; font-size: 11px; }
+    .btn-group { flex-direction: column; }
+    .btn-randomize { padding: 14px 24px; font-size: 13px; }
 
-    .layer-controls button { width: 36px; height: 36px; font-size: 18px; }
+    .layer-controls button { width: 40px; height: 40px; font-size: 20px; }
   }
 
   @media (max-width: 400px) {
     .stage { min-height: 480px; height: 60vh; }
-    .receipt-lines li { flex-direction: column; gap: 6px; text-align: left; align-items: flex-start; }
-    .receipt-lines li span.item-name { text-align: left; }
   }
-
 </style>
 </head>
 <body>
@@ -183,9 +230,10 @@
 
   <header class="tag-bar">
     <h1>QNEX BUILDER</h1>
-    <div class="top-actions">
-      <button class="btn-action" onclick="randomizeLook()">🎲 Собрать случайно</button>
-    </div>
+    <button class="btn-randomize" onclick="randomizeLook()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+      Собрать случайно
+    </button>
   </header>
 
   <div class="stage-grid">
@@ -224,34 +272,27 @@
       <div class="thumb-strip" id="thumbStrip"></div>
     </section>
 
-    <div>
-      <aside class="receipt-card">
-        <div class="receipt-head">СОСТАВ ОБРАЗА</div>
-        <ul class="receipt-lines" id="receiptLines"></ul>
-      </aside>
-
-      <aside class="admin-card">
-        <h3>РЕДАКТОР ТОВАРОВ</h3>
-        <p class="admin-desc">Редактируется сейчас: <strong id="editTargetName" style="color:var(--ink);">...</strong></p>
+    <aside class="admin-card">
+      <h3>РЕДАКТОР</h3>
+      <p class="admin-desc">Выбрано: <strong id="editTargetName" style="color:var(--ink);">...</strong></p>
+      
+      <div class="admin-form">
+        <input type="text" id="editName" placeholder="Название вещи">
+        <input type="text" id="editUrl" placeholder="URL картинки (PNG/JPG)">
+        <select id="editCategory">
+          <option value="head">Голова</option>
+          <option value="top">Верх</option>
+          <option value="bottom">Низ</option>
+          <option value="shoes">Обувь</option>
+        </select>
         
-        <div class="admin-form">
-          <input type="text" id="editName" placeholder="Название вещи">
-          <input type="text" id="editUrl" placeholder="URL картинки (PNG/JPG)">
-          <select id="editCategory">
-            <option value="head">Голова</option>
-            <option value="top">Верх</option>
-            <option value="bottom">Низ</option>
-            <option value="shoes">Обувь</option>
-          </select>
-          
-          <div class="btn-group">
-            <button id="btnUpdate" class="btn-primary">Сохранить</button>
-            <button id="btnAdd" class="btn-secondary">Добавить новый</button>
-          </div>
-          <button id="btnDelete" class="btn-danger">Удалить товар</button>
+        <div class="btn-group">
+          <button id="btnUpdate" class="btn-primary">Сохранить</button>
+          <button id="btnAdd" class="btn-secondary">Новый товар</button>
         </div>
-      </aside>
-    </div>
+        <button id="btnDelete" class="btn-danger">Удалить товар</button>
+      </div>
+    </aside>
 
   </div>
 </div>
@@ -288,7 +329,6 @@ const DEFAULT_ITEMS = {
 };
 
 let ITEMS = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
-// Установлен стартовый аутфит: везде выбран 1-й элемент (вещь) вместо 0-го (без вещи)
 let selected = { head: 1, top: 1, bottom: 1, shoes: 1 };
 let active = 'top'; 
 
@@ -330,7 +370,9 @@ function randomizeLook() {
 }
 
 function renderAll() {
-  renderThumbs(); renderStage(); renderReceipt(); updateEditForm();
+  renderThumbs(); 
+  renderStage(); 
+  updateEditForm();
 }
 
 function renderThumbs() {
@@ -345,21 +387,23 @@ function renderThumbs() {
 function renderStage() {
   CATEGORIES.forEach(c => {
     const i = ITEMS[c.key][selected[c.key]];
-    if(i) $('#layer-' + c.key).src = i.image;
+    const imgEl = $('#layer-' + c.key);
+    
+    // Если картинка изменилась — обновляем и запускаем анимацию
+    if(i && imgEl.src !== i.image) {
+      imgEl.src = i.image;
+      
+      imgEl.classList.remove('animate-pop');
+      void imgEl.offsetWidth; // Триггер для перезапуска анимации
+      imgEl.classList.add('animate-pop');
+    }
   });
+
   const cur = ITEMS[active][selected[active]];
   if(cur) {
     const lbl = CATEGORIES.find(c => c.key === active).label;
-    $('#currentItem').innerHTML = `АКТИВНА КАТЕГОРИЯ (${lbl.toUpperCase()}): <b>${cur.name}</b>`;
+    $('#currentItem').innerHTML = `РЕДАКТИРУЕТСЯ (${lbl.toUpperCase()}): <b>${cur.name}</b>`;
   }
-}
-
-function renderReceipt() {
-  $('#receiptLines').innerHTML = CATEGORIES.map(c => {
-    const i = ITEMS[c.key][selected[c.key]];
-    if (!i || i.name.includes('Без ')) return '';
-    return `<li><span>${c.label}</span><span class="item-name">${i.name}</span></li>`;
-  }).join('');
 }
 
 function cycle(cat, dir) {
