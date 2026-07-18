@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Конструктор луков — Qnex Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+  :root {
+    /* Абсолютно белый фон везде */
+    --bg: #ffffff; 
+    --bg-panel: #ffffff;
+    --ink: #000000;
+    --ink-soft: #666666;
+    --line: #eaeaea; /* Более светлая и нежная линия */
+    --danger: #e53935;
+    
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; height: 100%; }
+  
+  body { 
+    margin: 0; 
+    background: var(--bg); 
+    color: var(--ink); 
+    font-family: var(--font-body); 
+    padding: 40px 20px 80px; 
+    min-height: 100vh;
+  }
+  
+  .app { max-width: 1200px; margin: 0 auto; }
+
+  /* ШАПКА */
+  .tag-bar { text-align: center; margin-bottom: 48px; display: flex; flex-direction: column; align-items: center; gap: 16px;}
+  .tag-bar h1 { font-family: var(--font-display); font-size: clamp(40px, 8vw, 72px); margin: 0; letter-spacing: 2px; }
+
+  .top-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .btn-action { 
+    padding: 10px 20px; background: transparent; border: 1px solid var(--ink); color: var(--ink);
+    border-radius: 8px; font-family: var(--font-mono); font-size: 13px; cursor: pointer; transition: 0.2s; text-transform: uppercase;
+  }
+  .btn-action:hover { background: var(--ink); color: #fff; }
+
+  /* СЕТКА (ОГРОМНЫЙ GAP) */
+  .stage-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: start; }
+
+  /* КАРТОЧКИ (Белые с легчайшей тенью) */
+  .stage-card, .receipt-card, .admin-card {
+    background: var(--bg-panel);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    margin-bottom: 32px;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.03); 
+  }
+
+  /* ВКЛАДКИ */
+  .category-tabs { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; justify-content: center; }
+  .tab-chip {
+    padding: 14px 24px; background: transparent; color: var(--ink-soft);
+    font-family: var(--font-mono); font-size: 14px; border: 1px solid var(--line);
+    cursor: pointer; text-transform: uppercase; border-radius: 8px;
+    flex: 1 1 auto; min-width: 100px; text-align: center; transition: all 0.2s;
+  }
+  .tab-chip:hover { border-color: var(--ink); color: var(--ink); }
+  .tab-chip.active { background: var(--ink); color: #fff; border-color: var(--ink); font-weight: bold; }
+
+  /* ЗОНА МАНЕКЕНА (ВЫТЯНУТАЯ) */
+  .stage-container { position: relative; }
+  .zoom-control { 
+    position: absolute; top: 16px; right: 16px; z-index: 20; 
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line);
+  }
+  .zoom-control input[type=range] { width: 90px; }
+  .zoom-label { font-family: var(--font-mono); font-size: 11px; font-weight: bold; }
+
+  .stage {
+    display: flex; align-items: center; justify-content: center;
+    /* Увеличена высота, чтобы всё вытянулось вниз */
+    min-height: 650px; height: 70vh; max-height: 850px; 
+    position: relative;
+    background: #fdfdfd;
+    border-radius: 12px; border: 1px solid var(--line); margin-bottom: 32px;
+    padding: 20px; overflow: hidden;
+  }
+
+  /* СТРЕЛКИ УПРАВЛЕНИЯ */
+  .layer-controls {
+    position: absolute; width: 100%; display: flex; justify-content: space-between;
+    padding: 0 20px; z-index: 10; pointer-events: none;
+  }
+  .layer-controls button {
+    pointer-events: auto; width: 44px; height: 44px; border-radius: 50%;
+    border: 1px solid var(--line); background: #ffffff; color: var(--ink);
+    font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .layer-controls button:hover { background: var(--ink); color: #fff; transform: scale(1.1); }
+
+  /* СЛОИ ОДЕЖДЫ - НАСТРОЕНЫ ОТСТУПЫ ДЛЯ УСТРАНЕНИЯ ПЕРЕКРЫТИЯ */
+  .clothing-layers { position: relative; width: min(340px, 70vw); height: 100%; max-height: 750px; margin: 0 auto; transition: transform 0.2s; }
+  .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; }
+
+  /* Идеальные пропорции без сильного перекрытия */
+  #layer-head { z-index: 4; top: 0%; height: 22%; }
+  #layer-top { z-index: 3; top: 18%; height: 42%; }
+  #layer-bottom { z-index: 2; top: 55%; height: 38%; }
+  #layer-shoes { z-index: 1; top: 88%; height: 12%; }
+
+  .current-item { text-align: center; font-family: var(--font-mono); font-size: 15px; color: var(--ink-soft); margin: 24px 0; }
+  .current-item b { color: var(--ink); font-weight: 700; font-size: 16px; }
+
+  /* ПОЛОСА ТОВАРОВ (БОЛЬШОЙ GAP) */
+  .thumb-strip { 
+    display: flex; gap: 24px; /* Огромный gap */
+    overflow-x: auto; padding: 12px 4px 24px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; 
+  }
+  .thumb {
+    width: 76px; height: 76px; /* Чуть крупнее */
+    border-radius: 12px; border: 2px solid var(--line);
+    background-size: cover; background-position: center; cursor: pointer;
+    background-color: #ffffff; flex-shrink: 0; transition: all 0.2s;
+  }
+  .thumb:hover { border-color: var(--ink-soft); transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+  .thumb.selected { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ink) inset; }
+
+  /* ЧЕК-ЛИСТ И ЦЕНЫ */
+  .receipt-head { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 20px; font-family: var(--font-display); font-size: 28px; letter-spacing: 1.5px;}
+  .receipt-lines { list-style: none; margin: 0; padding: 0; font-family: var(--font-mono); font-size: 14px; }
+  .receipt-lines li { padding: 16px 0; border-bottom: 1px dashed var(--line); display: flex; justify-content: space-between; gap: 16px; }
+  .receipt-lines li span:first-child { color: var(--ink-soft); }
+  .receipt-lines li span.item-name { font-weight: bold; flex: 1; text-align: right; }
+  .receipt-lines li span.item-price { color: var(--ink); font-weight: bold; width: 70px; text-align: right; }
+  
+  .total-line { display: flex; justify-content: space-between; padding-top: 24px; font-family: var(--font-display); font-size: 24px; border-top: 3px solid var(--ink); margin-top: 16px; }
+
+  /* ПАНЕЛЬ АДМИНА */
+  .admin-card h3 { font-family: var(--font-display); font-size: 28px; margin-top: 0; letter-spacing: 1.5px; margin-bottom: 8px;}
+  .admin-desc { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); margin-bottom: 24px; }
+  .admin-form { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-mono); font-size: 14px; }
+  
+  .admin-form input, .admin-form select { 
+    padding: 16px; background: #ffffff; border: 1px solid var(--line); color: var(--ink);
+    border-radius: 8px; width: 100%; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;
+  }
+  .admin-form input:focus, .admin-form select:focus { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+  
+  .btn-group { display: flex; gap: 16px; }
+  .admin-form button { 
+    padding: 16px; border: none; border-radius: 8px; cursor: pointer; 
+    font-family: inherit; font-weight: bold; font-size: 13px; text-transform: uppercase; flex: 1; transition: 0.2s;
+  }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #333; transform: translateY(-2px); }
+  
+  .btn-secondary { background: transparent; color: var(--ink); border: 2px solid var(--ink) !important; padding: 14px; }
+  .btn-secondary:hover { background: #fafafa; }
+
+  .btn-danger { background: rgba(229, 57, 53, 0.05); color: var(--danger); border: 1px solid var(--danger) !important; margin-top: 8px; }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+
+
+  /* =========================================
+     АДАПТИВ ПОД РАЗНЫЕ УСТРОЙСТВА (Responsive)
+     ========================================= */
+
+  /* Для планшетов и небольших ноутбуков */
+  @media (max-width: 1024px) {
+    .stage-grid { gap: 32px; grid-template-columns: 1.2fr 1fr; }
+    .stage { min-height: 550px; }
+  }
+
+  /* Для смартфонов (Вертикальный режим) */
+  @media (max-width: 768px) {
+    body { padding: 24px 12px 60px; }
+    .stage-grid { grid-template-columns: 1fr; gap: 32px; }
+    
+    .stage-card, .receipt-card, .admin-card { padding: 20px; border-radius: 12px; }
+    
+    /* Манекен на телефонах подстраивается, чтобы влезть в экран */
+    .stage { min-height: 480px; height: 60vh; max-height: 600px; padding: 10px; margin-bottom: 24px; }
+    
+    .category-tabs { gap: 10px; margin-bottom: 24px; }
+    .tab-chip { padding: 12px 16px; font-size: 12px; min-width: 70px; }
+    
+    .thumb-strip { gap: 16px; padding-bottom: 16px; }
+    .thumb { width: 64px; height: 64px; }
+    
+    .btn-group { flex-direction: column; gap: 12px; }
+    .top-actions { gap: 10px; }
+    .btn-action { padding: 8px 12px; font-size: 11px; }
+
+    /* Расположение стрелок подгоняем под мобильный экран */
+    .layer-controls button { width: 36px; height: 36px; font-size: 18px; }
+  }
+
+  /* Для совсем узких экранов (iPhone SE и т.д.) */
+  @media (max-width: 400px) {
+    .stage { min-height: 420px; height: 55vh; }
+    .receipt-lines li { flex-direction: column; gap: 6px; text-align: left; align-items: flex-start; }
+    .receipt-lines li span.item-name { text-align: left; }
+    .receipt-lines li span.item-price { text-align: left; }
+  }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="tag-bar">
+    <h1>QNEX BUILDER</h1>
+    <div class="top-actions">
+      <button class="btn-action" onclick="randomizeLook()">🎲 Собрать случайно</button>
+      <button class="btn-action" onclick="resetLook()">🔄 Сбросить лук</button>
+      <button class="btn-action" onclick="saveReceipt()">💾 Сохранить чек-лист</button>
+    </div>
+  </header>
+
+  <div class="stage-grid">
+    <section class="stage-card">
+      <nav class="category-tabs" id="categoryTabs"></nav>
+
+      <div class="stage-container">
+        <!-- ФУНКЦИЯ 5: ЗУМ -->
+        <div class="zoom-control">
+          <span class="zoom-label">ЗУМ</span>
+          <input type="range" id="zoomSlider" min="0.8" max="1.5" step="0.1" value="1">
+        </div>
+
+        <div class="stage" id="stage">
+          <!-- Высота кнопок подогнана под новые пропорции слоев -->
+          <div class="layer-controls" style="top: 10%;">
+            <button onclick="cycle('head', -1)">‹</button>
+            <button onclick="cycle('head', 1)">›</button>
+          </div>
+          <div class="layer-controls" style="top: 35%;">
+            <button onclick="cycle('top', -1)">‹</button>
+            <button onclick="cycle('top', 1)">›</button>
+          </div>
+          <div class="layer-controls" style="top: 70%;">
+            <button onclick="cycle('bottom', -1)">‹</button>
+            <button onclick="cycle('bottom', 1)">›</button>
+          </div>
+          <div class="layer-controls" style="top: 92%;">
+            <button onclick="cycle('shoes', -1)">‹</button>
+            <button onclick="cycle('shoes', 1)">›</button>
+          </div>
+
+          <div class="clothing-layers" id="clothingLayers">
+              <img id="layer-head" class="clothing-layer" src="" alt="Голова">
+              <img id="layer-top" class="clothing-layer" src="" alt="Верх">
+              <img id="layer-bottom" class="clothing-layer" src="" alt="Низ">
+              <img id="layer-shoes" class="clothing-layer" src="" alt="Обувь">
+          </div>
+        </div>
+      </div>
+
+      <p class="current-item" id="currentItem"></p>
+      <div class="thumb-strip" id="thumbStrip"></div>
+    </section>
+
+    <div>
+      <aside class="receipt-card">
+        <div class="receipt-head">СОСТАВ ОБРАЗА</div>
+        <ul class="receipt-lines" id="receiptLines"></ul>
+        <div class="total-line">
+          <span>ИТОГО:</span>
+          <span id="totalPrice">0 $</span>
+        </div>
+      </aside>
+
+      <aside class="admin-card">
+        <h3>РЕДАКТОР ТОВАРОВ</h3>
+        <p class="admin-desc">Редактируется сейчас: <strong id="editTargetName" style="color:var(--ink);">...</strong></p>
+        
+        <div class="admin-form">
+          <input type="text" id="editName" placeholder="Название вещи">
+          <input type="text" id="editUrl" placeholder="URL картинки (PNG/JPG)">
+          <input type="number" id="editPrice" placeholder="Цена ($)" min="0">
+          <select id="editCategory">
+            <option value="head">Голова</option>
+            <option value="top">Верх</option>
+            <option value="bottom">Низ</option>
+            <option value="shoes">Обувь</option>
+          </select>
+          
+          <div class="btn-group">
+            <button id="btnUpdate" class="btn-primary">Сохранить</button>
+            <button id="btnAdd" class="btn-secondary">Добавить новый</button>
+          </div>
+          <button id="btnDelete" class="btn-danger">Удалить товар</button>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {};
+
+const CATEGORIES = [
+  { key: 'head',   label: 'Голова' },
+  { key: 'top',    label: 'Верх' },
+  { key: 'bottom', label: 'Низ' },
+  { key: 'shoes',  label: 'Обувь' },
+];
+
+const DEFAULT_ITEMS = {
+  head: [
+    { id: 'h0', name: 'Без головного убора', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', price: 0 },
+    { id: 'h1', name: 'Кепка Qnex', image: 'https://i.pinimg.com/736x/3e/79/69/3e7969a4f204067b86e4cf37e1cd6e5e.jpg', price: 25 }
+  ],
+  top: [
+    { id: 't0', name: 'Без верха', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', price: 0 },
+    
+    { id: 't2', name: 'Худи Black', image: 'https://i.pinimg.com/736x/1d/7f/50/1d7f50b7dc055ca1684fdc2b4aa07102.jpg', price: 80 }
+  ],
+  bottom: [
+    { id: 'b0', name: 'Без низа', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', price: 0 },
+    { id: 'b1', name: 'Шорты Cargo', image: 'https://i.pinimg.com/1200x/9c/44/ae/9c44ae8c7cd9a6c63d1972ab29d9d029.jpg', price: 45 },
+    { id: 'b2', name: 'Джинсы Vintage', image: 'https://i.pinimg.com/736x/e6/11/c9/e611c9ae6515c8dcec8b863f7d1f95ce.jpg', price: 60 }
+  ],
+  shoes: [
+    { id: 's0', name: 'Без обуви', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', price: 0 },
+    { id: 's1', name: 'Кроссовки Runner', image: 'https://i.pinimg.com/1200x/13/64/45/136445669b6b2fa4688887a6ab41afcb.jpg', price: 120 },
+    { id: 's2', name: 'Кроссовки Retro', image: 'https://i.pinimg.com/1200x/2b/58/bf/2b58bf95c25ae9ae3e388553e8225aeb.jpg', price: 150 }
+  ]
+};
+
+let ITEMS = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
+let selected = { head: 0, top: 0, bottom: 0, shoes: 0 };
+let active = 'top';
+
+const $ = (sel) => document.querySelector(sel);
+let db;
+let useFirebase = false;
+
+if (firebaseConfig.apiKey) {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  useFirebase = true;
+}
+
+function syncData() {
+  if (useFirebase) db.ref('qnex_items_v2').set(ITEMS);
+  else localStorage.setItem('qnex_items_v2', JSON.stringify(ITEMS));
+}
+
+function loadData(cb) {
+  if (useFirebase) {
+    db.ref('qnex_items_v2').once('value').then(s => {
+      if(s.exists()) ITEMS = s.val(); 
+      else syncData(); 
+      cb();
+    });
+  } else {
+    const l = localStorage.getItem('qnex_items_v2');
+    if (l) ITEMS = JSON.parse(l);
+    cb();
+  }
+}
+
+function randomizeLook() {
+  CATEGORIES.forEach(c => {
+    let min = ITEMS[c.key].length > 1 ? 1 : 0; 
+    selected[c.key] = Math.floor(Math.random() * (ITEMS[c.key].length - min)) + min;
+  });
+  renderAll();
+}
+
+function resetLook() {
+  CATEGORIES.forEach(c => selected[c.key] = 0);
+  renderAll();
+}
+
+function saveReceipt() {
+  let text = "ВАШ ОБРАЗ QNEX:\n\n";
+  let total = 0;
+  CATEGORIES.forEach(c => {
+    const item = ITEMS[c.key][selected[c.key]];
+    if (item && item.price > 0) {
+      text += `${c.label}: ${item.name} - ${item.price}$\n`;
+      total += Number(item.price);
+    }
+  });
+  text += `\nИТОГО: ${total}$`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+  a.download = 'qnex_outfit.txt';
+  a.click();
+}
+
+$('#zoomSlider').addEventListener('input', (e) => {
+  $('#clothingLayers').style.transform = `scale(${e.target.value})`;
+});
+
+function renderAll() {
+  renderTabs(); renderThumbs(); renderStage(); renderReceipt(); updateEditForm();
+}
+
+function renderTabs() {
+  $('#categoryTabs').innerHTML = CATEGORIES.map(c =>
+    `<button class="tab-chip ${c.key === active ? 'active' : ''}" data-key="${c.key}">${c.label}</button>`
+  ).join('');
+  document.querySelectorAll('.tab-chip').forEach(btn => {
+    btn.addEventListener('click', () => { active = btn.dataset.key; renderAll(); });
+  });
+}
+
+function renderThumbs() {
+  $('#thumbStrip').innerHTML = ITEMS[active].map((item, i) =>
+    `<div class="thumb ${i === selected[active] ? 'selected' : ''}" data-i="${i}" style="background-image: url('${item.image}')" title="${item.name}"></div>`
+  ).join('');
+  document.querySelectorAll('.thumb').forEach(btn => {
+    btn.addEventListener('click', () => { selected[active] = Number(btn.dataset.i); renderAll(); });
+  });
+}
+
+function renderStage() {
+  CATEGORIES.forEach(c => {
+    const i = ITEMS[c.key][selected[c.key]];
+    if(i) $('#layer-' + c.key).src = i.image;
+  });
+  const cur = ITEMS[active][selected[active]];
+  if(cur) {
+    const lbl = CATEGORIES.find(c => c.key === active).label;
+    $('#currentItem').innerHTML = `ВЫБРАНО (${lbl.toUpperCase()}): <b>${cur.name}</b>`;
+  }
+}
+
+function renderReceipt() {
+  let total = 0;
+  $('#receiptLines').innerHTML = CATEGORIES.map(c => {
+    const i = ITEMS[c.key][selected[c.key]];
+    if (!i || i.name.includes('Без ')) return '';
+    total += Number(i.price || 0);
+    return `<li><span>${c.label}</span><span class="item-name">${i.name}</span><span class="item-price">${i.price || 0} $</span></li>`;
+  }).join('');
+  $('#totalPrice').innerText = `${total} $`;
+}
+
+function cycle(cat, dir) {
+  const l = ITEMS[cat];
+  selected[cat] = (selected[cat] + dir + l.length) % l.length;
+  renderAll();
+}
+
+function updateEditForm() {
+  const i = ITEMS[active][selected[active]];
+  if(!i) return;
+  $('#editName').value = i.name; $('#editUrl').value = i.image;
+  $('#editPrice').value = i.price || 0; $('#editCategory').value = active;
+  $('#editTargetName').innerText = i.name;
+  $('#btnDelete').style.display = ITEMS[active].length <= 1 ? 'none' : 'block';
+}
+
+$('#btnUpdate').addEventListener('click', () => {
+  const nc = $('#editCategory').value;
+  const i = ITEMS[active][selected[active]];
+  i.name = $('#editName').value || 'Без названия'; i.image = $('#editUrl').value; i.price = Number($('#editPrice').value) || 0;
+  if (nc !== active) {
+    ITEMS[active].splice(selected[active], 1); ITEMS[nc].push(i);
+    selected[active] = Math.max(0, selected[active] - 1);
+    active = nc; selected[nc] = ITEMS[nc].length - 1;
+  }
+  syncData(); renderAll();
+});
+
+$('#btnAdd').addEventListener('click', () => {
+  const cat = $('#editCategory').value, url = $('#editUrl').value.trim(), name = $('#editName').value.trim(), price = Number($('#editPrice').value) || 0;
+  if (!url || !name) return alert("Введите название и ссылку!");
+  ITEMS[cat].push({ id: 'c' + Date.now(), name, image: url, price });
+  active = cat; selected[cat] = ITEMS[cat].length - 1;
+  syncData(); renderAll();
+});
+
+$('#btnDelete').addEventListener('click', () => {
+  if (ITEMS[active].length <= 1 || !confirm('Точно удалить?')) return;
+  ITEMS[active].splice(selected[active], 1);
+  selected[active] = Math.max(0, selected[active] - 1);
+  syncData(); renderAll();
+});
+
+loadData(() => renderAll());
+</script>
+</body>
+</html>
