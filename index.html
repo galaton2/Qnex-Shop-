@@ -9,12 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Fonts -->
+    <!-- Fonts: Space Grotesk (display/UI) + Inter (body text) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Speed up first Firestore round-trip -->
-    <link rel="preconnect" href="https://firestore.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;900&display=swap" rel="stylesheet">
 
     <style>
         /* THEMES */
@@ -22,8 +20,6 @@
             --bg: #000000; --text: #ffffff; --border: #ffffff;
             --hover-bg: #ffffff; --hover-text: #000000;
             --gray-bg: #111111; --shimmer: rgba(255,255,255,0.08);
-            --font-display: 'Bebas Neue', 'Helvetica Neue', sans-serif;
-            --font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
         [data-theme="light"] {
             --bg: #ffffff; --text: #000000; --border: #000000;
@@ -35,9 +31,18 @@
         html { scroll-behavior: smooth; touch-action: manipulation; }
         body {
             background-color: var(--bg); color: var(--text);
-            font-family: var(--font-body);
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0; padding: 0; transition: background-color 0.4s, color 0.4s;
             touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Display/UI face — used on anything short, uppercase or letter-spaced */
+        .logo, h1, h2, h3, .hero-slogan, .nav-link, .action-btn, .shop-now-btn,
+        .cat-btn, .search-input, .product-title, .product-price, .buy-btn,
+        .modal-title, .modal-price, .modal-category, .drawer-item, .drawer-badge,
+        .about-founded, .marquee-content a, .delivery-strip-item, .no-results {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
 
         /* MARQUEE */
@@ -48,7 +53,7 @@
         .marquee-content { display: inline-block; animation: marquee 20s linear infinite; }
         .marquee-content a {
             color: var(--text); text-decoration: none; font-size: 14px;
-            margin: 0 30px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+            margin: 0 30px; letter-spacing: 2px; text-transform: uppercase;
         }
         .marquee-content i { margin-right: 8px; }
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
@@ -59,12 +64,12 @@
             padding: 20px 5%; border-bottom: 1px solid var(--border);
             position: sticky; top: 0; background: var(--bg); z-index: 100;
         }
-        .logo { font-family: var(--font-display); font-size: 30px; font-weight: 400; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; }
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer;}
         nav { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
         .nav-link, .action-btn {
             color: var(--text); text-decoration: none; font-size: 14px;
             font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-            background: none; border: none; cursor: pointer; transition: 0.3s; font-family: var(--font-body);
+            background: none; border: none; cursor: pointer; transition: 0.3s;
         }
         .nav-link:hover, .action-btn:hover, .nav-link.active { opacity: 0.5; }
 
@@ -85,18 +90,18 @@
             font-size: 13px; letter-spacing: 6px; text-transform: uppercase;
             opacity: 0.6; margin-bottom: 18px; font-weight: 700;
         }
-        .hero-banner h1 { font-family: var(--font-display); font-weight: 400; font-size: 58px; letter-spacing: 6px; margin-bottom: 20px; text-transform: uppercase; }
+        .hero-banner h1 { font-size: 48px; letter-spacing: 5px; margin-bottom: 20px; text-transform: uppercase; }
         .shop-now-btn {
             display: inline-block; padding: 15px 40px; background: var(--text); color: var(--bg);
             text-transform: uppercase; font-weight: bold; letter-spacing: 2px;
             text-decoration: none; transition: 0.3s; border: 1px solid var(--text); cursor: pointer;
-            margin-top: 10px; font-family: var(--font-body);
+            margin-top: 10px;
         }
         .shop-now-btn:hover { background: var(--bg); color: var(--text); }
 
         /* ABOUT US */
-        .about-section { text-align: center; max-width: 680px; margin: 0 auto 50px; padding: 0 20px; }
-        .about-section h2 { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; font-size: 28px; }
+        .about-section { text-align: center; max-width: 680px; margin: 0 auto 60px; padding: 0 20px; }
+        .about-section h2 { text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; font-size: 22px; }
         .about-section p { font-size: 15px; line-height: 1.8; opacity: 0.8; margin: 0; }
         .about-founded {
             display: inline-flex; align-items: center; gap: 10px; margin-top: 26px;
@@ -105,18 +110,22 @@
         }
         .flag-icon { font-size: 18px; line-height: 1; }
 
-        /* DELIVERY STRIP */
+        /* DELIVERY STRIP (horizontal divider with delivery info) */
         .delivery-strip {
-            display: flex; align-items: center; justify-content: center; gap: 34px;
-            flex-wrap: wrap; padding: 22px 20px; margin: 0 0 50px;
+            display: flex; align-items: center; justify-content: center; gap: 28px;
+            max-width: 680px; margin: 0 auto 60px; padding: 22px 20px;
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
         }
-        .delivery-item { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
-        .delivery-item i { font-size: 15px; opacity: 0.7; }
-        .delivery-sep { width: 1px; height: 20px; background: var(--border); opacity: 0.4; }
+        .delivery-strip-item {
+            display: flex; align-items: center; gap: 10px; font-size: 12px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600; opacity: 0.85;
+        }
+        .delivery-strip-item i { opacity: 0.6; font-size: 13px; }
+        .delivery-strip-sep { width: 1px; height: 18px; background: var(--border); opacity: 0.4; }
         @media (max-width: 600px) {
-            .delivery-strip { flex-direction: column; gap: 14px; }
-            .delivery-sep { width: 40px; height: 1px; }
+            .delivery-strip { flex-direction: column; gap: 16px; padding: 20px; }
+            .delivery-strip-sep { width: 60%; height: 1px; }
         }
 
         /* CATALOG VIEW */
@@ -127,16 +136,16 @@
         .search-input {
             width: 100%; padding: 15px 15px 15px 45px; font-size: 16px;
             background: var(--bg); color: var(--text); border: 1px solid var(--border);
-            text-transform: uppercase; letter-spacing: 1px; font-family: var(--font-body);
+            text-transform: uppercase; letter-spacing: 1px; font-family: inherit;
         }
         .search-input:focus { outline: none; border-color: var(--text); box-shadow: 0 0 10px rgba(255,255,255,0.1); }
 
-        .categories-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; min-height: 41px; }
+        .categories-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
         .categories-scroll::-webkit-scrollbar { display: none; }
         .cat-btn {
             white-space: nowrap; padding: 10px 25px; border: 1px solid var(--border);
             background: transparent; color: var(--text); text-transform: uppercase;
-            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 12px; font-family: var(--font-body);
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 12px;
         }
         .cat-btn.active, .cat-btn:hover { background: var(--text); color: var(--bg); }
 
@@ -159,7 +168,7 @@
         /* Async image loading state (shared: grid + gallery) */
         .img-wrap { position: relative; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .img-wrap.loading { background: linear-gradient(100deg, var(--gray-bg) 30%, var(--shimmer) 50%, var(--gray-bg) 70%); background-size: 200% 100%; animation: shimmer 1.3s ease-in-out infinite; }
-        .img-wrap img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.35s ease; display: block; }
+        .img-wrap img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.45s ease; display: block; }
         .img-wrap img.loaded { opacity: 1; }
         .img-wrap.no-image { background: var(--gray-bg); }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
@@ -172,14 +181,13 @@
         }
         .skel-btn { height: 40px; margin-top: auto; }
 
-        .product-title { font-size: 14px; font-weight: 700; margin: 10px 0; text-transform: uppercase; }
-        .product-price { font-size: 16px; margin-bottom: 15px; opacity: 0.8; font-weight: 600; }
+        .product-title { font-size: 14px; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
+        .product-price { font-size: 16px; margin-bottom: 15px; opacity: 0.8; }
 
         .buy-btn {
             background: var(--bg); border: 1px solid var(--border); color: var(--text);
             padding: 12px; cursor: pointer; text-transform: uppercase; font-weight: bold;
             letter-spacing: 2px; transition: 0.3s; margin-top: auto; width: 100%; font-size: 12px;
-            font-family: var(--font-body);
         }
         .buy-btn:hover { background: var(--text); color: var(--bg); }
         .no-results { grid-column: 1/-1; text-align: center; padding: 50px; opacity: 0.5; text-transform: uppercase; }
@@ -196,7 +204,7 @@
         .bottom-menu-btn:hover { transform: translateX(-50%) scale(1.06); }
         .bottom-menu-btn span { width: 22px; height: 2px; background: var(--bg); border-radius: 2px; }
 
-        /* DRAWER / BOTTOM SHEET (shared: menu drawer + buy sheet) */
+        /* DRAWER / BOTTOM SHEET */
         .drawer-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.55);
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
@@ -214,8 +222,7 @@
             width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px;
             margin-bottom: 12px; background: transparent; border: 1px solid var(--border);
             color: var(--text); text-transform: uppercase; letter-spacing: 1px;
-            font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; text-align: left;
-            font-family: var(--font-body); text-decoration: none; box-sizing: border-box;
+            font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; text-align: left; font-family: inherit;
         }
         .drawer-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
         .drawer-item:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -227,22 +234,8 @@
         }
         .drawer-close-text {
             display: block; margin: 8px auto 0; background: none; border: none; color: var(--text);
-            opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; cursor: pointer; font-family: var(--font-body);
+            opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; cursor: pointer; font-family: inherit;
         }
-
-        /* BUY SHEET extras */
-        .buy-sheet-title { text-align: center; font-size: 13px; opacity: 0.65; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        .buy-sheet-product { text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 20px; font-size: 15px; }
-        .buy-sheet-hint { text-align: center; font-size: 11px; opacity: 0.5; margin-top: 4px; }
-
-        /* TOAST */
-        .toast {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
-            background: var(--text); color: var(--bg); padding: 12px 22px; font-size: 12px; font-weight: 700;
-            letter-spacing: 1px; text-transform: uppercase; border-radius: 30px; opacity: 0; pointer-events: none;
-            transition: 0.3s; z-index: 400; white-space: nowrap; font-family: var(--font-body);
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* PRODUCT DETAIL MODAL */
         .modal-overlay {
@@ -278,25 +271,22 @@
         .dot.active { opacity: 1; width: 18px; border-radius: 3px; }
 
         .modal-info { padding: 10px 24px 26px; }
-        .modal-title { font-family: var(--font-display); font-weight: 400; font-size: 24px; text-transform: uppercase; margin: 6px 0 6px; letter-spacing: 1px; }
+        .modal-title { font-size: 19px; font-weight: bold; text-transform: uppercase; margin: 6px 0 6px; }
         .modal-category { font-size: 11px; opacity: 0.55; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
-        .modal-price { font-size: 18px; margin-bottom: 20px; opacity: 0.85; font-weight: 600; }
-
-        /* Desktop: real side-by-side product window */
-        @media (min-width: 760px) {
-            .modal-panel { max-width: 840px; display: flex; align-items: stretch; max-height: 640px; }
-            .modal-media { width: 52%; flex-shrink: 0; display: flex; flex-direction: column; }
-            .modal-media .gallery-scroll { flex: 1; }
-            .modal-media .gallery-slide { aspect-ratio: auto; height: 100%; }
-            .modal-info { width: 48%; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
-            .modal-title { font-size: 30px; }
+        .modal-price { font-size: 18px; margin-bottom: 18px; opacity: 0.85; }
+        .modal-buy-label { font-size: 11px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600; }
+        .modal-buy-actions { display: flex; gap: 10px; }
+        .buy-btn-social {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-decoration: none; font-size: 12px;
         }
+        .buy-btn-social i { font-size: 15px; }
 
         @media (max-width: 900px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 600px) {
             header { flex-direction: column; gap: 15px; padding: 15px; }
             nav { justify-content: center; width: 100%; gap: 15px; }
-            .hero-banner h1 { font-size: 40px; }
+            .hero-banner h1 { font-size: 32px; }
 
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card { padding: 10px; }
@@ -311,13 +301,13 @@
 <body>
 
     <div class="marquee-wrapper">
-        <div class="marquee-content" id="marquee-content">
-            <a href="https://t.me/qnexshop" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> <span data-i18n="join_tg">JOIN TELEGRAM</span></a>
-            <a href="https://instagram.com/qnexshop" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> <span data-i18n="join_ig">FOLLOW INSTAGRAM</span></a>
-            <a href="#" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> <span data-i18n="join_tt">WATCH TIKTOK</span></a>
-            <a href="https://t.me/qnexshop" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> <span data-i18n="join_tg">JOIN TELEGRAM</span></a>
-            <a href="https://instagram.com/qnexshop" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> <span data-i18n="join_ig">FOLLOW INSTAGRAM</span></a>
-            <a href="#" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> <span data-i18n="join_tt">WATCH TIKTOK</span></a>
+        <div class="marquee-content">
+            <a class="social-tg" href="#" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> <span data-i18n="join_tg">JOIN TELEGRAM</span></a>
+            <a class="social-ig" href="#" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> <span data-i18n="join_ig">FOLLOW INSTAGRAM</span></a>
+            <a class="social-tt" href="#" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> <span data-i18n="join_tt">WATCH TIKTOK</span></a>
+            <a class="social-tg" href="#" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> <span data-i18n="join_tg">JOIN TELEGRAM</span></a>
+            <a class="social-ig" href="#" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> <span data-i18n="join_ig">FOLLOW INSTAGRAM</span></a>
+            <a class="social-tt" href="#" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> <span data-i18n="join_tt">WATCH TIKTOK</span></a>
         </div>
     </div>
 
@@ -343,7 +333,8 @@
             <div class="about-section">
                 <h2 data-i18n="about_title">About Us</h2>
                 <p data-i18n="about_text">
-                    <strong>EST. 2021.</strong> Qnex is monochrome by design — minimal, considered, made to last.
+                    <strong>EST. 2021.</strong> Qnex Shop is a Tashkent-based label built around one idea:
+                    monochrome, minimal, made well.
                 </p>
                 <div class="about-founded">
                     <span class="flag-icon">🇺🇿</span>
@@ -352,18 +343,18 @@
             </div>
 
             <div class="delivery-strip">
-                <div class="delivery-item">
+                <div class="delivery-strip-item">
                     <i class="fas fa-truck"></i>
-                    <span data-i18n="delivery_line_uzb">Delivery across Uzbekistan: 1–7 days</span>
+                    <span data-i18n="delivery_uz">Delivery across Uzbekistan: 1–7 days</span>
                 </div>
-                <div class="delivery-sep"></div>
-                <div class="delivery-item">
+                <span class="delivery-strip-sep"></span>
+                <div class="delivery-strip-item">
                     <i class="fas fa-globe"></i>
-                    <span data-i18n="delivery_line_world">Worldwide delivery: 7–14 days</span>
+                    <span data-i18n="delivery_world">Worldwide delivery: 7–14 days</span>
                 </div>
             </div>
 
-            <h2 style="text-align: center; text-transform: uppercase; margin: 50px 0 30px 0; font-family: var(--font-display); font-weight: 400; font-size: 28px; letter-spacing: 2px;" data-i18n="new_arrivals">New Arrivals</h2>
+            <h2 style="text-align: center; text-transform: uppercase; margin: 50px 0 30px 0;" data-i18n="new_arrivals">New Arrivals</h2>
             <div class="products-grid" id="latest-products"></div>
         </section>
 
@@ -404,46 +395,37 @@
         </div>
     </div>
 
-    <!-- ================= BUY OPTIONS SHEET ================= -->
-    <div class="drawer-overlay" id="buy-overlay" onclick="if(event.target===this) closeBuySheet();">
-        <div class="drawer-panel">
-            <div class="drawer-handle"></div>
-            <div class="buy-sheet-title" data-i18n="buy_sheet_intro">Write to us to place your order</div>
-            <div class="buy-sheet-product" id="buy-sheet-product"></div>
-            <a class="drawer-item" id="buy-tg-btn" target="_blank" rel="noopener">
-                <i class="fab fa-telegram-plane"></i>
-                <span data-i18n="buy_via_tg">Message on Telegram</span>
-            </a>
-            <a class="drawer-item" id="buy-ig-btn" target="_blank" rel="noopener">
-                <i class="fab fa-instagram"></i>
-                <span data-i18n="buy_via_ig">Message on Instagram</span>
-            </a>
-            <div class="buy-sheet-hint" data-i18n="buy_sheet_hint">Order details copied — just paste them into the chat</div>
-            <button class="drawer-close-text" onclick="closeBuySheet()" data-i18n="drawer_close">Close</button>
-        </div>
-    </div>
-
     <!-- ================= PRODUCT DETAIL MODAL ================= -->
     <div class="modal-overlay" id="product-modal-overlay" onclick="if(event.target===this) closeProductDetail();">
         <div class="modal-panel">
             <button class="modal-close" onclick="closeProductDetail()" aria-label="Close">&times;</button>
-            <div class="modal-media">
-                <div class="gallery-scroll" id="gallery-scroll"></div>
-                <div class="gallery-dots" id="gallery-dots"></div>
-            </div>
+            <div class="gallery-scroll" id="gallery-scroll"></div>
+            <div class="gallery-dots" id="gallery-dots"></div>
             <div class="modal-info">
                 <div class="modal-category" id="modal-category"></div>
                 <div class="modal-title" id="modal-title"></div>
                 <div class="modal-price" id="modal-price"></div>
-                <button class="buy-btn" onclick="quickBuy(event)" id="modal-buy-btn"></button>
+                <div class="modal-buy-label" data-i18n="buy_label">Order via:</div>
+                <div class="modal-buy-actions">
+                    <a class="buy-btn buy-btn-social" id="modal-buy-ig" href="#" target="_blank" rel="noopener">
+                        <i class="fab fa-instagram"></i> <span data-i18n="buy_instagram">Instagram</span>
+                    </a>
+                    <a class="buy-btn buy-btn-social" id="modal-buy-tg" href="#" target="_blank" rel="noopener">
+                        <i class="fab fa-telegram-plane"></i> <span data-i18n="buy_telegram">Telegram</span>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= TOAST ================= -->
-    <div class="toast" id="toast"></div>
-
     <script>
+        // --- SOCIAL LINKS (edit these to your real accounts) ---
+        const SOCIAL_LINKS = {
+            instagram: 'https://instagram.com/qnexshop',
+            telegram: 'https://t.me/qnexshop',
+            tiktok: 'https://tiktok.com/@qnexshop'
+        };
+
         // --- TRANSLATIONS ---
         const translations = {
             en: {
@@ -452,22 +434,17 @@
                 hero_title: "Build Your Wish",
                 btn_shop_now: "Shop Now", new_arrivals: "New Arrivals",
                 about_title: "About Us",
-                about_text: "<strong>EST. 2021.</strong> Qnex is monochrome by design — minimal, considered, made to last.",
+                about_text: "<strong>EST. 2021.</strong> Qnex Shop is a Tashkent-based label built around one idea: monochrome, minimal, made well.",
                 about_founded: "Founded in Uzbekistan",
-                delivery_line_uzb: "Delivery across Uzbekistan: 1–7 days",
-                delivery_line_world: "Worldwide delivery: 7–14 days",
                 search_ph: "Search products...",
-                cat_all: "All",
+                cat_all: "All", cat_hoodie: "Hoodies", cat_tshirt: "T-Shirts", cat_pants: "Pants", cat_accs: "Accessories",
                 buy_btn: "BUY NOW", no_results: "No products found.",
-                buy_sheet_intro: "Write to us to place your order",
-                buy_via_tg: "Message on Telegram",
-                buy_via_ig: "Message on Instagram",
-                buy_sheet_hint: "Order details copied — just paste them into the chat",
-                order_prefix: "Order",
-                copied_toast: "Copied to clipboard",
+                buy_label: "Order via:", buy_instagram: "Instagram", buy_telegram: "Telegram",
+                delivery_uz: "Delivery across Uzbekistan: 1–7 days",
+                delivery_world: "Worldwide delivery: 7–14 days",
                 drawer_delivery: "Delivery", drawer_outfit: "Create Your Own Outfit",
                 drawer_badge: "(coming soon)", drawer_close: "Close",
-                delivery_alert: "We deliver across Uzbekistan in 1–7 days and worldwide in 7–14 days. Contact us on social media for details!",
+                delivery_alert: "We deliver across Uzbekistan and worldwide. Contact us on social media for details!",
                 untitled: "Untitled"
             },
             ru: {
@@ -476,31 +453,24 @@
                 hero_title: "Build Your Wish",
                 btn_shop_now: "В Каталог", new_arrivals: "Новинки",
                 about_title: "О нас",
-                about_text: "<strong>ОСНОВАН В 2021.</strong> Qnex — монохромный по замыслу: минимализм, продуманность, вещи надолго.",
+                about_text: "<strong>ОСНОВАН В 2021.</strong> Qnex Shop — бренд из Ташкента. Монохром, минимализм и внимание к качеству в каждой вещи.",
                 about_founded: "Основан в Узбекистане",
-                delivery_line_uzb: "Доставка по Узбекистану: 1–7 дней",
-                delivery_line_world: "Доставка по всему миру: 7–14 дней",
                 search_ph: "Поиск товаров...",
-                cat_all: "Все",
+                cat_all: "Все", cat_hoodie: "Худи", cat_tshirt: "Футболки", cat_pants: "Штаны", cat_accs: "Аксессуары",
                 buy_btn: "КУПИТЬ", no_results: "Товары не найдены.",
-                buy_sheet_intro: "Напишите нам, чтобы оформить заказ",
-                buy_via_tg: "Написать в Telegram",
-                buy_via_ig: "Написать в Instagram",
-                buy_sheet_hint: "Данные заказа скопированы — просто вставьте их в чат",
-                order_prefix: "Заказ",
-                copied_toast: "Скопировано",
+                buy_label: "Оформить заказ через:", buy_instagram: "Instagram", buy_telegram: "Telegram",
+                delivery_uz: "Доставка по Узбекистану: 1–7 дней",
+                delivery_world: "Доставка по всему миру: 7–14 дней",
                 drawer_delivery: "Доставка", drawer_outfit: "Создать собственный аутфит",
                 drawer_badge: "(пока в разработке)", drawer_close: "Закрыть",
-                delivery_alert: "Мы доставляем по всему Узбекистану за 1–7 дней и по миру за 7–14 дней. Свяжитесь с нами в социальных сетях для деталей!",
+                delivery_alert: "Мы доставляем по всему Узбекистану и миру. Свяжитесь с нами в социальных сетях для деталей!",
                 untitled: "Без названия"
             }
         };
 
-        // --- SOCIAL LINKS (used by marquee + buy sheet) ---
-        const SOCIAL_LINKS = {
-            telegram: 'https://t.me/qnexshop',
-            instagram: 'https://instagram.com/qnexshop'
-        };
+        document.querySelectorAll('.social-tg').forEach(a => a.href = SOCIAL_LINKS.telegram);
+        document.querySelectorAll('.social-ig').forEach(a => a.href = SOCIAL_LINKS.instagram);
+        document.querySelectorAll('.social-tt').forEach(a => a.href = SOCIAL_LINKS.tiktok);
 
         let currentLang = localStorage.getItem('lang') || 'en';
         document.getElementById('lang-btn').innerText = currentLang === 'en' ? 'RU' : 'EN';
@@ -514,8 +484,6 @@
                 const key = el.getAttribute('data-i18n-placeholder');
                 if (translations[currentLang][key]) el.placeholder = translations[currentLang][key];
             });
-            const modalBuyBtn = document.getElementById('modal-buy-btn');
-            if (modalBuyBtn) modalBuyBtn.innerText = translations[currentLang].buy_btn;
         }
 
         function toggleLang() {
@@ -555,9 +523,6 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        // Offline persistence (IndexedDB) = instant reloads + far larger capacity than localStorage,
-        // which is what was silently failing before with image-heavy products.
-        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
 
         // --- VISITS TRACKER ---
         const todayStr = new Date().toISOString().split('T')[0];
@@ -570,6 +535,20 @@
         // --- HELPERS ---
         function escapeHtml(str) {
             return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // --- LOCAL CACHE (instant re-render, no refetch flash) ---
+        const CACHE_KEY = 'qnex_products_cache_v1';
+        function loadProductsCache() {
+            try {
+                const raw = localStorage.getItem(CACHE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) { console.warn('Cache read failed', e); }
+            return null;
+        }
+        function saveProductsCache(products) {
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify(products)); }
+            catch (e) { console.warn('Cache write failed (quota?)', e); }
         }
 
         // --- IMAGE LOAD CACHE (skip skeleton/spinner for already-seen images) ---
@@ -585,20 +564,49 @@
             if (!url) return `<div class="img-wrap no-image"><span style="font-size:56px;">📦</span></div>`;
             const isCached = imageLoadedCache.has(url);
             const safeUrl = url.replace(/'/g, "\\'");
-            const priorityAttr = loadingAttr === 'eager' ? ' fetchpriority="high"' : '';
             return `<div class="img-wrap${isCached ? '' : ' loading'}">
-                <img src="${url}" loading="${loadingAttr}" decoding="async"${priorityAttr} class="${isCached ? 'loaded' : ''}" onload="handleImgLoad(this,'${safeUrl}')" alt="">
+                <img src="${url}" loading="${loadingAttr}" decoding="async" class="${isCached ? 'loaded' : ''}" onload="handleImgLoad(this,'${safeUrl}')" alt="">
             </div>`;
         }
 
         // --- DATA STATE ---
-        let allProducts = [];
+        let allProducts = [];      // full catalog (Catalog view)
+        let latestProducts = [];   // small, fast-loading set (Home "New Arrivals")
         let dataLoaded = false;
+        let latestLoaded = false;
         let activeCategory = 'all';
         let searchQuery = '';
 
-        // --- CATEGORIES (mirrors admin panel: built-ins + custom Firestore categories) ---
-        let allCategories = [];
+        const cached = loadProductsCache();
+        if (cached && cached.length) {
+            allProducts = cached;
+            dataLoaded = true;
+        }
+        renderLatest();
+        renderCatalog();
+
+        // Fast, small query just for the Home page — so "New Arrivals" renders
+        // immediately instead of waiting on the whole catalog (with all photos) to download.
+        db.collection("products").orderBy("createdAt", "desc").limit(8).onSnapshot((snapshot) => {
+            const fresh = [];
+            snapshot.forEach((doc) => { fresh.push({ id: doc.id, ...doc.data() }); });
+            latestProducts = fresh;
+            latestLoaded = true;
+            renderLatest();
+        });
+
+        // Full catalog query — powers the Catalog view/search/categories.
+        db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+            const fresh = [];
+            snapshot.forEach((doc) => { fresh.push({ id: doc.id, ...doc.data() }); });
+            allProducts = fresh;
+            dataLoaded = true;
+            saveProductsCache(fresh);
+            renderCatalog();
+            if (!latestLoaded) renderLatest();
+        });
+
+        // --- CATEGORIES (synced with the same Firestore "categories" collection as Admin) ---
         const DEFAULT_CATEGORIES = [
             { key: 'hoodie', ru: 'Худи', en: 'Hoodies' },
             { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts' },
@@ -606,21 +614,18 @@
             { key: 'accessories', ru: 'Аксессуары', en: 'Accessories' },
             { key: 'other', ru: 'Другое', en: 'Other' }
         ];
-        function getAllCategories() {
-            return [...DEFAULT_CATEGORIES, ...allCategories];
-        }
+        let customCategories = [];
+        function getAllCategories() { return [...DEFAULT_CATEGORIES, ...customCategories]; }
+
         function renderCategoryButtons() {
             const scroll = document.getElementById('categories-scroll');
             const cats = getAllCategories();
             let html = `<button class="cat-btn${activeCategory === 'all' ? ' active' : ''}" data-cat="all">${escapeHtml(translations[currentLang].cat_all)}</button>`;
-            html += cats.map(c => {
-                const label = currentLang === 'ru' ? c.ru : c.en;
-                return `<button class="cat-btn${activeCategory === c.key ? ' active' : ''}" data-cat="${c.key}">${escapeHtml(label)}</button>`;
-            }).join('');
+            html += cats.map(c => `<button class="cat-btn${activeCategory === c.key ? ' active' : ''}" data-cat="${c.key}">${escapeHtml(currentLang === 'ru' ? c.ru : c.en)}</button>`).join('');
             scroll.innerHTML = html;
         }
-        // Event delegation: categories are rendered dynamically, so a single listener
-        // on the scroll container (not per-button) keeps clicks working after re-renders.
+        renderCategoryButtons();
+
         document.getElementById('categories-scroll').addEventListener('click', (e) => {
             const btn = e.target.closest('.cat-btn');
             if (!btn) return;
@@ -628,23 +633,11 @@
             renderCategoryButtons();
             renderCatalog();
         });
+
         db.collection("categories").orderBy("createdAt", "asc").onSnapshot((snapshot) => {
-            allCategories = [];
-            snapshot.forEach(doc => allCategories.push({ id: doc.id, ...doc.data() }));
+            customCategories = [];
+            snapshot.forEach((doc) => { customCategories.push({ id: doc.id, ...doc.data() }); });
             renderCategoryButtons();
-        });
-
-        renderCategoryButtons();
-        renderLatest();
-        renderCatalog();
-
-        db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-            const fresh = [];
-            snapshot.forEach((doc) => { fresh.push({ id: doc.id, ...doc.data() }); });
-            allProducts = fresh;
-            dataLoaded = true;
-            renderLatest();
-            renderCatalog();
         });
 
         // --- SKELETON LOADER ---
@@ -662,16 +655,15 @@
             container.innerHTML = html;
         }
 
-        // --- RENDER CARDS (grid: only first image, lazy — first row loads eagerly) ---
-        function createCardHTML(product, index) {
+        // --- RENDER CARDS (grid: only first image, lazy) ---
+        function createCardHTML(product) {
             const titleStr = escapeHtml(product.title || translations[currentLang].untitled);
             const priceStr = escapeHtml(product.price || '0');
             const firstImg = (product.images && product.images.length > 0) ? product.images[0] : (product.img || null);
-            const loadMode = index < 4 ? 'eager' : 'lazy';
 
             return `
                 <div class="product-card" onclick="openProductDetail('${product.id}')">
-                    <div class="product-img">${createImgBlock(firstImg, loadMode)}</div>
+                    <div class="product-img">${createImgBlock(firstImg, 'lazy')}</div>
                     <div class="product-title">${titleStr}</div>
                     <div class="product-price">$ ${priceStr}</div>
                     <button class="buy-btn" onclick="quickBuy(event, '${product.id}')">${translations[currentLang].buy_btn}</button>
@@ -679,11 +671,19 @@
             `;
         }
 
+        function quickBuy(e, id) {
+            if (e) e.stopPropagation();
+            openProductDetail(id);
+        }
+
         function renderLatest() {
             const container = document.getElementById('latest-products');
-            if (!dataLoaded) { renderSkeletonGrid(container, 4); return; }
-            if (allProducts.length === 0) { container.innerHTML = `<div class="no-results">${translations[currentLang].no_results}</div>`; return; }
-            container.innerHTML = allProducts.slice(0, 4).map((p, i) => createCardHTML(p, i)).join('');
+            let source = null;
+            if (latestLoaded) source = latestProducts;
+            else if (dataLoaded) source = allProducts;
+            if (!source) { renderSkeletonGrid(container, 4); return; }
+            if (source.length === 0) { container.innerHTML = `<div class="no-results">${translations[currentLang].no_results}</div>`; return; }
+            container.innerHTML = source.slice(0, 4).map(createCardHTML).join('');
         }
 
         function renderCatalog() {
@@ -702,7 +702,7 @@
                 container.innerHTML = `<div class="no-results">${translations[currentLang].no_results}</div>`;
                 return;
             }
-            container.innerHTML = filtered.map((p, i) => createCardHTML(p, i)).join('');
+            container.innerHTML = filtered.map(createCardHTML).join('');
         }
 
         // --- SEARCH ---
@@ -712,12 +712,12 @@
         });
 
         // --- PRODUCT DETAIL MODAL (data comes from in-memory/cache, no refetch) ---
-        let currentModalProduct = null;
-
+        function findProduct(id) {
+            return allProducts.find(p => p.id === id) || latestProducts.find(p => p.id === id);
+        }
         function openProductDetail(id) {
-            const product = allProducts.find(p => p.id === id);
+            const product = findProduct(id);
             if (!product) return;
-            currentModalProduct = product;
 
             const images = (product.images && product.images.length > 0)
                 ? product.images
@@ -742,25 +742,22 @@
                 galleryDots.innerHTML = '';
             }
 
-            document.getElementById('modal-category').innerText = catLabel(product.category);
+            document.getElementById('modal-category').innerText = product.category || '';
             document.getElementById('modal-title').innerText = product.title || translations[currentLang].untitled;
             document.getElementById('modal-price').innerText = `$ ${product.price || '0'}`;
-            document.getElementById('modal-buy-btn').innerText = translations[currentLang].buy_btn;
+
+            const productLabel = encodeURIComponent(product.title || translations[currentLang].untitled);
+            document.getElementById('modal-buy-ig').href = SOCIAL_LINKS.instagram;
+            document.getElementById('modal-buy-tg').href = `${SOCIAL_LINKS.telegram}?text=${productLabel}`;
 
             galleryScroll.scrollLeft = 0;
             document.getElementById('product-modal-overlay').classList.add('open');
-            updateBodyScrollLock();
-        }
-
-        function catLabel(cat) {
-            const found = getAllCategories().find(c => c.key === cat);
-            if (!found) return cat || '';
-            return currentLang === 'ru' ? found.ru : found.en;
+            document.body.style.overflow = 'hidden';
         }
 
         function closeProductDetail() {
             document.getElementById('product-modal-overlay').classList.remove('open');
-            updateBodyScrollLock();
+            document.body.style.overflow = document.getElementById('drawer-overlay').classList.contains('open') ? 'hidden' : '';
         }
 
         // Sync dots with swipe/scroll position (no arrow buttons — swipe only)
@@ -773,69 +770,16 @@
         });
 
         // --- BOTTOM SHEET / DRAWER ---
-        function updateBodyScrollLock() {
-            const anyOpen = ['product-modal-overlay', 'drawer-overlay', 'buy-overlay']
-                .some(id => document.getElementById(id).classList.contains('open'));
-            document.body.style.overflow = anyOpen ? 'hidden' : '';
-        }
         function openDrawer() {
             document.getElementById('drawer-overlay').classList.add('open');
-            updateBodyScrollLock();
+            document.body.style.overflow = 'hidden';
         }
         function closeDrawer() {
             document.getElementById('drawer-overlay').classList.remove('open');
-            updateBodyScrollLock();
+            document.body.style.overflow = document.getElementById('product-modal-overlay').classList.contains('open') ? 'hidden' : '';
         }
         function handleDelivery() {
             alert(translations[currentLang].delivery_alert);
-        }
-
-        // --- BUY SHEET (write to us on Telegram / Instagram) ---
-        let pendingBuyProduct = null;
-
-        function quickBuy(e, productId) {
-            if (e) e.stopPropagation();
-            const product = productId ? allProducts.find(p => p.id === productId) : currentModalProduct;
-            openBuySheet(product);
-        }
-
-        function openBuySheet(product) {
-            pendingBuyProduct = product || null;
-            const title = pendingBuyProduct ? (pendingBuyProduct.title || translations[currentLang].untitled) : '';
-            document.getElementById('buy-sheet-product').innerText = title ? `"${title}"` : '';
-
-            const tgBtn = document.getElementById('buy-tg-btn');
-            const igBtn = document.getElementById('buy-ig-btn');
-            tgBtn.href = SOCIAL_LINKS.telegram;
-            igBtn.href = SOCIAL_LINKS.instagram;
-            tgBtn.onclick = copyOrderInfo;
-            igBtn.onclick = copyOrderInfo;
-
-            document.getElementById('buy-overlay').classList.add('open');
-            updateBodyScrollLock();
-        }
-        function closeBuySheet() {
-            document.getElementById('buy-overlay').classList.remove('open');
-            updateBodyScrollLock();
-        }
-        function copyOrderInfo() {
-            if (!pendingBuyProduct) return;
-            const text = `${translations[currentLang].order_prefix}: ${pendingBuyProduct.title || ''} — $${pendingBuyProduct.price || '0'}`;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text)
-                    .then(() => showToast(translations[currentLang].copied_toast))
-                    .catch(() => {});
-            }
-        }
-
-        // --- TOAST ---
-        let toastTimer;
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
         }
 
         // ESC closes any open overlay
@@ -843,7 +787,6 @@
             if (e.key === 'Escape') {
                 closeProductDetail();
                 closeDrawer();
-                closeBuySheet();
             }
         });
 
