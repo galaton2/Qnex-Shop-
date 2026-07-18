@@ -6,16 +6,16 @@
 <title>Конструктор луков — Qnex Style</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
 <style>
   :root {
-    --bg: #f4f5f7; 
+    --bg: #ffffff; 
     --bg-panel: #ffffff;
     --ink: #111111;
     --ink-soft: #888888;
-    --line: #e2e4e8; 
+    --line: #ebebeb; 
     --danger: #ff4757;
     --accent: #2f3542;
     
@@ -91,7 +91,7 @@
     border-radius: 24px;
     padding: 32px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.04); 
-    border: 1px solid rgba(255,255,255,0.5);
+    border: 1px solid var(--line);
   }
 
   /* ЗОНА МАНЕКЕНА */
@@ -101,15 +101,12 @@
     display: flex; align-items: center; justify-content: center;
     min-height: 900px; height: 75vh; max-height: 950px; 
     position: relative;
-    background-color: #fafafa;
-    /* Сетка на фоне для стиля "конструктора" */
-    background-image: radial-gradient(var(--line) 2px, transparent 2px);
-    background-size: 24px 24px;
+    background-color: #ffffff;
+    border: 1px solid var(--line);
     border-radius: 16px; 
     margin-bottom: 24px;
     padding: 20px; 
     overflow: hidden;
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.02);
   }
 
   /* СТРЕЛКИ УПРАВЛЕНИЯ */
@@ -199,6 +196,25 @@
   .btn-danger { background: rgba(255, 71, 87, 0.05); color: var(--danger); border: 1px dashed var(--danger) !important; margin-top: 8px; }
   .btn-danger:hover { background: var(--danger); color: #fff; border-style: solid !important;}
 
+  /* ПАНЕЛЬ "ВАШ ОБРАЗ" */
+  .look-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .look-row { display: flex; align-items: center; gap: 14px; padding: 10px; background: #f8f9fa; border-radius: 12px; }
+  .look-thumb { width: 46px; height: 46px; border-radius: 10px; background-size: cover; background-position: center; background-color: #fff; border: 1px solid var(--line); flex-shrink: 0; }
+  .look-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .look-name { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .look-price { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+  .look-empty { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); text-align: center; padding: 20px 0; margin: 0; }
+  .look-total { font-family: var(--font-mono); font-weight: 700; font-size: 18px; text-align: right; margin-bottom: 20px; color: var(--ink); min-height: 24px; }
+  .btn-order {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px; border: none; border-radius: 12px; cursor: pointer;
+    font-family: var(--font-mono); font-weight: bold; font-size: 13px; text-transform: uppercase;
+    text-decoration: none; background: var(--ink); color: #fff; transition: all 0.2s;
+  }
+  .btn-order:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+  .btn-order.disabled { opacity: 0.4; pointer-events: none; }
+  .catalog-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); text-align: center; margin-top: 16px; line-height: 1.6; }
+
 
   /* АДАПТИВ */
   @media (max-width: 992px) {
@@ -273,109 +289,131 @@
     </section>
 
     <aside class="admin-card">
-      <h3>РЕДАКТОР</h3>
-      <p class="admin-desc">Выбрано: <strong id="editTargetName" style="color:var(--ink);">...</strong></p>
-      
-      <div class="admin-form">
-        <input type="text" id="editName" placeholder="Название вещи">
-        <input type="text" id="editUrl" placeholder="URL картинки (PNG/JPG)">
-        <select id="editCategory">
-          <option value="head">Голова</option>
-          <option value="top">Верх</option>
-          <option value="bottom">Низ</option>
-          <option value="shoes">Обувь</option>
-        </select>
-        
-        <div class="btn-group">
-          <button id="btnUpdate" class="btn-primary">Сохранить</button>
-          <button id="btnAdd" class="btn-secondary">Новый товар</button>
-        </div>
-        <button id="btnDelete" class="btn-danger">Удалить товар</button>
-      </div>
+      <h3>ВАШ ОБРАЗ</h3>
+      <p class="admin-desc" id="loadStatus">Загрузка каталога…</p>
+
+      <div class="look-list" id="lookList"></div>
+      <div class="look-total" id="lookTotal"></div>
+      <a class="btn-order disabled" id="btnOrder" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Заказать образ в Telegram
+      </a>
+      <p class="catalog-note">Все товары берутся напрямую из каталога Qnex Shop в реальном времени.</p>
     </aside>
 
   </div>
 </div>
 
 <script>
-const firebaseConfig = {};
+// ================= FIREBASE (та же база, что и у каталога Qnex Shop) =================
+const firebaseConfig = {
+  apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
+  authDomain: "gifts-d8f30.firebaseapp.com",
+  projectId: "gifts-d8f30"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
+// ================= ССЫЛКА ДЛЯ ЗАКАЗА — тот же телеграм, что в каталоге =================
+const TELEGRAM_USERNAME = 'qnex_shop';
+
+// ================= СЛОТЫ МАНЕКЕНА =================
 const CATEGORIES = [
   { key: 'head',   label: 'Голова' },
   { key: 'top',    label: 'Верх' },
   { key: 'bottom', label: 'Низ' },
   { key: 'shoes',  label: 'Обувь' },
 ];
+const NONE_IMG = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+const EMPTY_ITEMS = () => ({
+  head:   [{ id: 'h0', name: 'Без головного убора', image: NONE_IMG }],
+  top:    [{ id: 't0', name: 'Без верха',            image: NONE_IMG }],
+  bottom: [{ id: 'b0', name: 'Без низа',              image: NONE_IMG }],
+  shoes:  [{ id: 's0', name: 'Без обуви',             image: NONE_IMG }]
+});
 
-const DEFAULT_ITEMS = {
-  head: [
-    { id: 'h0', name: 'Без головного убора', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' },
-    { id: 'h1', name: 'Кепка Qnex', image: 'https://i.pinimg.com/736x/3e/79/69/3e7969a4f204067b86e4cf37e1cd6e5e.jpg' }
-  ],
-  top: [
-    { id: 't0', name: 'Без верха', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' },
-    { id: 't2', name: 'Худи Black', image: 'https://i.pinimg.com/736x/1d/7f/50/1d7f50b7dc055ca1684fdc2b4aa07102.jpg' }
-  ],
-  bottom: [
-    { id: 'b0', name: 'Без низа', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' },
-    { id: 'b1', name: 'Шорты Cargo', image: 'https://i.pinimg.com/1200x/9c/44/ae/9c44ae8c7cd9a6c63d1972ab29d9d029.jpg' },
-    { id: 'b2', name: 'Джинсы Vintage', image: 'https://i.pinimg.com/736x/e6/11/c9/e611c9ae6515c8dcec8b863f7d1f95ce.jpg' }
-  ],
-  shoes: [
-    { id: 's0', name: 'Без обуви', image: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' },
-    { id: 's1', name: 'Кроссовки Runner', image: 'https://i.pinimg.com/1200x/13/64/45/136445669b6b2fa4688887a6ab41afcb.jpg' },
-    { id: 's2', name: 'Кроссовки Retro', image: 'https://i.pinimg.com/1200x/2b/58/bf/2b58bf95c25ae9ae3e388553e8225aeb.jpg' }
-  ]
+// Категории каталога по умолчанию (совпадают с index.html) — нужны, чтобы читать русские/английские названия кастомных категорий
+const DEFAULT_CATALOG_CATEGORIES = [
+  { key: 'hoodie', ru: 'Худи', en: 'Hoodies' },
+  { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts' },
+  { key: 'pants', ru: 'Штаны', en: 'Pants' },
+  { key: 'accessories', ru: 'Аксессуары', en: 'Accessories' },
+  { key: 'other', ru: 'Другое', en: 'Other' }
+];
+let customCatalogCategories = [];
+function getAllCatalogCategories() { return [...DEFAULT_CATALOG_CATEGORIES, ...customCatalogCategories]; }
+
+// ============================================================================
+// КАРТА "категория каталога -> слот манекена" по ключевым словам.
+// Если в каталоге появится новая категория, допишите нужные слова сюда.
+// ============================================================================
+const SLOT_KEYWORDS = {
+  head:   ['аксессуар', 'accessor', 'кепк', 'шапк', 'панам', 'hat', 'cap', 'убор'],
+  shoes:  ['обув', 'shoe', 'кроссов', 'sneaker', 'ботин', 'boot', 'туфл'],
+  bottom: ['штан', 'pant', 'джинс', 'jean', 'шорт', 'short', 'брюк', 'юбк', 'skirt'],
+  top:    ['худи', 'hoodie', 'футбол', 't-shirt', 'рубаш', 'shirt', 'куртк', 'jacket', 'свитш', 'sweat', 'верх']
 };
+function detectSlot(categoryKey) {
+  const cat = getAllCatalogCategories().find(c => c.key === categoryKey);
+  const haystack = [categoryKey || '', cat ? cat.ru : '', cat ? cat.en : ''].join(' ').toLowerCase();
+  for (const slot of Object.keys(SLOT_KEYWORDS)) {
+    if (SLOT_KEYWORDS[slot].some(kw => haystack.includes(kw))) return slot;
+  }
+  return 'top'; // товары без явного совпадения попадают в "Верх"
+}
 
-let ITEMS = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
-let selected = { head: 1, top: 1, bottom: 1, shoes: 1 };
-let active = 'top'; 
+let ITEMS = EMPTY_ITEMS();
+let selected = { head: 0, top: 0, bottom: 0, shoes: 0 };
+let active = 'top';
+let dataLoaded = false;
+let latestProducts = [];
 
 const $ = (sel) => document.querySelector(sel);
-let db;
-let useFirebase = false;
 
-if (firebaseConfig.apiKey) {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  useFirebase = true;
+// --- ЛОКАЛЬНЫЙ КЭШ (тот же ключ, что в каталоге — для мгновенной загрузки) ---
+const CACHE_KEY = 'qnex_products_cache_v1';
+function loadProductsCache() {
+  try { const raw = localStorage.getItem(CACHE_KEY); if (raw) return JSON.parse(raw); }
+  catch (e) { console.warn('Cache read failed', e); }
+  return null;
 }
 
-function syncData() {
-  if (useFirebase) db.ref('qnex_items_v3').set(ITEMS);
-  else localStorage.setItem('qnex_items_v3', JSON.stringify(ITEMS));
+function rebuildItemsFromProducts(products) {
+  const base = EMPTY_ITEMS();
+  products.forEach(p => {
+    const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || null);
+    if (!img) return;
+    const slot = detectSlot(p.category);
+    base[slot].push({ id: p.id, name: p.title || 'Без названия', image: img, price: p.price || '0' });
+  });
+  ITEMS = base;
+  Object.keys(selected).forEach(k => { if (selected[k] >= ITEMS[k].length) selected[k] = 0; });
 }
 
-function loadData(cb) {
-  if (useFirebase) {
-    db.ref('qnex_items_v3').once('value').then(s => {
-      if(s.exists()) ITEMS = s.val(); 
-      else syncData(); 
-      cb();
-    });
-  } else {
-    const l = localStorage.getItem('qnex_items_v3');
-    if (l) ITEMS = JSON.parse(l);
-    cb();
-  }
+function tryRebuild() {
+  rebuildItemsFromProducts(latestProducts);
+  renderAll();
 }
 
 function randomizeLook() {
   CATEGORIES.forEach(c => {
-    let min = ITEMS[c.key].length > 1 ? 1 : 0; 
+    let min = ITEMS[c.key].length > 1 ? 1 : 0;
     selected[c.key] = Math.floor(Math.random() * (ITEMS[c.key].length - min)) + min;
   });
   renderAll();
 }
 
 function renderAll() {
-  renderThumbs(); 
-  renderStage(); 
-  updateEditForm();
+  renderThumbs();
+  renderStage();
+  renderLookPanel();
 }
 
 function renderThumbs() {
+  if (!dataLoaded) {
+    $('#thumbStrip').innerHTML = `<span style="font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);">Загрузка товаров из каталога…</span>`;
+    return;
+  }
   $('#thumbStrip').innerHTML = ITEMS[active].map((item, i) =>
     `<div class="thumb ${i === selected[active] ? 'selected' : ''}" data-i="${i}" style="background-image: url('${item.image}')" title="${item.name}"></div>`
   ).join('');
@@ -388,68 +426,96 @@ function renderStage() {
   CATEGORIES.forEach(c => {
     const i = ITEMS[c.key][selected[c.key]];
     const imgEl = $('#layer-' + c.key);
-    
-    // Если картинка изменилась — обновляем и запускаем анимацию
-    if(i && imgEl.src !== i.image) {
+
+    if (i && imgEl.src !== i.image) {
       imgEl.src = i.image;
-      
       imgEl.classList.remove('animate-pop');
-      void imgEl.offsetWidth; // Триггер для перезапуска анимации
+      void imgEl.offsetWidth;
       imgEl.classList.add('animate-pop');
     }
   });
 
   const cur = ITEMS[active][selected[active]];
-  if(cur) {
+  if (cur) {
     const lbl = CATEGORIES.find(c => c.key === active).label;
-    $('#currentItem').innerHTML = `РЕДАКТИРУЕТСЯ (${lbl.toUpperCase()}): <b>${cur.name}</b>`;
+    $('#currentItem').innerHTML = `${lbl.toUpperCase()}: <b>${cur.name}</b>`;
   }
 }
 
 function cycle(cat, dir) {
   const l = ITEMS[cat];
   selected[cat] = (selected[cat] + dir + l.length) % l.length;
-  active = cat; 
+  active = cat;
   renderAll();
 }
 
-function updateEditForm() {
-  const i = ITEMS[active][selected[active]];
-  if(!i) return;
-  $('#editName').value = i.name; $('#editUrl').value = i.image;
-  $('#editCategory').value = active;
-  $('#editTargetName').innerText = i.name;
-  $('#btnDelete').style.display = ITEMS[active].length <= 1 ? 'none' : 'block';
+function renderLookPanel() {
+  $('#loadStatus').innerText = dataLoaded
+    ? 'Выберите вещи стрелками или кликом по товарам ниже.'
+    : 'Загрузка каталога…';
+
+  const chosen = CATEGORIES
+    .map(c => ITEMS[c.key][selected[c.key]])
+    .filter(item => item && item.image !== NONE_IMG);
+
+  $('#lookList').innerHTML = chosen.length
+    ? chosen.map(item => `
+        <div class="look-row">
+          <div class="look-thumb" style="background-image:url('${item.image}')"></div>
+          <div class="look-info">
+            <span class="look-name">${item.name}</span>
+            <span class="look-price">$ ${item.price || '0'}</span>
+          </div>
+        </div>`).join('')
+    : `<p class="look-empty">Соберите образ — выбранные вещи появятся здесь</p>`;
+
+  const total = chosen.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+  $('#lookTotal').innerText = chosen.length ? `Итого: $ ${total.toFixed(2)}` : '';
+
+  const btn = $('#btnOrder');
+  if (chosen.length) {
+    const lines = chosen.map(item => `${item.name} — $${item.price || '0'}`).join('\n');
+    const msg = `Здравствуйте! Хочу заказать образ:\n${lines}\nИтого: $${total.toFixed(2)}`;
+    btn.href = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(msg)}`;
+    btn.classList.remove('disabled');
+  } else {
+    btn.href = '#';
+    btn.classList.add('disabled');
+  }
 }
 
-$('#btnUpdate').addEventListener('click', () => {
-  const nc = $('#editCategory').value;
-  const i = ITEMS[active][selected[active]];
-  i.name = $('#editName').value || 'Без названия'; i.image = $('#editUrl').value;
-  if (nc !== active) {
-    ITEMS[active].splice(selected[active], 1); ITEMS[nc].push(i);
-    selected[active] = Math.max(0, selected[active] - 1);
-    active = nc; selected[nc] = ITEMS[nc].length - 1;
+// --- ЗАГРУЗКА ИЗ FIRESTORE (та же коллекция products, что и в каталоге) ---
+const cachedProducts = loadProductsCache();
+if (cachedProducts && cachedProducts.length) {
+  latestProducts = cachedProducts;
+  dataLoaded = true;
+  rebuildItemsFromProducts(latestProducts);
+}
+renderAll();
+
+db.collection('categories').orderBy('createdAt', 'asc').onSnapshot(
+  (snapshot) => {
+    customCatalogCategories = [];
+    snapshot.forEach(doc => customCatalogCategories.push({ id: doc.id, ...doc.data() }));
+    tryRebuild();
+  },
+  (err) => console.warn('Categories listener error:', err)
+);
+
+db.collection('products').orderBy('createdAt', 'desc').onSnapshot(
+  (snapshot) => {
+    const fresh = [];
+    snapshot.forEach(doc => fresh.push({ id: doc.id, ...doc.data() }));
+    latestProducts = fresh;
+    dataLoaded = true;
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(fresh)); } catch (e) {}
+    tryRebuild();
+  },
+  (err) => {
+    console.warn('Products listener error:', err);
+    $('#loadStatus').innerText = 'Не удалось загрузить каталог. Проверьте соединение.';
   }
-  syncData(); renderAll();
-});
-
-$('#btnAdd').addEventListener('click', () => {
-  const cat = $('#editCategory').value, url = $('#editUrl').value.trim(), name = $('#editName').value.trim();
-  if (!url || !name) return alert("Введите название и ссылку!");
-  ITEMS[cat].push({ id: 'c' + Date.now(), name, image: url });
-  active = cat; selected[cat] = ITEMS[cat].length - 1;
-  syncData(); renderAll();
-});
-
-$('#btnDelete').addEventListener('click', () => {
-  if (ITEMS[active].length <= 1 || !confirm('Точно удалить?')) return;
-  ITEMS[active].splice(selected[active], 1);
-  selected[active] = Math.max(0, selected[active] - 1);
-  syncData(); renderAll();
-});
-
-loadData(() => renderAll());
+);
 </script>
 </body>
 </html>
