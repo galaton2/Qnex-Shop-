@@ -36,7 +36,39 @@
     min-height: 100vh;
   }
   
-  .app { max-width: 1100px; margin: 0 auto; animation: fadeUp 0.6s ease-out; }
+  .app { max-width: 1100px; margin: 0 auto; animation: fadeUp 0.6s ease-out; position: relative; }
+
+  /* ЭКРАН ЗАГРУЗКИ */
+  .page-loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg); z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease;
+  }
+  .page-loader.hidden { opacity: 0; pointer-events: none; }
+  .spinner {
+    width: 40px; height: 40px; border: 4px solid var(--line);
+    border-top: 4px solid var(--ink); border-radius: 50%;
+    animation: spin 1s linear infinite; margin-bottom: 20px;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .loader-text { font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); }
+
+  /* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКОВ */
+  .lang-switcher { 
+    position: absolute; top: -20px; right: 0; 
+    display: flex; gap: 8px; z-index: 100; 
+  }
+  .lang-switcher button { 
+    background: transparent; border: 1px solid var(--line); 
+    font-family: var(--font-mono); font-size: 12px; padding: 6px 12px; 
+    cursor: pointer; border-radius: 8px; color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .lang-switcher button.active { 
+    border-color: var(--ink); color: var(--ink); font-weight: bold; 
+    background: #f8f9fa;
+  }
 
   /* АНИМАЦИИ */
   @keyframes fadeUp {
@@ -51,7 +83,7 @@
   }
 
   /* ШАПКА */
-  .tag-bar { text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 20px;}
+  .tag-bar { text-align: center; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative;}
   .tag-bar h1 { font-family: var(--font-display); font-size: clamp(40px, 8vw, 72px); margin: 0; letter-spacing: 2px; }
 
   /* УЛУЧШЕННАЯ КНОПКА */
@@ -86,27 +118,13 @@
   .stage-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; align-items: start; }
 
   /* КАРТОЧКИ */
-  /* КАРТОЧКИ */
   .stage-card, .admin-card {
     background: var(--bg-panel);
     border-radius: 24px;
     padding: 32px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.04); 
     border: 1px solid var(--line);
-    min-width: 0; /* ВОТ ЭТО ИСПРАВЛЯЕТ БАГ: запрещаем карточке бесконечно растягиваться */
-  }
-
-  /* ... (код манекена остается без изменений) ... */
-
-  /* ПОЛОСА ТОВАРОВ */
-  .thumb-strip { 
-    display: flex; 
-    gap: 32px; 
-    overflow-x: auto; 
-    padding: 12px 4px 24px; 
-    -webkit-overflow-scrolling: touch; 
-    scrollbar-width: none;
-    width: 100%; /* Удерживаем полосу в границах родителя */
+    min-width: 0; 
   }
 
   /* ЗОНА МАНЕКЕНА */
@@ -144,7 +162,6 @@
 
   /* СЛОИ ОДЕЖДЫ */
   .clothing-layers { position: relative; width: min(340px, 70vw); height: 100%; max-height: 850px; margin: 0 auto; }
-  /* Тени убраны по вашей просьбе */
   .clothing-layer { position: absolute; width: 100%; height: 100%; object-fit: contain; left: 0; }
   .animate-pop { animation: clothPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
@@ -155,17 +172,20 @@
   .current-item { text-align: center; font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); margin: 24px 0; background: #f4f5f7; padding: 12px; border-radius: 12px; }
   .current-item b { color: var(--ink); font-weight: 700; font-size: 15px; }
 
-  /* ПОЛОСА ТОВАРОВ */
+  /* ПОЛОСА ТОВАРОВ (обновлено - уменьшен gap) */
   .thumb-strip { 
     display: flex; 
-    gap: 32px; /* Расстояние увеличено */
-    overflow-x: auto; padding: 12px 4px 24px; -webkit-overflow-scrolling: touch; 
+    gap: 12px; 
+    overflow-x: auto; 
+    padding: 12px 4px 24px; 
+    -webkit-overflow-scrolling: touch; 
     scrollbar-width: none;
+    width: 100%; 
   }
   .thumb-strip::-webkit-scrollbar { display: none; }
   
   .thumb {
-    width: 56px; height: 56px; /* Товары стали меньше */
+    width: 56px; height: 56px; 
     border-radius: 12px; 
     background-size: cover; background-position: center; cursor: pointer;
     background-color: #f4f5f7; flex-shrink: 0; 
@@ -178,40 +198,13 @@
     opacity: 1; filter: grayscale(0%);
     border-color: var(--ink); 
     transform: scale(1.05) translateY(-4px);
-    /* Тени убраны по вашей просьбе */
   }
 
   /* ПАНЕЛЬ АДМИНА */
   .admin-card { position: sticky; top: 40px; }
   .admin-card h3 { font-family: var(--font-display); font-size: 32px; margin-top: 0; letter-spacing: 1.5px; margin-bottom: 8px;}
   .admin-desc { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); margin-bottom: 32px; }
-  .admin-form { display: flex; flex-direction: column; gap: 16px; font-family: var(--font-mono); font-size: 14px; }
   
-  .admin-form input, .admin-form select { 
-    padding: 16px 20px; background: #f8f9fa; border: 1px solid var(--line); color: var(--ink);
-    border-radius: 12px; width: 100%; font-family: inherit; font-size: 14px; outline: none; transition: 0.3s;
-  }
-  .admin-form input:focus, .admin-form select:focus { 
-    background: #ffffff;
-    border-color: var(--ink); 
-    box-shadow: 0 0 0 4px rgba(17,17,17,0.05); 
-  }
-  
-  .btn-group { display: flex; gap: 12px; margin-top: 8px; }
-  .admin-form button { 
-    padding: 16px; border: none; border-radius: 12px; cursor: pointer; 
-    font-family: inherit; font-weight: bold; font-size: 13px; text-transform: uppercase; flex: 1; 
-    transition: all 0.2s;
-  }
-  .btn-primary { background: var(--ink); color: #fff; }
-  .btn-primary:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-  
-  .btn-secondary { background: transparent; color: var(--ink); border: 2px solid var(--ink) !important; padding: 14px; }
-  .btn-secondary:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
-
-  .btn-danger { background: rgba(255, 71, 87, 0.05); color: var(--danger); border: 1px dashed var(--danger) !important; margin-top: 8px; }
-  .btn-danger:hover { background: var(--danger); color: #fff; border-style: solid !important;}
-
   /* ПАНЕЛЬ "ВАШ ОБРАЗ" */
   .look-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
   .look-row { display: flex; align-items: center; gap: 14px; padding: 10px; background: #f8f9fa; border-radius: 12px; }
@@ -221,6 +214,7 @@
   .look-price { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
   .look-empty { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); text-align: center; padding: 20px 0; margin: 0; }
   .look-total { font-family: var(--font-mono); font-weight: 700; font-size: 18px; text-align: right; margin-bottom: 20px; color: var(--ink); min-height: 24px; }
+  
   .btn-order {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     padding: 16px; border: none; border-radius: 12px; cursor: pointer;
@@ -229,6 +223,7 @@
   }
   .btn-order:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
   .btn-order.disabled { opacity: 0.4; pointer-events: none; }
+  
   .catalog-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); text-align: center; margin-top: 16px; line-height: 1.6; }
 
   /* АДАПТИВ */
@@ -239,7 +234,7 @@
   }
 
   @media (max-width: 768px) {
-    body { padding: 24px 12px 60px; }
+    body { padding: 40px 12px 60px; }
     .stage-card, .admin-card { padding: 24px; border-radius: 20px; }
     
     .stage { min-height: 550px; height: 65vh; max-height: 750px; padding: 10px; margin-bottom: 24px; }
@@ -249,6 +244,7 @@
     .btn-randomize { padding: 14px 24px; font-size: 13px; }
 
     .layer-controls button { width: 40px; height: 40px; font-size: 20px; }
+    .lang-switcher { top: -30px; }
   }
 
   @media (max-width: 400px) {
@@ -257,19 +253,30 @@
 </style>
 </head>
 <body>
+
+<!-- ЭКРАН ЗАГРУЗКИ -->
+<div id="pageLoader" class="page-loader">
+  <div class="spinner"></div>
+  <p id="loaderText" class="loader-text">Загрузка каталога / Loading...</p>
+</div>
+
 <div class="app">
 
   <header class="tag-bar">
-    <h1>QNEX BUILDER</h1>
+    <div class="lang-switcher">
+      <button onclick="setLang('ru')" id="btnLangRu" class="active">RU</button>
+      <button onclick="setLang('en')" id="btnLangEn">EN</button>
+    </div>
+
+    <h1 id="mainTitle">QNEX BUILDER</h1>
     <button class="btn-randomize" onclick="randomizeLook()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
-      Собрать случайно
+      <span id="btnRandomizeText">Собрать случайно</span>
     </button>
   </header>
 
   <div class="stage-grid">
     <section class="stage-card">
-
       <div class="stage-container">
         <div class="stage" id="stage">
           
@@ -299,23 +306,99 @@
     </section>
 
     <aside class="admin-card">
-      <h3>ВАШ ОБРАЗ</h3>
+      <h3 id="yourLookTitle">ВАШ ОБРАЗ</h3>
       <p class="admin-desc" id="loadStatus">Загрузка каталога…</p>
 
       <div class="look-list" id="lookList"></div>
       <div class="look-total" id="lookTotal"></div>
       <a class="btn-order disabled" id="btnOrder" target="_blank" rel="noopener">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        Заказать образ в Telegram
+        <span id="orderText">Заказать образ в Telegram</span>
       </a>
-      <p class="catalog-note">Все товары берутся напрямую из каталога Qnex Shop в реальном времени.</p>
+      <p class="catalog-note" id="noteText">Все товары берутся напрямую из каталога Qnex Shop в реальном времени.</p>
     </aside>
 
   </div>
 </div>
 
 <script>
-// ================= FIREBASE (та же база, что и у каталога Qnex Shop) =================
+// ================= ЛОКАЛИЗАЦИЯ (RU/EN) =================
+const i18n = {
+  ru: {
+    title: "QNEX BUILDER",
+    randomize: "Собрать случайно",
+    yourLook: "ВАШ ОБРАЗ",
+    loadingCatalog: "Загрузка каталога…",
+    loadingItems: "Загрузка товаров из каталога…",
+    instruction: "Выберите вещи стрелками или кликом по товарам ниже.",
+    emptyLook: "Соберите образ — выбранные вещи появятся здесь",
+    total: "Итого: $",
+    order: "Заказать образ в Telegram",
+    note: "Все товары берутся напрямую из каталога Qnex Shop в реальном времени.",
+    msgPrefix: "Здравствуйте! Хочу заказать образ:\n",
+    top: "ВЕРХ",
+    bottom: "НИЗ",
+    shoes: "ОБУВЬ",
+    noTop: "Без верха",
+    noBottom: "Без низа",
+    noShoes: "Без обуви",
+    unnamed: "Без названия"
+  },
+  en: {
+    title: "QNEX BUILDER",
+    randomize: "Randomize Look",
+    yourLook: "YOUR LOOK",
+    loadingCatalog: "Loading catalog…",
+    loadingItems: "Loading items from catalog…",
+    instruction: "Select items using arrows or click on thumbnails below.",
+    emptyLook: "Build a look — selected items will appear here",
+    total: "Total: $",
+    order: "Order via Telegram",
+    note: "All products are fetched directly from Qnex Shop catalog in real time.",
+    msgPrefix: "Hello! I would like to order this look:\n",
+    top: "TOP",
+    bottom: "BOTTOM",
+    shoes: "SHOES",
+    noTop: "No top",
+    noBottom: "No bottom",
+    noShoes: "No shoes",
+    unnamed: "Unnamed"
+  }
+};
+
+let currentLang = 'ru';
+
+function t(key) { return i18n[currentLang][key]; }
+
+function setLang(lang) {
+  currentLang = lang;
+  
+  // Обновление кнопок
+  document.getElementById('btnLangRu').classList.toggle('active', lang === 'ru');
+  document.getElementById('btnLangEn').classList.toggle('active', lang === 'en');
+  
+  // Обновление статических текстов
+  document.getElementById('mainTitle').innerText = t('title');
+  document.getElementById('btnRandomizeText').innerText = t('randomize');
+  document.getElementById('yourLookTitle').innerText = t('yourLook');
+  document.getElementById('orderText').innerText = t('order');
+  document.getElementById('noteText').innerText = t('note');
+  
+  // Обновление категорий
+  CATEGORIES[0].label = t('top');
+  CATEGORIES[1].label = t('bottom');
+  CATEGORIES[2].label = t('shoes');
+
+  // Обновление пустых слотов
+  if (ITEMS && ITEMS.top && ITEMS.top[0]) ITEMS.top[0].name = t('noTop');
+  if (ITEMS && ITEMS.bottom && ITEMS.bottom[0]) ITEMS.bottom[0].name = t('noBottom');
+  if (ITEMS && ITEMS.shoes && ITEMS.shoes[0]) ITEMS.shoes[0].name = t('noShoes');
+  
+  renderAll();
+}
+
+
+// ================= FIREBASE =================
 const firebaseConfig = {
   apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
   authDomain: "gifts-d8f30.firebaseapp.com",
@@ -324,24 +407,22 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ================= ССЫЛКА ДЛЯ ЗАКАЗА — тот же телеграм, что в каталоге =================
 const TELEGRAM_USERNAME = 'qnex_shop';
 
 // ================= СЛОТЫ МАНЕКЕНА =================
-// Аксессуары убраны
 const CATEGORIES = [
-  { key: 'top',    label: 'Верх' },
-  { key: 'bottom', label: 'Низ' },
-  { key: 'shoes',  label: 'Обувь' },
+  { key: 'top',    label: i18n.ru.top },
+  { key: 'bottom', label: i18n.ru.bottom },
+  { key: 'shoes',  label: i18n.ru.shoes },
 ];
 const NONE_IMG = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
 const EMPTY_ITEMS = () => ({
-  top:    [{ id: 't0', name: 'Без верха',            image: NONE_IMG }],
-  bottom: [{ id: 'b0', name: 'Без низа',              image: NONE_IMG }],
-  shoes:  [{ id: 's0', name: 'Без обуви',             image: NONE_IMG }]
+  top:    [{ id: 't0', name: t('noTop'),    image: NONE_IMG }],
+  bottom: [{ id: 'b0', name: t('noBottom'), image: NONE_IMG }],
+  shoes:  [{ id: 's0', name: t('noShoes'),  image: NONE_IMG }]
 });
 
-// Категории каталога
 const DEFAULT_CATALOG_CATEGORIES = [
   { key: 'hoodie', ru: 'Худи', en: 'Hoodies' },
   { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts' },
@@ -350,9 +431,6 @@ const DEFAULT_CATALOG_CATEGORIES = [
 let customCatalogCategories = [];
 function getAllCatalogCategories() { return [...DEFAULT_CATALOG_CATEGORIES, ...customCatalogCategories]; }
 
-// ============================================================================
-// УЛУЧШЕННАЯ КАРТА "категория каталога/название -> слот манекена"
-// ============================================================================
 const SLOT_KEYWORDS = {
   shoes:  ['обув', 'shoe', 'кроссов', 'sneaker', 'ботин', 'boot', 'туфл', 'кед'],
   bottom: ['штан', 'pant', 'джинс', 'jean', 'шорт', 'short', 'брюк', 'юбк', 'skirt', 'джоггер', 'треник'],
@@ -361,14 +439,10 @@ const SLOT_KEYWORDS = {
 
 function detectSlot(categoryKey, title = '') {
   const cat = getAllCatalogCategories().find(c => c.key === categoryKey);
-  // Проверяем и категорию, и само название вещи
   const haystack = [categoryKey || '', cat ? cat.ru : '', cat ? cat.en : '', title || ''].join(' ').toLowerCase();
-  
   for (const slot of Object.keys(SLOT_KEYWORDS)) {
     if (SLOT_KEYWORDS[slot].some(kw => haystack.includes(kw))) return slot;
   }
-  
-  // Если товар не подошел ни под одну категорию верха, низа или обуви (например, это брелок) — он отбрасывается
   return null; 
 }
 
@@ -377,10 +451,10 @@ let selected = { top: 0, bottom: 0, shoes: 0 };
 let active = 'top';
 let dataLoaded = false;
 let latestProducts = [];
+let hasInitiallyRandomized = false; 
 
 const $ = (sel) => document.querySelector(sel);
 
-// --- ЛОКАЛЬНЫЙ КЭШ ---
 const CACHE_KEY = 'qnex_products_cache_v1';
 function loadProductsCache() {
   try { const raw = localStorage.getItem(CACHE_KEY); if (raw) return JSON.parse(raw); }
@@ -394,12 +468,9 @@ function rebuildItemsFromProducts(products) {
     const img = (p.images && p.images.length > 0) ? p.images[0] : (p.img || null);
     if (!img) return;
     
-    // Получаем слот, проверяя также название товара
     const slot = detectSlot(p.category, p.title);
-    
-    // Добавляем только если товар был четко распознан
     if (slot && base[slot]) {
-      base[slot].push({ id: p.id, name: p.title || 'Без названия', image: img, price: p.price || '0' });
+      base[slot].push({ id: p.id, name: p.title || t('unnamed'), image: img, price: p.price || '0' });
     }
   });
   
@@ -407,9 +478,23 @@ function rebuildItemsFromProducts(products) {
   Object.keys(selected).forEach(k => { if (selected[k] >= ITEMS[k].length) selected[k] = 0; });
 }
 
+// СКРЫВАЕМ ЭКРАН ЗАГРУЗКИ И ДЕЛАЕМ ПЕРВЫЙ РАНДОМ
+function hideLoader() {
+  const loader = document.getElementById('pageLoader');
+  if (loader && !loader.classList.contains('hidden')) {
+    loader.classList.add('hidden');
+    
+    if (!hasInitiallyRandomized) {
+      randomizeLook();
+      hasInitiallyRandomized = true;
+    }
+  }
+}
+
 function tryRebuild() {
   rebuildItemsFromProducts(latestProducts);
   renderAll();
+  if (dataLoaded) hideLoader();
 }
 
 function randomizeLook() {
@@ -428,7 +513,7 @@ function renderAll() {
 
 function renderThumbs() {
   if (!dataLoaded) {
-    $('#thumbStrip').innerHTML = `<span style="font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);">Загрузка товаров из каталога…</span>`;
+    $('#thumbStrip').innerHTML = `<span style="font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);">${t('loadingItems')}</span>`;
     return;
   }
   $('#thumbStrip').innerHTML = ITEMS[active].map((item, i) =>
@@ -467,9 +552,7 @@ function cycle(cat, dir) {
 }
 
 function renderLookPanel() {
-  $('#loadStatus').innerText = dataLoaded
-    ? 'Выберите вещи стрелками или кликом по товарам ниже.'
-    : 'Загрузка каталога…';
+  $('#loadStatus').innerText = dataLoaded ? t('instruction') : t('loadingCatalog');
 
   const chosen = CATEGORIES
     .map(c => ITEMS[c.key][selected[c.key]])
@@ -484,15 +567,15 @@ function renderLookPanel() {
             <span class="look-price">$ ${item.price || '0'}</span>
           </div>
         </div>`).join('')
-    : `<p class="look-empty">Соберите образ — выбранные вещи появятся здесь</p>`;
+    : `<p class="look-empty">${t('emptyLook')}</p>`;
 
   const total = chosen.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-  $('#lookTotal').innerText = chosen.length ? `Итого: $ ${total.toFixed(2)}` : '';
+  $('#lookTotal').innerText = chosen.length ? `${t('total')} ${total.toFixed(2)}` : '';
 
   const btn = $('#btnOrder');
   if (chosen.length) {
     const lines = chosen.map(item => `${item.name} — $${item.price || '0'}`).join('\n');
-    const msg = `Здравствуйте! Хочу заказать образ:\n${lines}\nИтого: $${total.toFixed(2)}`;
+    const msg = `${t('msgPrefix')}${lines}\n${t('total')} ${total.toFixed(2)}`;
     btn.href = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(msg)}`;
     btn.classList.remove('disabled');
   } else {
@@ -507,6 +590,7 @@ if (cachedProducts && cachedProducts.length) {
   latestProducts = cachedProducts;
   dataLoaded = true;
   rebuildItemsFromProducts(latestProducts);
+  hideLoader(); // Скрываем лоадер и делаем рандом если есть кэш
 }
 renderAll();
 
@@ -530,7 +614,8 @@ db.collection('products').orderBy('createdAt', 'desc').onSnapshot(
   },
   (err) => {
     console.warn('Products listener error:', err);
-    $('#loadStatus').innerText = 'Не удалось загрузить каталог. Проверьте соединение.';
+    $('#loadStatus').innerText = 'Error / Ошибка соединения.';
+    hideLoader();
   }
 );
 </script>
