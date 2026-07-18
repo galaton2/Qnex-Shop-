@@ -240,20 +240,8 @@
         }
         .retry-btn:hover { background: var(--text); color: var(--bg); }
 
-        /* BOTTOM MENU BUTTON */
-        .bottom-menu-btn {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            width: 56px; height: 56px; border-radius: 50%;
-            background: var(--text); border: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            cursor: pointer; z-index: 250; box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-            transition: transform 0.25s ease;
-        }
-        .bottom-menu-btn:hover { transform: translateX(-50%) scale(1.06); }
-        .bottom-menu-btn span { width: 22px; height: 2px; background: var(--bg); border-radius: 2px; }
-
-        /* SIDE SETTINGS BUTTON */
-        .side-settings-btn {
+        /* SIDE MENU BUTTON (Combined) */
+        .side-menu-btn {
             position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
             width: 50px; height: 50px; border-radius: 50%;
             background: var(--bg); border: 1px solid var(--border); color: var(--text);
@@ -261,28 +249,45 @@
             cursor: pointer; z-index: 245; font-size: 17px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.25); transition: 0.25s ease;
         }
-        .side-settings-btn:hover { background: var(--text); color: var(--bg); transform: translateY(-50%) scale(1.08); }
+        .side-menu-btn:hover { background: var(--text); color: var(--bg); transform: translateY(-50%) scale(1.08); }
         @media (max-width: 640px) {
-            .side-settings-btn { right: 12px; top: auto; bottom: 92px; transform: none; width: 46px; height: 46px; font-size: 15px; }
-            .side-settings-btn:hover { transform: scale(1.08); }
+            .side-menu-btn { right: 12px; top: auto; bottom: 92px; transform: none; width: 46px; height: 46px; font-size: 15px; }
+            .side-menu-btn:hover { transform: scale(1.08); }
         }
 
-        /* SETTINGS PANEL (slides in from the side) */
-        .settings-overlay {
+        /* MENU PANEL (slides in from the side) */
+        .menu-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.55);
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
             z-index: 320; display: flex; justify-content: flex-end;
         }
-        .settings-overlay.open { opacity: 1; pointer-events: auto; }
-        .settings-panel {
+        .menu-overlay.open { opacity: 1; pointer-events: auto; }
+        .menu-panel {
             background: var(--bg); border-left: 1px solid var(--border);
             width: 100%; max-width: 340px; height: 100%; padding: 26px 26px 30px;
             transform: translateX(100%); transition: transform 0.4s cubic-bezier(.22,1,.36,1);
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; overflow-y: auto;
         }
-        .settings-overlay.open .settings-panel { transform: translateX(0); }
-        .settings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 34px; }
-        .settings-header h3 { font-family: var(--font-display); font-size: 15px; text-transform: uppercase; letter-spacing: 2px; margin: 0; font-weight: 700; }
+        .menu-overlay.open .menu-panel { transform: translateX(0); }
+        .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 34px; }
+        .menu-header h3 { font-family: var(--font-display); font-size: 15px; text-transform: uppercase; letter-spacing: 2px; margin: 0; font-weight: 700; }
+        
+        /* Menu Items */
+        .menu-item {
+            width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px;
+            margin-bottom: 12px; background: transparent; border: 1px solid var(--border);
+            color: var(--text); text-transform: uppercase; letter-spacing: 1px;
+            font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; text-align: left; font-family: var(--font-body);
+        }
+        .menu-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
+        .menu-item:disabled { opacity: 0.4; cursor: not-allowed; }
+        .menu-item:disabled:hover { background: transparent; color: var(--text); }
+        .menu-badge {
+            margin-left: auto; font-size: 10px; text-transform: none; letter-spacing: 0;
+            opacity: 0.85; background: var(--gray-bg); padding: 4px 8px; border-radius: 10px; font-weight: 400;
+            white-space: nowrap;
+        }
+
         .settings-row { margin-bottom: 26px; }
         .settings-row > span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.55; margin-bottom: 12px; font-weight: 700; }
         .switch-toggle { display: flex; border: 1px solid var(--border); overflow: hidden; }
@@ -293,39 +298,6 @@
         .switch-opt.active { background: var(--text); color: var(--bg); }
         .switch-opt:not(.active):hover { background: var(--gray-bg); }
         .settings-note { margin-top: auto; font-size: 11px; opacity: 0.45; line-height: 1.6; }
-
-        /* DRAWER / BOTTOM SHEET */
-        .drawer-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-            z-index: 260; display: flex; align-items: flex-end;
-        }
-        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-        .drawer-panel {
-            background: var(--bg); border-top: 1px solid var(--border);
-            width: 100%; padding: 12px 20px 34px;
-            transform: translateY(100%); transition: transform 0.4s cubic-bezier(.22,1,.36,1);
-        }
-        .drawer-overlay.open .drawer-panel { transform: translateY(0); }
-        .drawer-handle { width: 40px; height: 4px; background: var(--border); opacity: 0.4; border-radius: 2px; margin: 6px auto 22px; }
-        .drawer-item {
-            width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px;
-            margin-bottom: 12px; background: transparent; border: 1px solid var(--border);
-            color: var(--text); text-transform: uppercase; letter-spacing: 1px;
-            font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.3s; text-align: left; font-family: var(--font-body);
-        }
-        .drawer-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
-        .drawer-item:disabled { opacity: 0.4; cursor: not-allowed; }
-        .drawer-item:disabled:hover { background: transparent; color: var(--text); }
-        .drawer-badge {
-            margin-left: auto; font-size: 10px; text-transform: none; letter-spacing: 0;
-            opacity: 0.85; background: var(--gray-bg); padding: 4px 8px; border-radius: 10px; font-weight: 400;
-            white-space: nowrap;
-        }
-        .drawer-close-text {
-            display: block; margin: 8px auto 0; background: none; border: none; color: var(--text);
-            opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; cursor: pointer; font-family: var(--font-body);
-        }
 
         /* PRODUCT DETAIL MODAL — full screen takeover */
         .modal-overlay {
@@ -342,11 +314,13 @@
             transform: translateY(24px); transition: transform 0.35s cubic-bezier(.22,1,.36,1);
         }
         .modal-overlay.open .modal-panel { transform: translateY(0); }
+        
+        /* Elegant Close Icon */
         .modal-close {
             position: fixed; top: 18px; right: 18px; z-index: 5;
             width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border);
-            background: var(--bg); color: var(--text); font-size: 20px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; opacity: 0.9;
+            background: var(--bg); color: var(--text); font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; opacity: 0.9; transition: 0.3s;
         }
         .modal-close:hover { opacity: 1; background: var(--text); color: var(--bg); }
 
@@ -444,7 +418,7 @@
                 </div>
             </div>
 
-            <!-- DELIVERY INFO — horizontal divider requested after the About/story section -->
+            <!-- DELIVERY INFO -->
             <div class="delivery-divider">
                 <hr class="delivery-line">
                 <div class="delivery-info">
@@ -494,23 +468,33 @@
         </section>
     </div>
 
-    <!-- ================= BOTTOM MENU BUTTON ================= -->
-    <button class="bottom-menu-btn" id="bottom-menu-btn" onclick="openDrawer()" aria-label="Menu">
-        <span></span><span></span><span></span>
+    <!-- ================= SIDE MENU BUTTON (Hamburger) ================= -->
+    <button class="side-menu-btn" onclick="openMenu()" aria-label="Menu">
+        <i class="fas fa-bars"></i>
     </button>
 
-    <!-- ================= SIDE SETTINGS BUTTON ================= -->
-    <button class="side-settings-btn" onclick="openSettings()" aria-label="Settings">
-        <i class="fas fa-sliders"></i>
-    </button>
-
-    <!-- ================= SETTINGS PANEL ================= -->
-    <div class="settings-overlay" id="settings-overlay" onclick="if(event.target===this) closeSettings();">
-        <div class="settings-panel">
-            <div class="settings-header">
-                <h3 data-i18n="settings_title">Settings</h3>
-                <button class="modal-close" style="position:static;" onclick="closeSettings()" aria-label="Close">&times;</button>
+    <!-- ================= COMBINED MENU PANEL ================= -->
+    <div class="menu-overlay" id="menu-overlay" onclick="if(event.target===this) closeMenu();">
+        <div class="menu-panel">
+            <div class="menu-header">
+                <h3 data-i18n="settings_title">Menu</h3>
+                <button class="modal-close" style="position:static;" onclick="closeMenu()" aria-label="Close">
+                    <i class="fas fa-xmark"></i>
+                </button>
             </div>
+            
+            <!-- Items from former bottom menu -->
+            <button class="menu-item" onclick="handleDelivery()">
+                <i class="fas fa-truck"></i>
+                <span data-i18n="drawer_delivery">Delivery</span>
+            </button>
+            <button class="menu-item" disabled style="margin-bottom: 30px;">
+                <i class="fas fa-tshirt"></i>
+                <span data-i18n="drawer_outfit">Create Your Own Outfit</span>
+                <span class="menu-badge" data-i18n="drawer_badge">(coming soon)</span>
+            </button>
+
+            <!-- Items from former settings -->
             <div class="settings-row">
                 <span data-i18n="settings_theme">Theme</span>
                 <div class="switch-toggle">
@@ -529,27 +513,12 @@
         </div>
     </div>
 
-    <!-- ================= BOTTOM SHEET / DRAWER ================= -->
-    <div class="drawer-overlay" id="drawer-overlay" onclick="if(event.target===this) closeDrawer();">
-        <div class="drawer-panel">
-            <div class="drawer-handle"></div>
-            <button class="drawer-item" onclick="handleDelivery()">
-                <i class="fas fa-truck"></i>
-                <span data-i18n="drawer_delivery">Delivery</span>
-            </button>
-            <button class="drawer-item" disabled>
-                <i class="fas fa-tshirt"></i>
-                <span data-i18n="drawer_outfit">Create Your Own Outfit</span>
-                <span class="drawer-badge" data-i18n="drawer_badge">(coming soon)</span>
-            </button>
-            <button class="drawer-close-text" onclick="closeDrawer()" data-i18n="drawer_close">Close</button>
-        </div>
-    </div>
-
     <!-- ================= PRODUCT DETAIL MODAL (fullscreen) ================= -->
     <div class="modal-overlay" id="product-modal-overlay" onclick="if(event.target===this) closeProductDetail();">
         <div class="modal-panel">
-            <button class="modal-close" onclick="closeProductDetail()" aria-label="Close">&times;</button>
+            <button class="modal-close" onclick="closeProductDetail()" aria-label="Close">
+                <i class="fas fa-xmark"></i>
+            </button>
             <div class="modal-media">
                 <div class="gallery-scroll" id="gallery-scroll"></div>
                 <div class="gallery-dots" id="gallery-dots"></div>
@@ -610,10 +579,10 @@
                 buy_tg: "Message on Telegram", buy_ig: "Message on Instagram",
                 load_error: "Couldn't load products. Check your connection.", retry: "Retry",
                 drawer_delivery: "Delivery", drawer_outfit: "Create Your Own Outfit",
-                drawer_badge: "(coming soon)", drawer_close: "Close",
+                drawer_badge: "(coming soon)",
                 delivery_alert: "We deliver across Uzbekistan (1–7 days) and worldwide (7–14 days). Message us on Telegram or Instagram for details!",
                 untitled: "Untitled",
-                settings_title: "Settings", settings_theme: "Theme", settings_lang: "Language",
+                settings_title: "Menu", settings_theme: "Theme", settings_lang: "Language",
                 settings_dark: "Dark", settings_light: "Light",
                 settings_note: "Your preferences are saved on this device."
             },
@@ -636,10 +605,10 @@
                 buy_tg: "Написать в Telegram", buy_ig: "Написать в Instagram",
                 load_error: "Не удалось загрузить товары. Проверьте соединение.", retry: "Повторить",
                 drawer_delivery: "Доставка", drawer_outfit: "Создать собственный аутфит",
-                drawer_badge: "(пока в разработке)", drawer_close: "Закрыть",
+                drawer_badge: "(в разработке)",
                 delivery_alert: "Мы доставляем по Узбекистану (1–7 дней) и всему миру (7–14 дней). Напишите нам в Telegram или Instagram для деталей!",
                 untitled: "Без названия",
-                settings_title: "Настройки", settings_theme: "Тема", settings_lang: "Язык",
+                settings_title: "Меню", settings_theme: "Тема", settings_lang: "Язык",
                 settings_dark: "Тёмная", settings_light: "Светлая",
                 settings_note: "Настройки сохраняются на этом устройстве."
             }
@@ -697,14 +666,17 @@
             window.scrollTo(0, 0);
         }
 
-        // --- SETTINGS PANEL ---
-        function openSettings() {
-            document.getElementById('settings-overlay').classList.add('open');
+        // --- COMBINED MENU PANEL ---
+        function openMenu() {
+            document.getElementById('menu-overlay').classList.add('open');
             document.body.style.overflow = 'hidden';
         }
-        function closeSettings() {
-            document.getElementById('settings-overlay').classList.remove('open');
+        function closeMenu() {
+            document.getElementById('menu-overlay').classList.remove('open');
             syncBodyScrollLock();
+        }
+        function handleDelivery() {
+            alert(translations[currentLang].delivery_alert);
         }
 
         // --- FIREBASE INIT ---
@@ -716,8 +688,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Offline persistence: lets the store show cached products instantly on repeat visits
-        // and survive flaky connections, instead of always waiting on a fresh network round-trip.
         db.enablePersistence({ synchronizeTabs: true }).catch(err => {
             console.warn('Firestore persistence unavailable:', err.code);
         });
@@ -735,7 +705,7 @@
             return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // --- LOCAL CACHE (instant re-render, no refetch flash) ---
+        // --- LOCAL CACHE ---
         const CACHE_KEY = 'qnex_products_cache_v1';
         function loadProductsCache() {
             try {
@@ -746,10 +716,10 @@
         }
         function saveProductsCache(products) {
             try { localStorage.setItem(CACHE_KEY, JSON.stringify(products)); }
-            catch (e) { console.warn('Cache write failed (quota?)', e); }
+            catch (e) { console.warn('Cache write failed', e); }
         }
 
-        // --- IMAGE LOAD CACHE (skip skeleton/spinner for already-seen images) ---
+        // --- IMAGE LOAD CACHE ---
         const imageLoadedCache = new Set();
         function handleImgLoad(imgEl, url) {
             imgEl.classList.add('loaded');
@@ -774,7 +744,7 @@
             </div>`;
         }
 
-        // --- CATEGORIES (built-in + custom from Firestore, matching the admin panel) ---
+        // --- CATEGORIES ---
         const DEFAULT_CATEGORIES = [
             { key: 'hoodie', ru: 'Худи', en: 'Hoodies' },
             { key: 't-shirt', ru: 'Футболки', en: 'T-Shirts' },
@@ -807,8 +777,6 @@
             allProducts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
 
             const cats = getAllCategories().filter(c => counts[c.key] > 0);
-
-            // If the active category disappeared (e.g. last product removed), fall back to "All"
             if (activeCategory !== 'all' && !cats.some(c => c.key === activeCategory)) activeCategory = 'all';
 
             let html = `<button class="cat-btn${activeCategory === 'all' ? ' active' : ''}" data-cat="all">${translations[currentLang].cat_all}${allProducts.length ? ` <span class="cat-count">${allProducts.length}</span>` : ''}</button>`;
@@ -842,7 +810,7 @@
             container.innerHTML = html;
         }
 
-        // --- RENDER CARDS (grid: only first image, lazy) ---
+        // --- RENDER CARDS ---
         function createCardHTML(product) {
             const titleStr = escapeHtml(product.title || translations[currentLang].untitled);
             const priceStr = escapeHtml(product.price || '0');
@@ -896,7 +864,7 @@
             container.innerHTML = filtered.map(createCardHTML).join('');
         }
 
-        // --- SEARCH (debounced) ---
+        // --- SEARCH ---
         let searchDebounceTimer = null;
         document.getElementById('search-input').addEventListener('input', (e) => {
             const val = e.target.value;
@@ -913,7 +881,7 @@
             renderCatalog();
         });
 
-        // --- PRODUCT DETAIL MODAL (data comes from in-memory/cache, no refetch) ---
+        // --- PRODUCT DETAIL MODAL ---
         function telegramBuyLink(product) {
             const priceStr = product.price || '0';
             const title = product.title || '';
@@ -967,13 +935,11 @@
         }
 
         function syncBodyScrollLock() {
-            const anyOpen = document.getElementById('drawer-overlay').classList.contains('open')
-                || document.getElementById('product-modal-overlay').classList.contains('open')
-                || document.getElementById('settings-overlay').classList.contains('open');
+            const anyOpen = document.getElementById('product-modal-overlay').classList.contains('open')
+                || document.getElementById('menu-overlay').classList.contains('open');
             document.body.style.overflow = anyOpen ? 'hidden' : '';
         }
 
-        // Sync dots with swipe/scroll position (no arrow buttons — swipe only)
         document.getElementById('gallery-scroll').addEventListener('scroll', () => {
             const scroller = document.getElementById('gallery-scroll');
             const dots = document.querySelectorAll('#gallery-dots .dot');
@@ -982,25 +948,10 @@
             dots.forEach((d, i) => d.classList.toggle('active', i === idx));
         });
 
-        // --- BOTTOM SHEET / DRAWER ---
-        function openDrawer() {
-            document.getElementById('drawer-overlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeDrawer() {
-            document.getElementById('drawer-overlay').classList.remove('open');
-            syncBodyScrollLock();
-        }
-        function handleDelivery() {
-            alert(translations[currentLang].delivery_alert);
-        }
-
-        // ESC closes any open overlay
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeProductDetail();
-                closeDrawer();
-                closeSettings();
+                closeMenu();
             }
         });
 
@@ -1074,7 +1025,7 @@
             },
             (err) => {
                 console.warn('Categories listener error:', err);
-                categoriesLoaded = true; // fall back to built-in categories only
+                categoriesLoaded = true; 
                 renderCategoryBar();
             }
         );
