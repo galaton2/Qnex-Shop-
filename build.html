@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<!-- Блокируем зум для эффекта нативного приложения -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Make Your Own Outfit</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -24,19 +25,68 @@
     --font-body: 'Inter', sans-serif;
   }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html { -webkit-text-size-adjust: 100%; height: 100%; }
+  * { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+  }
+  
+  html { 
+    -webkit-text-size-adjust: 100%; 
+    height: 100%; 
+  }
   
   body { 
     margin: 0; 
     background: var(--bg); 
     color: var(--ink); 
     font-family: var(--font-body); 
-    padding: 40px 20px 80px; 
+    padding: 20px 20px 80px; /* Немного уменьшили верхний отступ */
     min-height: 100vh;
+    /* Свойства для ощущения мобильного приложения (без лишних выделений и оттяжек) */
+    overscroll-behavior-y: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   
-  .app { max-width: 1100px; margin: 0 auto; animation: fadeUp 0.6s ease-out; position: relative; }
+  .app { 
+    max-width: 1100px; 
+    margin: 0 auto; 
+    animation: fadeUp 0.6s ease-out; 
+    position: relative; 
+  }
+
+  /* ВЕРХНЯЯ НАВИГАЦИЯ (APP STYLE) */
+  .top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f4f5f7;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-back:hover {
+    background: var(--ink);
+    color: #fff;
+    transform: translateX(-2px);
+  }
+
+  .btn-back:active {
+    transform: scale(0.95);
+  }
 
   /* ЭКРАН ЗАГРУЗКИ */
   .page-loader {
@@ -56,7 +106,6 @@
 
   /* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКОВ */
   .lang-switcher { 
-    position: absolute; top: -20px; right: 0; 
     display: flex; gap: 8px; z-index: 100; 
   }
   .lang-switcher button { 
@@ -167,12 +216,12 @@
 
   #layer-top { z-index: 3; top: 5%; height: 40%; }
   #layer-bottom { z-index: 2; top: 40%; height: 40%; }
-  #layer-shoes { z-index: 1; top: 86%; height: 22%; }
+  #layer-shoes { z-index: 1; top: 80%; height: 20%; }
 
   .current-item { text-align: center; font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); margin: 24px 0; background: #f4f5f7; padding: 12px; border-radius: 12px; }
   .current-item b { color: var(--ink); font-weight: 700; font-size: 15px; }
 
-  /* ПОЛОСА ТОВАРОВ (обновлено - уменьшен gap) */
+  /* ПОЛОСА ТОВАРОВ */
   .thumb-strip { 
     display: flex; 
     gap: 12px; 
@@ -223,8 +272,6 @@
   }
   .btn-order:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
   .btn-order.disabled { opacity: 0.4; pointer-events: none; }
-  
-  .catalog-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); text-align: center; margin-top: 16px; line-height: 1.6; }
 
   /* АДАПТИВ */
   @media (max-width: 992px) {
@@ -234,17 +281,16 @@
   }
 
   @media (max-width: 768px) {
-    body { padding: 40px 12px 60px; }
+    body { padding: 16px 12px 60px; }
     .stage-card, .admin-card { padding: 24px; border-radius: 20px; }
     
     .stage { min-height: 550px; height: 65vh; max-height: 750px; padding: 10px; margin-bottom: 24px; }
     .thumb { width: 50px; height: 50px; }
     
-    .btn-group { flex-direction: column; }
     .btn-randomize { padding: 14px 24px; font-size: 13px; }
-
     .layer-controls button { width: 40px; height: 40px; font-size: 20px; }
-    .lang-switcher { top: -30px; }
+    
+    .btn-back { width: 40px; height: 40px; }
   }
 
   @media (max-width: 400px) {
@@ -262,12 +308,21 @@
 
 <div class="app">
 
-  <header class="tag-bar">
+  <!-- ВЕРХНЯЯ НАВИГАЦИЯ -->
+  <div class="top-nav">
+    <a href="index.html" class="btn-back" title="Назад">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </a>
+    
     <div class="lang-switcher">
       <button onclick="setLang('ru')" id="btnLangRu" class="active">RU</button>
       <button onclick="setLang('en')" id="btnLangEn">EN</button>
     </div>
+  </div>
 
+  <header class="tag-bar">
     <h1 id="mainTitle">QNEX BUILDER</h1>
     <button class="btn-randomize" onclick="randomizeLook()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
@@ -315,9 +370,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span id="orderText">Заказать образ в Telegram</span>
       </a>
-      <p class="catalog-note" id="noteText">Все товары берутся напрямую из каталога Qnex Shop в реальном времени.</p>
     </aside>
-
   </div>
 </div>
 
@@ -382,7 +435,7 @@ function setLang(lang) {
   document.getElementById('btnRandomizeText').innerText = t('randomize');
   document.getElementById('yourLookTitle').innerText = t('yourLook');
   document.getElementById('orderText').innerText = t('order');
-  document.getElementById('noteText').innerText = t('note');
+  // document.getElementById('noteText').innerText = t('note'); /* Note element not used in HTML anymore */
   
   // Обновление категорий
   CATEGORIES[0].label = t('top');
@@ -396,7 +449,6 @@ function setLang(lang) {
   
   renderAll();
 }
-
 
 // ================= FIREBASE =================
 const firebaseConfig = {
