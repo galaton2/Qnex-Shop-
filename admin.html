@@ -187,24 +187,49 @@
         .modal-overlay-x { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; overflow-y:auto; padding: 20px 0;}
         .modal-scroll-inner { max-height: 85vh; overflow-y: auto; }
 
-
-        .table-responsive { width: 100%; margin-top: 20px; }
-        .sheet-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        .sheet-table th, .sheet-table td { border: 1px solid var(--border); padding: 15px; text-align: left; }
-        .sheet-table th { background-color: var(--text); color: var(--bg); text-transform: uppercase; letter-spacing: 1px; }
-        .sheet-table tr:nth-child(even) { background-color: var(--gray); }
+        /* УЛУЧШЕННЫЙ ДИЗАЙН ТАБЛИЦЫ */
+        .table-responsive { 
+            width: 100%; 
+            margin-top: 20px; 
+            overflow-x: auto; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; /* Скругление */
+            background: var(--bg);
+        }
+        .sheet-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px; 
+        }
+        .sheet-table th, .sheet-table td { 
+            padding: 16px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--gray);
+        }
+        .sheet-table th { 
+            background-color: var(--text); 
+            color: var(--bg); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .sheet-table tbody tr { transition: background-color 0.2s ease; }
+        .sheet-table tbody tr:hover { background-color: var(--gray); } /* Подсветка при наведении */
+        .sheet-table tr:last-child td { border-bottom: none; }
         .contact-link { color: #3b82f6; text-decoration: none; font-weight: bold; }
 
         /* MOBILE TABLE CSS */
         @media (max-width: 768px) {
+            .table-responsive { border: none; border-radius: 0; background: transparent; }
             .sheet-table thead { display: none; }
             .sheet-table, .sheet-table tbody, .sheet-table tr, .sheet-table td { display: block; width: 100%; box-sizing: border-box; }
-            .sheet-table tr { margin-bottom: 20px; border: 2px solid var(--border); }
-            .sheet-table td { text-align: right; padding-left: 45%; position: relative; border: none; border-bottom: 1px solid var(--gray); }
+            .sheet-table tr { margin-bottom: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+            .sheet-table td { text-align: right; padding-left: 45%; position: relative; border-bottom: 1px solid var(--gray); }
             .sheet-table td:last-child { border-bottom: none; }
             .sheet-table td::before { 
                 content: attr(data-label); position: absolute; left: 15px; width: 40%; 
-                text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px;
+                text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px; opacity: 0.7;
             }
         }
     </style>
@@ -355,6 +380,11 @@
                         <label data-i18n="crm_client">Client Name</label>
                         <input type="text" id="c-name" required placeholder="Name">
                     </div>
+                    <!-- НОВОЕ ПОЛЕ: Название товара -->
+                    <div>
+                        <label data-i18n="crm_item">Product / Item</label>
+                        <input type="text" id="c-item" required placeholder="Например: Hoodie Black M">
+                    </div>
                     <div>
                         <label data-i18n="crm_contact">Contact (Tg/Phone)</label>
                         <input type="text" id="c-contact" placeholder="@username or +998...">
@@ -406,6 +436,8 @@
                     <thead>
                         <tr>
                             <th data-i18n="tbl_client">Client</th>
+                            <!-- НОВАЯ КОЛОНКА В ТАБЛИЦЕ -->
+                            <th data-i18n="tbl_item">Item</th>
                             <th data-i18n="tbl_contact">Contact</th>
                             <th data-i18n="tbl_sum">Sum</th>
                             <th data-i18n="tbl_cost">Cost</th>
@@ -431,6 +463,11 @@
                 <div>
                     <label data-i18n="crm_client">Client Name</label>
                     <input type="text" id="edit-name" required>
+                </div>
+                <!-- НОВОЕ ПОЛЕ: Редактирование товара -->
+                <div>
+                    <label data-i18n="crm_item">Product / Item</label>
+                    <input type="text" id="edit-item" required>
                 </div>
                 <div>
                     <label data-i18n="crm_contact">Contact (Tg/Phone)</label>
@@ -522,6 +559,7 @@
                 msg_cat_added: "Category added!", confirm_del_cat: "Delete this category?",
                 add_order: "Add New Order", btn_add_order: "Add Order", edit_order: "Edit Order", btn_save: "Save Changes",
                 crm_title: "Orders Database", crm_client: "Client Name", crm_contact: "Contact (Tg/Phone)", crm_price: "Price ($)", crm_cost: "Cost ($)", crm_status: "Status",
+                crm_item: "Product / Item", tbl_item: "Item", // Добавлен перевод для товара (EN)
                 crm_search_ph: "Search by name or contact...", crm_filter_all: "All Statuses", crm_count_label: "orders",
                 tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date", tbl_action: "Action",
                 st_Processing: "Processing", st_Paid: "Paid", st_AwaitingGoods: "Awaiting Goods", st_Shipped: "Shipped", st_Completed: "Completed", st_Cancelled: "Cancelled",
@@ -543,6 +581,7 @@
                 msg_cat_added: "Категория добавлена!", confirm_del_cat: "Удалить эту категорию?",
                 add_order: "Оформить Заказ", btn_add_order: "Добавить в базу", edit_order: "Редактировать заказ", btn_save: "Сохранить изменения",
                 crm_title: "База Клиентов", crm_client: "Имя клиента", crm_contact: "Контакт (Tg/Тел)", crm_price: "Сумма ($)", crm_cost: "Себестоим. ($)", crm_status: "Статус",
+                crm_item: "Купленный товар", tbl_item: "Товар", // Добавлен перевод для товара (RU)
                 crm_search_ph: "Поиск по имени или контакту...", crm_filter_all: "Все статусы", crm_count_label: "заказов",
                 tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата", tbl_action: "Действие",
                 st_Processing: "В обработке", st_Paid: "Оплачен", st_AwaitingGoods: "Ждёт товар", st_Shipped: "Отправлен", st_Completed: "Завершён", st_Cancelled: "Отменён",
@@ -829,6 +868,7 @@
             tbody.innerHTML = '';
 
             const lblClient = translations[currentLang].tbl_client;
+            const lblItem = translations[currentLang].tbl_item; // Label для товара
             const lblContact = translations[currentLang].tbl_contact;
             const lblSum = translations[currentLang].tbl_sum;
             const lblCost = translations[currentLang].tbl_cost;
@@ -845,7 +885,8 @@
                 const matchesStatus = statusFilter === 'all' || data.status === statusFilter;
                 if (!matchesStatus) return false;
                 if (!searchQuery) return true;
-                const haystack = `${data.name || ''} ${data.contact || ''}`.toLowerCase();
+                // Поиск по имени, контакту и названию товара
+                const haystack = `${data.name || ''} ${data.contact || ''} ${data.item || ''}`.toLowerCase();
                 return haystack.includes(searchQuery);
             });
 
@@ -853,7 +894,7 @@
             if (countEl) countEl.innerText = `${filtered.length} / ${allOrders.length} ${translations[currentLang].crm_count_label}`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; opacity:0.5; padding:30px;">—</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; opacity:0.5; padding:30px;">—</td></tr>`;
                 return;
             }
 
@@ -870,7 +911,8 @@
 
                 tbody.innerHTML += `
                     <tr>
-                        <td data-label="${lblClient}">${data.name}</td>
+                        <td data-label="${lblClient}" style="font-weight: 600;">${data.name}</td>
+                        <td data-label="${lblItem}">${data.item || '—'}</td>
                         <td data-label="${lblContact}">${contactHtml}</td>
                         <td data-label="${lblSum}">$${data.sum}</td>
                         <td data-label="${lblCost}" style="opacity: 0.7;">$${data.cost || 0}</td>
@@ -878,7 +920,7 @@
                         <td data-label="${lblStatus}"><span class="status-badge ${badgeClass}">${displayStatus}</span></td>
                         <td data-label="${lblDate}">${data.date}</td>
                         <td data-label="Action">
-                            <div style="display:flex;">
+                            <div style="display:flex; gap: 5px;">
                                 <button class="edit-btn" onclick="editSale('${data.id}')">✎</button>
                                 <button class="delete-btn" style="width:auto; padding: 5px 15px;" onclick="deleteSale('${data.id}')">✕</button>
                             </div>
@@ -925,10 +967,10 @@
             });
         }
 
-        // --- IMAGE COMPRESSION (shared helper — keeps Firestore docs lightweight) ---
-        const IMG_MAX_DIM = 560;   // longer side capped (never upscaled) — smaller = faster storefront loads
-        const IMG_QUALITY = 0.5;   // jpeg quality
-        const SIZE_WARN_KB = 700;  // Firestore doc hard limit is ~1MB, warn earlier so photos keep loading fast
+        // --- IMAGE COMPRESSION ---
+        const IMG_MAX_DIM = 560;   
+        const IMG_QUALITY = 0.5;   
+        const SIZE_WARN_KB = 700;  
 
         function compressImageFile(file) {
             return new Promise((resolve, reject) => {
@@ -956,7 +998,7 @@
         }
         function dataUrlsSizeKB(urls) {
             const totalChars = urls.reduce((sum, u) => sum + (u ? u.length : 0), 0);
-            return Math.round(totalChars * 0.75 / 1024); // base64 -> approx bytes
+            return Math.round(totalChars * 0.75 / 1024); 
         }
         function updateSizeHint(hintElId, urls) {
             const el = document.getElementById(hintElId);
@@ -1063,7 +1105,9 @@
         document.getElementById('client-form').addEventListener('submit', function(e) {
             e.preventDefault();
             db.collection("sales").add({
-                name: document.getElementById('c-name').value, contact: document.getElementById('c-contact').value || '-',
+                name: document.getElementById('c-name').value, 
+                item: document.getElementById('c-item').value, // Запись названия товара
+                contact: document.getElementById('c-contact').value || '-',
                 sum: Number(document.getElementById('c-sum').value), cost: Number(document.getElementById('c-cost').value),
                 status: document.getElementById('c-status').value, date: new Date().toLocaleDateString('en-US'), timestamp: Date.now()
             }).then(() => {
@@ -1078,6 +1122,7 @@
             if(!order) return;
             document.getElementById('edit-id').value = order.id;
             document.getElementById('edit-name').value = order.name;
+            document.getElementById('edit-item').value = order.item || ''; // Подгрузка товара
             document.getElementById('edit-contact').value = order.contact;
             document.getElementById('edit-sum').value = order.sum;
             document.getElementById('edit-cost').value = order.cost || 0;
@@ -1090,6 +1135,7 @@
             const id = document.getElementById('edit-id').value;
             db.collection("sales").doc(id).update({
                 name: document.getElementById('edit-name').value,
+                item: document.getElementById('edit-item').value, // Обновление товара
                 contact: document.getElementById('edit-contact').value,
                 sum: Number(document.getElementById('edit-sum').value),
                 cost: Number(document.getElementById('edit-cost').value),
