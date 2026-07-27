@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>QNEX SHOP — Монохромная одежда</title>
+    <meta name="description" content="Qnex Shop — базовая и акцентная одежда в монохромной эстетике.">
+
+    <!-- Firebase SDK (Оставлено для вашей базы данных) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Шрифты -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============ TOKENS & THEMES ============ */
+        :root {
+            --bg: #0a0a0a;
+            --bg-elev: #131311;
+            --bg-elev-2: #1a1a17;
+            --fg: #f4f2ec;
+            --fg-dim: #9c9a90;
+            --fg-dimmer: #6b6a62;
+            --line: #2b2a25;
+            --radius: 8px;
+            --radius-lg: 16px;
+            --ease: cubic-bezier(.16,1,.3,1);
+            --maxw: 1200px;
+            --font-display: 'Anton', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        [data-theme="light"] {
+            --bg: #f2efe6;
+            --bg-elev: #ffffff;
+            --bg-elev-2: #e9e5d8;
+            --fg: #100f0c;
+            --fg-dim: #59564c;
+            --fg-dimmer: #8a877c;
+            --line: #dcd8ca;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg); color: var(--fg);
+            font-family: var(--font-body);
+            min-height: 100svh; overflow-x: hidden;
+            transition: background 0.4s var(--ease), color 0.4s var(--ease);
+            -webkit-font-smoothing: antialiased;
+        }
+        img, svg { display: block; max-width: 100%; }
+        a { color: inherit; text-decoration: none; }
+        button, input { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+        .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+        
+        .eyebrow { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--fg-dim); font-weight: 600; }
+        .display { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
+
+        /* ============ АНИМАЦИИ ПОЯВЛЕНИЯ ============ */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+        .reveal.in-view { opacity: 1; transform: translateY(0); }
+        .reveal-d1 { transition-delay: 0.1s; }
+        .reveal-d2 { transition-delay: 0.2s; }
+        .reveal-d3 { transition-delay: 0.3s; }
+
+        /* ============ АМБИЕНТНЫЙ ФОН ============ */
+        .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .ambient span {
+            position: absolute; border-radius: 50%; border: 1px solid var(--line);
+            opacity: 0.5; animation: drift 26s ease-in-out infinite;
+        }
+        .ambient span:nth-child(1) { width: 520px; height: 520px; top: -220px; left: -160px; animation-duration: 32s; }
+        .ambient span:nth-child(2) { width: 340px; height: 340px; bottom: -140px; right: -100px; animation-duration: 24s; animation-delay: -6s; }
+        .grain {
+            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(24px, -18px) scale(1.04); }
+        }
+
+        /* ============ HEADER & NAV ============ */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px; backdrop-filter: blur(10px);
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            border-bottom: 1px solid var(--line);
+        }
+        .logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.08em; cursor: pointer; }
+        .nav-links { display: flex; gap: 24px; display: none; } /* Скрыто на мобильных, управляется через меню */
+        @media (min-width: 768px) { .nav-links { display: flex; } }
+        .nav-link { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6; transition: 0.3s; }
+        .nav-link.active, .nav-link:hover { opacity: 1; }
+        
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .theme-toggle, .menu-toggle {
+            width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: center; transition: 0.3s;
+        }
+        .theme-toggle:hover, .menu-toggle:hover { border-color: var(--fg); background: var(--fg); color: var(--bg); }
+        .icon-moon { display: none; }
+        [data-theme="light"] .icon-sun { display: none; }
+        [data-theme="light"] .icon-moon { display: block; }
+
+        /* ============ VIEW УПРАВЛЕНИЕ ============ */
+        .view-section { display: none; position: relative; z-index: 2; padding-top: 80px; }
+        .view-section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ============ HERO СЕКЦИЯ (ОДЕЖДА) ============ */
+        .hero { min-height: 90svh; display: flex; align-items: center; padding: 40px 0; }
+        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+        .hero-text h1 { font-size: clamp(40px, 6vw, 72px); margin: 16px 0; }
+        .hero-text h1 em { font-style: normal; color: var(--fg-dim); display: block; }
+        .hero-sub { font-size: 16px; line-height: 1.6; color: var(--fg-dim); margin-bottom: 30px; max-width: 480px; }
+        
+        /* Коллаж с одеждой */
+        .hero-images { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: relative; }
+        .hero-img { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4/5; background: var(--bg-elev); }
+        .hero-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease); }
+        .hero-img:hover img { transform: scale(1.05); }
+        .hero-img:nth-child(2) { transform: translateY(40px); }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 16px 32px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            border-radius: var(--radius); transition: transform 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s;
+        }
+        .btn-primary { background: var(--fg); color: var(--bg); }
+        .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .btn-outline { border: 1px solid var(--line); }
+        .btn-outline:hover { border-color: var(--fg); background: var(--fg); color: var(--bg); }
+
+        @media (max-width: 860px) {
+            .hero-grid { grid-template-columns: 1fr; text-align: center; margin-top: 20px;}
+            .hero-sub { margin-left: auto; margin-right: auto; }
+            .hero-images { max-width: 500px; margin: 40px auto 0; padding-bottom: 40px;}
+        }
+
+        /* ============ БЕГУЩАЯ СТРОКА ============ */
+        .marquee-wrap { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-elev); overflow: hidden; padding: 12px 0; margin-bottom: 60px; }
+        .marquee { display: flex; width: max-content; animation: scroll-x 20s linear infinite; }
+        .marquee span { font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 0 28px; color: var(--fg-dim); display: flex; align-items: center; gap: 28px; }
+        @keyframes scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* ============ КАТЕГОРИИ ============ */
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 80px; }
+        .cat-card { background: var(--bg); padding: 40px 24px; text-align: center; transition: 0.3s; cursor: pointer; }
+        .cat-card:hover { background: var(--bg-elev); }
+        .cat-card i { font-size: 32px; margin-bottom: 16px; color: var(--fg); transition: 0.4s var(--ease); }
+        .cat-card:hover i { transform: translateY(-8px); }
+        .cat-card h3 { font-size: 15px; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+        .cat-card p { font-size: 13px; color: var(--fg-dim); line-height: 1.5; }
+        @media (max-width: 768px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* ============ ДОСТАВКА (ИЗ MAIN КОДА) ============ */
+        .delivery-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 30px 0; margin-bottom: 80px; text-align: center; }
+        .delivery-item { flex: 1; min-width: 260px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .delivery-item i { font-size: 24px; color: var(--fg-dim); }
+        .delivery-item strong { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .delivery-item span { font-size: 14px; color: var(--fg-dim); }
+
+        /* ============ КАТАЛОГ И ТОВАРЫ ============ */
+        .catalog-controls { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; margin-bottom: 30px; }
+        .search-input { padding: 14px 20px; border: 1px solid var(--line); border-radius: var(--radius); width: 100%; max-width: 300px; font-size: 14px; background: var(--bg-elev); color: var(--fg); }
+        
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; margin-bottom: 80px; }
+        .product-card {
+            background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius-lg);
+            padding: 16px; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;
+        }
+        .product-card:hover { transform: translateY(-6px); border-color: var(--fg-dim); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+        .product-img { width: 100%; aspect-ratio: 4/5; background: var(--bg-elev-2); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+        .product-img img { width: 100%; height: 100%; object-fit: cover; }
+        .product-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--fg-dim); margin-bottom: 6px; }
+        .product-title { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
+        .product-price { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+        
+        .buy-btn { width: 100%; padding: 12px; border: 1px solid var(--line); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; font-size: 12px; border-radius: var(--radius); transition: 0.3s; }
+        .buy-btn:hover { background: var(--fg); color: var(--bg); }
+
+        /* ============ ПОДВАЛ И МЕНЮ ============ */
+        footer { padding: 40px 0; border-top: 1px solid var(--line); text-align: center; color: var(--fg-dim); font-size: 13px; position: relative; z-index: 2;}
+        
+        .menu-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100;
+            display: flex; justify-content: flex-end;
+        }
+        .menu-overlay.open { opacity: 1; pointer-events: auto; }
+        .menu-panel {
+            background: var(--bg); border-left: 1px solid var(--line);
+            width: 100%; max-width: 320px; height: 100%; padding: 30px;
+            transform: translateX(100%); transition: transform 0.4s var(--ease);
+            display: flex; flex-direction: column;
+        }
+        .menu-overlay.open .menu-panel { transform: translateX(0); }
+        .menu-close { align-self: flex-end; font-size: 24px; margin-bottom: 30px; }
+        
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--line); font-size: 14px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; transition: 0.3s; }
+        .menu-item:hover { color: var(--fg-dim); padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Фоновые элементы -->
+    <div class="ambient" aria-hidden="true"><span></span><span></span></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo" onclick="switchView('home')">QNEX</div>
+        <nav class="nav-links">
+            <button class="nav-link active" id="nav-home" onclick="switchView('home')">Главная</button>
+            <button class="nav-link" id="nav-catalog" onclick="switchView('catalog')">Каталог</button>
+        </nav>
+        <div class="header-actions">
+            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+            </button>
+            <button class="menu-toggle" onclick="openMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Боковое меню -->
+    <div class="menu-overlay" id="menu-overlay" onclick="if(event.target===this) closeMenu();">
+        <div class="menu-panel">
+            <button class="menu-close" onclick="closeMenu()"><i class="fas fa-times"></i></button>
+            <button class="menu-item" onclick="switchView('home'); closeMenu();"><i class="fas fa-home"></i> Главная</button>
+            <button class="menu-item" onclick="switchView('catalog'); closeMenu();"><i class="fas fa-tshirt"></i> Каталог</button>
+            <a href="#" class="menu-item"><i class="fab fa-telegram-plane"></i> Наш Telegram</a>
+            <a href="#" class="menu-item"><i class="fab fa-instagram"></i> Наш Instagram</a>
+        </div>
+    </div>
+
+    <!-- ================= VIEW: ГЛАВНАЯ ================= -->
+    <section id="view-home" class="view-section active">
+        <div class="container">
+            <div class="hero">
+                <div class="hero-grid">
+                    <div class="hero-text reveal">
+                        <div class="eyebrow">Монохромная эстетика</div>
+                        <h1 class="display">Build Your <em>Wish</em></h1>
+                        <p class="hero-sub">
+                            Базовый гардероб и акцентные вещи в чёрно-белой палитре — минимум шума, максимум стиля. Худи, футболки, верхняя одежда и аксессуары.
+                        </p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="switchView('catalog')">В Каталог</button>
+                        </div>
+                    </div>
+                    <div class="hero-images reveal reveal-d2">
+                        <!-- Плейсхолдеры для фото одежды, чтобы было сразу понятно направление магазина -->
+                        <div class="hero-img"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80" alt="Qnex Hoodie"></div>
+                        <div class="hero-img"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80" alt="Qnex T-Shirt"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="marquee-wrap">
+            <div class="marquee">
+                <span>✦ QNEX SHOP ✦ ДОСТАВКА ПО УЗБЕКИСТАНУ ✦ МОНОХРОМНЫЙ СТИЛЬ ✦ ПРЕМИУМ ХЛОПОК ✦ WORLDWIDE DELIVERY ✦</span>
+                <span aria-hidden="true">✦ QNEX SHOP ✦ ДОСТАВКА ПО УЗБЕКИСТАНУ ✦ МОНОХРОМНЫЙ СТИЛЬ ✦ ПРЕМИУМ ХЛОПОК ✦ WORLDWIDE DELIVERY ✦</span>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="section-title reveal">
+                <div class="eyebrow">Ассортимент</div>
+                <h2 class="display" style="font-size: 32px; margin-top: 10px;">Что мы продаем</h2>
+            </div>
+            <div class="cat-grid reveal reveal-d1">
+                <div class="cat-card" onclick="switchView('catalog')">
+                    <i class="fas fa-user-ninja"></i>
+                    <h3>Худи</h3>
+                    <p>Плотный хлопок, свободный крой.</p>
+                </div>
+                <div class="cat-card" onclick="switchView('catalog')">
+                    <i class="fas fa-tshirt"></i>
+                    <h3>Футболки</h3>
+                    <p>База гардероба — чистые силуэты.</p>
+                </div>
+                <div class="cat-card" onclick="switchView('catalog')">
+                    <i class="fas fa-vest"></i>
+                    <h3>Верхняя одежда</h3>
+                    <p>Куртки и ветровки для смены сезона.</p>
+                </div>
+                <div class="cat-card" onclick="switchView('catalog')">
+                    <i class="fas fa-glasses"></i>
+                    <h3>Аксессуары</h3>
+                    <p>Детали, которые завершают образ.</p>
+                </div>
+            </div>
+
+            <div class="delivery-info reveal">
+                <div class="delivery-item">
+                    <i class="fas fa-location-dot"></i>
+                    <strong>По Узбекистану</strong>
+                    <span>Доставка от 1 до 7 дней</span>
+                </div>
+                <div class="delivery-item">
+                    <i class="fas fa-earth-americas"></i>
+                    <strong>По всему миру</strong>
+                    <span>Доставка от 7 до 14 дней</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= VIEW: КАТАЛОГ ================= -->
+    <section id="view-catalog" class="view-section">
+        <div class="container">
+            <div class="section-title">
+                <h2 class="display" style="font-size: 40px;">Каталог</h2>
+            </div>
+            
+            <div class="catalog-controls">
+                <input type="text" class="search-input" placeholder="Поиск товаров...">
+                <div style="display: flex; gap: 10px; overflow-x: auto;">
+                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Все</button>
+                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Худи</button>
+                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Футболки</button>
+                </div>
+            </div>
+
+            <!-- Сетка товаров (Место для интеграции вашей Firebase базы) -->
+            <div class="products-grid" id="catalog-products">
+                <!-- Демо карточка 1 -->
+                <div class="product-card">
+                    <div class="product-img"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=400&q=80" alt="Black Hoodie"></div>
+                    <div class="product-tag">Худи</div>
+                    <h3 class="product-title">Basic Black Hoodie</h3>
+                    <div class="product-price">350 000 UZS</div>
+                    <button class="buy-btn">Смотреть детальнее</button>
+                </div>
+                
+                <!-- Демо карточка 2 -->
+                <div class="product-card">
+                    <div class="product-img"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=400&q=80" alt="T-Shirt"></div>
+                    <div class="product-tag">Футболки</div>
+                    <h3 class="product-title">Oversize T-Shirt</h3>
+                    <div class="product-price">180 000 UZS</div>
+                    <button class="buy-btn">Смотреть детальнее</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Qnex Shop © 2026. Монохромная эстетика.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Управление темами ---
+        const root = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
+        
+        function setTheme(theme) {
+            root.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        
+        toggle.addEventListener('click', () => {
+            const isLight = root.getAttribute('data-theme') === 'light';
+            setTheme(isLight ? 'dark' : 'light');
+        });
+        
+        // Устанавливаем сохраненную тему
+        if (localStorage.getItem('theme') === 'light') {
+            setTheme('light');
+        }
+
+        // --- Управление View (Главная / Каталог) ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            
+            const navLink = document.getElementById(`nav-${viewName}`);
+            if (navLink) navLink.classList.add('active');
+            
+            window.scrollTo(0, 0);
+        }
+
+        // --- Боковое меню ---
+        const menuOverlay = document.getElementById('menu-overlay');
+        function openMenu() { menuOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { menuOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+        // --- Плавные анимации при скролле ---
+        const revealEls = document.querySelectorAll('.reveal');
+        if ('IntersectionObserver' in window) {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { 
+                        e.target.classList.add('in-view'); 
+                        io.unobserve(e.target); 
+                    }
+                });
+            }, { threshold: 0.15 });
+            revealEls.forEach(el => io.observe(el));
+        } else {
+            revealEls.forEach(el => el.classList.add('in-view'));
+        }
+
+      
+        const firebaseConfig = {
+            apiKey: "ВАШ_КЛЮЧ",
+            authDomain: "gifts-d8f30.firebaseapp.com",
+            projectId: "gifts-d8f30"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // Здесь вы можете продолжить логику загрузки товаров из БД (функция loadProductsCache и т.д.)
+        */
+    </script>
+</body>
+</html>
