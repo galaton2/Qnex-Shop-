@@ -1,434 +1,577 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-    <title>QNEX SHOP — Монохромная одежда</title>
-    <meta name="description" content="Qnex Shop — базовая и акцентная одежда в монохромной эстетике.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>QNEX SHOP — скидка 10% на первый товар по QR</title>
+<meta name="description" content="Вы отсканировали QR-код Qnex Shop — интернет-магазина монохромной одежды: худи, футболки, штаны и аксессуары. Скидка 10% на первый товар уже активна, без промокодов.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230a0a0a'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='34' font-weight='900' fill='%23f4f2ec' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* ============ TOKENS — same system as the main Qnex Shop site ============ */
+:root{
+  --bg:#0a0a0a; --text:#f5f5f3; --border:#f5f5f3;
+  --hover-bg:#f5f5f3; --hover-text:#0a0a0a;
+  --gray-bg:#131313; --shimmer:rgba(255,255,255,0.08);
+  --font-display:'Unbounded', sans-serif;
+  --font-body:'Manrope', sans-serif;
+  --radius-card:16px; --radius-btn:8px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --maxw:1120px;
+}
+[data-theme="light"]{
+  --bg:#fafaf8; --text:#0a0a0a; --border:#0a0a0a;
+  --hover-bg:#0a0a0a; --hover-text:#fafaf8;
+  --gray-bg:#f0efec; --shimmer:rgba(0,0,0,0.06);
+}
 
-    <!-- Firebase SDK (Оставлено для вашей базы данных) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;touch-action:manipulation;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:var(--font-body);
+  min-height:100svh; overflow-x:hidden;
+  transition:background .4s var(--ease), color .4s var(--ease);
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+}
+img,svg{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+.container{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+.eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;opacity:.6;font-weight:700;}
+.display{font-family:var(--font-display);font-weight:800;letter-spacing:.01em;text-transform:uppercase;line-height:1.05;}
+::selection{background:var(--text);color:var(--bg);}
+:focus-visible{outline:2px solid var(--text);outline-offset:2px;}
 
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
+}
 
-    <!-- Шрифты -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+/* ============ TOP MARQUEE — identical component to the main site ============ */
+.marquee-wrapper{width:100%;overflow:hidden;border-bottom:1px solid var(--border);padding:10px 0;white-space:nowrap;background:var(--bg);position:relative;z-index:41;}
+.marquee-content{display:inline-block;animation:marquee 24s linear infinite;}
+.marquee-content a{color:var(--text);font-size:12px;margin:0 26px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;font-family:var(--font-body);display:inline-flex;align-items:center;gap:8px;transition:opacity .25s;}
+.marquee-content a:hover{opacity:.65;}
+@keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
-    <style>
-        /* ============ TOKENS & THEMES ============ */
-        :root {
-            --bg: #0a0a0a;
-            --bg-elev: #131311;
-            --bg-elev-2: #1a1a17;
-            --fg: #f4f2ec;
-            --fg-dim: #9c9a90;
-            --fg-dimmer: #6b6a62;
-            --line: #2b2a25;
-            --radius: 8px;
-            --radius-lg: 16px;
-            --ease: cubic-bezier(.16,1,.3,1);
-            --maxw: 1200px;
-            --font-display: 'Anton', sans-serif;
-            --font-body: 'Inter', sans-serif;
-        }
-        [data-theme="light"] {
-            --bg: #f2efe6;
-            --bg-elev: #ffffff;
-            --bg-elev-2: #e9e5d8;
-            --fg: #100f0c;
-            --fg-dim: #59564c;
-            --fg-dimmer: #8a877c;
-            --line: #dcd8ca;
-        }
+/* ============ AMBIENT BG ============ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.ambient span{position:absolute;border-radius:50%;border:1px solid var(--border);opacity:.12;animation:drift 26s ease-in-out infinite;}
+.ambient span:nth-child(1){width:520px;height:520px;top:-220px;left:-160px;animation-duration:32s;}
+.ambient span:nth-child(2){width:340px;height:340px;bottom:-140px;right:-100px;animation-duration:24s;animation-delay:-6s;}
+.ambient span:nth-child(3){width:180px;height:180px;top:38%;right:8%;animation-duration:20s;animation-delay:-3s;}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(24px,-18px) scale(1.04);}}
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body {
-            background: var(--bg); color: var(--fg);
-            font-family: var(--font-body);
-            min-height: 100svh; overflow-x: hidden;
-            transition: background 0.4s var(--ease), color 0.4s var(--ease);
-            -webkit-font-smoothing: antialiased;
-        }
-        img, svg { display: block; max-width: 100%; }
-        a { color: inherit; text-decoration: none; }
-        button, input { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-        .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
-        
-        .eyebrow { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--fg-dim); font-weight: 600; }
-        .display { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.1; }
+/* ============ HEADER ============ */
+header{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;
+  backdrop-filter:blur(10px);
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom:1px solid var(--border);
+}
+.logo{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;opacity:0;animation:logo-in .7s var(--ease) .15s forwards;}
+@keyframes logo-in{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.theme-toggle{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .3s var(--ease), background .3s, color .3s;
+}
+.theme-toggle:hover{background:var(--hover-bg);color:var(--hover-text);transform:rotate(20deg);}
+.theme-toggle svg{width:16px;height:16px;}
+.icon-moon{display:none;}
+[data-theme="light"] .icon-sun{display:none;}
+[data-theme="light"] .icon-moon{display:block;}
 
-        /* ============ АНИМАЦИИ ПОЯВЛЕНИЯ ============ */
-        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
-        .reveal.in-view { opacity: 1; transform: translateY(0); }
-        .reveal-d1 { transition-delay: 0.1s; }
-        .reveal-d2 { transition-delay: 0.2s; }
-        .reveal-d3 { transition-delay: 0.3s; }
+/* ============ REVEAL UTILITY ============ */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease), transform .8s var(--ease);}
+.reveal.in-view{opacity:1;transform:translateY(0);}
+.reveal-d1{transition-delay:.08s;}
+.reveal-d2{transition-delay:.16s;}
+.reveal-d3{transition-delay:.24s;}
+.reveal-d4{transition-delay:.32s;}
 
-        /* ============ АМБИЕНТНЫЙ ФОН ============ */
-        .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .ambient span {
-            position: absolute; border-radius: 50%; border: 1px solid var(--line);
-            opacity: 0.5; animation: drift 26s ease-in-out infinite;
-        }
-        .ambient span:nth-child(1) { width: 520px; height: 520px; top: -220px; left: -160px; animation-duration: 32s; }
-        .ambient span:nth-child(2) { width: 340px; height: 340px; bottom: -140px; right: -100px; animation-duration: 24s; animation-delay: -6s; }
-        .grain {
-            position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-        @keyframes drift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(24px, -18px) scale(1.04); }
-        }
+/* ============ HERO ============ */
+.hero{position:relative;z-index:2;min-height:92svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:90px 24px 70px;}
+.scan-line{font-family:var(--font-body);font-size:11px;letter-spacing:.28em;text-transform:uppercase;opacity:.65;margin-bottom:20px;height:16px;display:flex;align-items:center;gap:10px;font-weight:700;}
+.scan-dot{width:6px;height:6px;border-radius:50%;background:#8fd47a;box-shadow:0 0 8px #8fd47a;animation:pulse-dot 1.4s ease-in-out infinite;flex-shrink:0;}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.25;}}
+.scan-text{border-right:2px solid var(--text);white-space:nowrap;overflow:hidden;width:0;animation:type 1.15s steps(19,end) .3s forwards, caret .8s step-end infinite .3s;}
+@keyframes type{to{width:19ch;}}
+@keyframes caret{50%{border-color:transparent;}}
 
-        /* ============ HEADER & NAV ============ */
-        header {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 40;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 24px; backdrop-filter: blur(10px);
-            background: color-mix(in srgb, var(--bg) 85%, transparent);
-            border-bottom: 1px solid var(--line);
-        }
-        .logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.08em; cursor: pointer; }
-        .nav-links { display: flex; gap: 24px; display: none; } /* Скрыто на мобильных, управляется через меню */
-        @media (min-width: 768px) { .nav-links { display: flex; } }
-        .nav-link { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.6; transition: 0.3s; }
-        .nav-link.active, .nav-link:hover { opacity: 1; }
-        
-        .header-actions { display: flex; align-items: center; gap: 16px; }
-        .theme-toggle, .menu-toggle {
-            width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
-            display: flex; align-items: center; justify-content: center; transition: 0.3s;
-        }
-        .theme-toggle:hover, .menu-toggle:hover { border-color: var(--fg); background: var(--fg); color: var(--bg); }
-        .icon-moon { display: none; }
-        [data-theme="light"] .icon-sun { display: none; }
-        [data-theme="light"] .icon-moon { display: block; }
+.hero h1{font-size:clamp(34px,9vw,68px);max-width:760px;}
+.hero h1 em{font-style:normal;opacity:.55;}
+.hero-sub{margin-top:22px;max-width:560px;font-size:16px;line-height:1.65;opacity:.75;}
+.hero-sub b{opacity:1;font-weight:800;}
+.founded-row{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;font-weight:700;}
+.founded-row .dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.7;}
 
-        /* ============ VIEW УПРАВЛЕНИЕ ============ */
-        .view-section { display: none; position: relative; z-index: 2; padding-top: 80px; }
-        .view-section.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.hero-actions{margin-top:34px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:15px 28px;font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  border-radius:var(--radius-btn); border:1px solid var(--border);
+  transition:transform .3s var(--ease), background .3s, color .3s;
+}
+.btn-primary{background:var(--text);color:var(--bg);}
+.btn-primary:hover{background:var(--hover-bg);color:var(--hover-text);transform:translateY(-3px);}
+.btn-outline{background:transparent;color:var(--text);}
+.btn-outline:hover{background:var(--hover-bg);color:var(--hover-text);transform:translateY(-3px);}
+.btn:active{transform:translateY(-1px) scale(.98);}
+.btn svg,.btn i{width:14px;font-size:14px;}
+.scroll-cue{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.45;animation:bob 2.2s ease-in-out infinite;font-weight:700;}
+@keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
+.scroll-cue svg{width:14px;height:14px;}
 
-        /* ============ HERO СЕКЦИЯ (ОДЕЖДА) ============ */
-        .hero { min-height: 90svh; display: flex; align-items: center; padding: 40px 0; }
-        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
-        .hero-text h1 { font-size: clamp(40px, 6vw, 72px); margin: 16px 0; }
-        .hero-text h1 em { font-style: normal; color: var(--fg-dim); display: block; }
-        .hero-sub { font-size: 16px; line-height: 1.6; color: var(--fg-dim); margin-bottom: 30px; max-width: 480px; }
-        
-        /* Коллаж с одеждой */
-        .hero-images { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: relative; }
-        .hero-img { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4/5; background: var(--bg-elev); }
-        .hero-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease); }
-        .hero-img:hover img { transform: scale(1.05); }
-        .hero-img:nth-child(2) { transform: translateY(40px); }
+/* ============ PRODUCT MARQUEE (mid page) ============ */
+.marquee-wrap{position:relative;z-index:2;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--gray-bg);overflow:hidden;padding:14px 0;}
+.marquee2{display:flex;width:max-content;animation:scroll-x 24s linear infinite;}
+.marquee2 span{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;padding:0 26px;white-space:nowrap;opacity:.55;display:flex;align-items:center;gap:26px;}
+.marquee2 span b{opacity:1;}
+@keyframes scroll-x{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 16px 32px; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-            border-radius: var(--radius); transition: transform 0.3s var(--ease), background 0.3s, color 0.3s, border-color 0.3s;
-        }
-        .btn-primary { background: var(--fg); color: var(--bg); }
-        .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .btn-outline { border: 1px solid var(--line); }
-        .btn-outline:hover { border-color: var(--fg); background: var(--fg); color: var(--bg); }
+/* ============ SECTION SHELL ============ */
+section{position:relative;z-index:2;padding:100px 0;}
+.sec-head{max-width:620px;margin:0 auto 50px;text-align:center;padding:0 24px;}
+.sec-head h2{font-size:clamp(28px,5.5vw,46px);margin-top:12px;}
+.sec-head p{margin-top:14px;opacity:.7;font-size:15px;line-height:1.7;}
 
-        @media (max-width: 860px) {
-            .hero-grid { grid-template-columns: 1fr; text-align: center; margin-top: 20px;}
-            .hero-sub { margin-left: auto; margin-right: auto; }
-            .hero-images { max-width: 500px; margin: 40px auto 0; padding-bottom: 40px;}
-        }
+/* ============ OFFER ============ */
+.offer{background:var(--gray-bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.offer-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:60px;align-items:center;max-width:1000px;margin:0 auto;padding:0 24px;}
+.stamp-wrap{display:flex;justify-content:center;}
+.stamp{
+  width:236px;height:236px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--hover-bg) 100%, white 0%), var(--hover-bg) 55%, color-mix(in srgb, var(--hover-bg) 78%, var(--bg) 22%) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--hover-text);
+  position:relative;transform:scale(0) rotate(-18deg);
+  animation:stamp-in 1s var(--ease) .3s forwards;
+  box-shadow:0 20px 60px -20px rgba(0,0,0,.5);
+}
+.stamp::before{content:'';position:absolute;inset:13px;border-radius:50%;border:2px dashed color-mix(in srgb, var(--hover-text) 35%, transparent);}
+.stamp .num{font-family:var(--font-display);font-size:56px;font-weight:900;line-height:1;}
+.stamp .lbl{font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-top:6px;font-weight:800;}
+.stamp .lbl2{font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-top:2px;opacity:.65;font-weight:700;}
+@keyframes stamp-in{0%{transform:scale(2.1) rotate(-18deg);opacity:0;}60%{transform:scale(.92) rotate(-6deg);opacity:1;}80%{transform:scale(1.04) rotate(-2deg);}100%{transform:scale(1) rotate(-4deg);}}
+.stamp-shine{position:absolute;inset:0;border-radius:50%;overflow:hidden;}
+.stamp-shine::after{content:'';position:absolute;top:-50%;left:-60%;width:36%;height:200%;background:linear-gradient(115deg, transparent, color-mix(in srgb, var(--hover-text) 45%, transparent), transparent);animation:shine 3.8s ease-in-out infinite 1.6s;}
+@keyframes shine{0%{transform:translateX(0) rotate(20deg);}100%{transform:translateX(420%) rotate(20deg);}}
 
-        /* ============ БЕГУЩАЯ СТРОКА ============ */
-        .marquee-wrap { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-elev); overflow: hidden; padding: 12px 0; margin-bottom: 60px; }
-        .marquee { display: flex; width: max-content; animation: scroll-x 20s linear infinite; }
-        .marquee span { font-family: var(--font-body); font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 0 28px; color: var(--fg-dim); display: flex; align-items: center; gap: 28px; }
-        @keyframes scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.offer-copy p{opacity:.75;font-size:15px;line-height:1.7;margin-top:14px;max-width:440px;}
+.offer-copy p b{opacity:1;color:var(--text);font-weight:800;}
+.offer-copy h2{font-size:clamp(26px,5vw,40px);margin-top:8px;}
 
-        /* ============ КАТЕГОРИИ ============ */
-        .section-title { text-align: center; margin-bottom: 40px; }
-        .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 80px; }
-        .cat-card { background: var(--bg); padding: 40px 24px; text-align: center; transition: 0.3s; cursor: pointer; }
-        .cat-card:hover { background: var(--bg-elev); }
-        .cat-card i { font-size: 32px; margin-bottom: 16px; color: var(--fg); transition: 0.4s var(--ease); }
-        .cat-card:hover i { transform: translateY(-8px); }
-        .cat-card h3 { font-size: 15px; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
-        .cat-card p { font-size: 13px; color: var(--fg-dim); line-height: 1.5; }
-        @media (max-width: 768px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+.mini-steps{margin-top:28px;display:flex;flex-direction:column;gap:0;max-width:460px;border-top:1px solid var(--border);}
+.mini-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.mini-step .mn{font-family:var(--font-display);font-size:22px;font-weight:800;opacity:.35;min-width:34px;line-height:1.3;}
+.mini-step h4{font-size:14px;font-weight:800;letter-spacing:.01em;}
+.mini-step p{margin-top:4px;opacity:.65;font-size:13px;line-height:1.55;max-width:360px;}
 
-        /* ============ ДОСТАВКА (ИЗ MAIN КОДА) ============ */
-        .delivery-info { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 30px 0; margin-bottom: 80px; text-align: center; }
-        .delivery-item { flex: 1; min-width: 260px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .delivery-item i { font-size: 24px; color: var(--fg-dim); }
-        .delivery-item strong { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .delivery-item span { font-size: 14px; color: var(--fg-dim); }
+.offer-note{margin-top:18px;font-size:12.5px;opacity:.55;max-width:420px;line-height:1.6;}
+.offer-actions{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;}
 
-        /* ============ КАТАЛОГ И ТОВАРЫ ============ */
-        .catalog-controls { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; margin-bottom: 30px; }
-        .search-input { padding: 14px 20px; border: 1px solid var(--line); border-radius: var(--radius); width: 100%; max-width: 300px; font-size: 14px; background: var(--bg-elev); color: var(--fg); }
-        
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; margin-bottom: 80px; }
-        .product-card {
-            background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius-lg);
-            padding: 16px; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;
-        }
-        .product-card:hover { transform: translateY(-6px); border-color: var(--fg-dim); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
-        .product-img { width: 100%; aspect-ratio: 4/5; background: var(--bg-elev-2); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
-        .product-img img { width: 100%; height: 100%; object-fit: cover; }
-        .product-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--fg-dim); margin-bottom: 6px; }
-        .product-title { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; }
-        .product-price { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-        
-        .buy-btn { width: 100%; padding: 12px; border: 1px solid var(--line); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; font-size: 12px; border-radius: var(--radius); transition: 0.3s; }
-        .buy-btn:hover { background: var(--fg); color: var(--bg); }
+/* ============ CATEGORIES ============ */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);max-width:var(--maxw);margin:0 auto;border-radius:var(--radius-card);overflow:hidden;}
+.cat-card{background:var(--bg);padding:22px 20px 26px;text-align:left;transition:background .3s;}
+.cat-card:hover{background:var(--gray-bg);}
+.cat-photo{
+  position:relative;aspect-ratio:1/1;border-radius:calc(var(--radius-card) - 6px);
+  background:linear-gradient(155deg, var(--gray-bg), color-mix(in srgb, var(--gray-bg) 60%, var(--bg) 40%));
+  display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;
+}
+.cat-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg, transparent 40%, var(--shimmer) 50%, transparent 60%);transform:translateX(-120%);transition:transform .7s var(--ease);}
+.cat-card:hover .cat-photo::after{transform:translateX(120%);}
+.cat-photo .icon-wrap{width:52%;height:52%;color:var(--text);opacity:.85;transition:transform .5s var(--ease);}
+.cat-card:hover .cat-photo .icon-wrap{transform:translateY(-4px) scale(1.05);}
+.cat-card h3{font-size:14px;letter-spacing:.03em;text-transform:uppercase;font-weight:800;}
+.cat-card p{margin-top:8px;font-size:12.5px;opacity:.6;line-height:1.55;}
+.cat-cta{text-align:center;margin-top:40px;}
+.cat-cta a{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--text);padding-bottom:4px;transition:opacity .25s;}
+.cat-cta a:hover{opacity:.6;}
 
-        /* ============ ПОДВАЛ И МЕНЮ ============ */
-        footer { padding: 40px 0; border-top: 1px solid var(--line); text-align: center; color: var(--fg-dim); font-size: 13px; position: relative; z-index: 2;}
-        
-        .menu-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100;
-            display: flex; justify-content: flex-end;
-        }
-        .menu-overlay.open { opacity: 1; pointer-events: auto; }
-        .menu-panel {
-            background: var(--bg); border-left: 1px solid var(--line);
-            width: 100%; max-width: 320px; height: 100%; padding: 30px;
-            transform: translateX(100%); transition: transform 0.4s var(--ease);
-            display: flex; flex-direction: column;
-        }
-        .menu-overlay.open .menu-panel { transform: translateX(0); }
-        .menu-close { align-self: flex-end; font-size: 24px; margin-bottom: 30px; }
-        
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--line); font-size: 14px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; transition: 0.3s; }
-        .menu-item:hover { color: var(--fg-dim); padding-left: 20px; }
-    </style>
+/* ============ TRUST ============ */
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);max-width:var(--maxw);margin:0 auto;border-radius:var(--radius-card);overflow:hidden;}
+.trust-card{background:var(--bg);padding:36px 24px;text-align:center;}
+.trust-card .big{font-family:var(--font-display);font-size:30px;font-weight:800;}
+.trust-card p{margin-top:8px;font-size:12.5px;opacity:.65;letter-spacing:.03em;text-transform:uppercase;font-weight:700;}
+.brand-line{max-width:620px;margin:56px auto 0;text-align:center;padding:0 24px;}
+.brand-line p{font-size:19px;line-height:1.5;font-family:var(--font-display);font-weight:700;text-transform:none;letter-spacing:.005em;opacity:.65;}
+
+/* ============ FINAL CTA ============ */
+.final-cta{text-align:center;padding-bottom:130px;}
+.final-cta h2{font-size:clamp(32px,7.5vw,64px);}
+.final-cta p{margin-top:16px;opacity:.7;font-size:15px;max-width:480px;margin-left:auto;margin-right:auto;}
+.final-actions{margin-top:32px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
+
+/* ============ FOOTER ============ */
+footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40px 24px 110px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;max-width:var(--maxw);margin:0 auto;}
+.foot-note{font-size:11px;opacity:.45;max-width:420px;line-height:1.6;}
+.foot-social{display:flex;gap:14px;}
+.foot-social a{width:38px;height:38px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .3s, color .3s, transform .3s;font-size:14px;}
+.foot-social a:hover{background:var(--hover-bg);color:var(--hover-text);transform:translateY(-3px);}
+
+/* ============ CONFETTI ============ */
+.confetti-layer{position:fixed;inset:0;z-index:50;pointer-events:none;overflow:hidden;}
+.confetti-piece{position:absolute;top:-10%;width:8px;height:14px;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg);opacity:.15;}}
+
+/* ============ STICKY BAR ============ */
+.sticky-bar{
+  position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:45;
+  background:var(--gray-bg);border:1px solid var(--border);border-radius:var(--radius-card);
+  padding:12px 12px 12px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.5);
+  transform:translateY(140%);transition:transform .5s var(--ease);
+}
+.sticky-bar.visible{transform:translateY(0);}
+.sticky-copy{display:flex;flex-direction:column;line-height:1.25;flex-shrink:0;}
+.sticky-copy span{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;font-weight:700;}
+.sticky-copy b{font-family:var(--font-display);font-size:14px;font-weight:800;}
+.sticky-cta{background:var(--text);color:var(--bg);padding:11px 16px;border-radius:calc(var(--radius-btn) - 1px);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;transition:background .3s,color .3s;margin-left:auto;display:flex;align-items:center;gap:7px;}
+.sticky-cta:hover{background:var(--hover-bg);color:var(--hover-text);}
+.sticky-dismiss{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:.4;flex-shrink:0;transition:opacity .25s,background .25s;font-size:11px;}
+.sticky-dismiss:hover{opacity:1;background:var(--shimmer);}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:900px){
+  .offer-grid{grid-template-columns:1fr;gap:36px;}
+  .stamp-wrap{order:-1;}
+  .cat-grid{grid-template-columns:repeat(2,1fr);}
+  .trust-grid{grid-template-columns:1fr;}
+}
+@media (max-width:640px){
+  header{padding:14px 18px;}
+  .logo{font-size:14px;letter-spacing:1.8px;}
+  .hero{padding:60px 20px 60px;min-height:auto;}
+  section{padding:70px 0;}
+  .final-cta{padding-bottom:120px;}
+  .offer-copy p,.offer-copy h2{max-width:100%;}
+  .mini-steps,.offer-note{max-width:100%;}
+  .cat-card{padding:16px 14px 20px;}
+  .footer,footer{justify-content:center;text-align:center;}
+  .sticky-bar{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:10px 10px 10px 14px;}
+  .sticky-copy b{font-size:12.5px;}
+  .stamp{width:190px;height:190px;}
+  .stamp .num{font-size:44px;}
+}
+@media (max-width:380px){
+  .sticky-copy span{display:none;}
+  .btn{padding:14px 20px;font-size:11.5px;}
+}
+</style>
 </head>
 <body>
 
-    <!-- Фоновые элементы -->
-    <div class="ambient" aria-hidden="true"><span></span><span></span></div>
-    <div class="grain" aria-hidden="true"></div>
+<div class="marquee-wrapper">
+  <div class="marquee-content" id="marqueeTop"></div>
+</div>
 
-    <!-- Header -->
-    <header>
-        <div class="logo" onclick="switchView('home')">QNEX</div>
-        <nav class="nav-links">
-            <button class="nav-link active" id="nav-home" onclick="switchView('home')">Главная</button>
-            <button class="nav-link" id="nav-catalog" onclick="switchView('catalog')">Каталог</button>
-        </nav>
-        <div class="header-actions">
-            <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
-                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
-            </button>
-            <button class="menu-toggle" onclick="openMenu()">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </header>
+<div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="grain" aria-hidden="true"></div>
 
-    <!-- Боковое меню -->
-    <div class="menu-overlay" id="menu-overlay" onclick="if(event.target===this) closeMenu();">
-        <div class="menu-panel">
-            <button class="menu-close" onclick="closeMenu()"><i class="fas fa-times"></i></button>
-            <button class="menu-item" onclick="switchView('home'); closeMenu();"><i class="fas fa-home"></i> Главная</button>
-            <button class="menu-item" onclick="switchView('catalog'); closeMenu();"><i class="fas fa-tshirt"></i> Каталог</button>
-            <a href="#" class="menu-item"><i class="fab fa-telegram-plane"></i> Наш Telegram</a>
-            <a href="#" class="menu-item"><i class="fab fa-instagram"></i> Наш Instagram</a>
+<header>
+  <div class="logo">QNEX SHOP</div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+  </button>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="scan-line"><span class="scan-dot"></span><span class="scan-text">QR-КОД РАСПОЗНАН</span></div>
+  <h1 class="display reveal in-view reveal-d1">Добро пожаловать <em>в Qnex Shop</em></h1>
+  <p class="hero-sub reveal in-view reveal-d2">
+    Вы отсканировали QR-код <b>Qnex Shop</b> — магазина одежды в монохромной эстетике: худи, футболки, штаны и аксессуары.
+    В подарок вам — <b>скидка 10% на первый товар</b>. Без промокодов: просто напишите нам, и мы применим её сами.
+  </p>
+  <div class="founded-row reveal in-view reveal-d3">
+    <span>🇺🇿 Основан в Узбекистане</span><span class="dot"></span><span>EST. 2021</span><span class="dot"></span><span>Монохромная эстетика</span>
+  </div>
+  <div class="hero-actions reveal in-view reveal-d4">
+    <a href="#offer" class="btn btn-primary">Получить скидку 10%</a>
+    <a href="/" class="btn btn-outline">Смотреть каталог</a>
+  </div>
+  <div class="scroll-cue"><span>Листай вниз</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v16M6 14l6 6 6-6"/></svg></div>
+</section>
+
+<!-- PRODUCT MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee2" id="marquee">
+    <span><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −10% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −10% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦</span>
+    <span aria-hidden="true"><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −10% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −10% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦</span>
+  </div>
+</div>
+
+<!-- OFFER -->
+<section class="offer" id="offer">
+  <div class="offer-grid">
+    <div class="stamp-wrap reveal">
+      <div class="stamp">
+        <div class="stamp-shine"></div>
+        <div class="num">-10%</div>
+        <div class="lbl">на первый</div>
+        <div class="lbl2">товар · Qnex Shop</div>
+      </div>
+    </div>
+    <div class="offer-copy">
+      <div class="eyebrow reveal">Ваш бонус за QR</div>
+      <h2 class="display reveal reveal-d1">Скидка активна. Код не нужен.</h2>
+      <p class="reveal reveal-d2"><b>10% скидка на первый товар</b> в вашем заказе уже закреплена за визитом по QR — ничего вводить не нужно. Выберите вещи и напишите нам, мы применим её вручную.</p>
+
+      <div class="mini-steps reveal reveal-d3">
+        <div class="mini-step">
+          <div class="mn">01</div>
+          <div>
+            <h4>Выберите вещи в каталоге</h4>
+            <p>Худи, футболки, штаны или аксессуары в монохромной палитре.</p>
+          </div>
         </div>
+        <div class="mini-step">
+          <div class="mn">02</div>
+          <div>
+            <h4>Напишите нам в Telegram или Instagram</h4>
+            <p>Скажите, что пришли по QR — применим скидку 10% на первый товар вручную.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="offer-note reveal reveal-d4">Скидка действует 24 часа с момента сканирования — не откладывайте сообщение на потом.</p>
+
+      <div class="offer-actions reveal reveal-d4">
+        <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-primary tg-link">
+          <i class="fab fa-telegram-plane"></i> Telegram
+        </a>
+        <a href="https://ig.me/m/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline">
+          <i class="fab fa-instagram"></i> Instagram
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="catalog">
+  <div class="sec-head">
+    <div class="eyebrow reveal">Что мы продаём</div>
+    <h2 class="display reveal reveal-d1">Одежда. Монохромно.</h2>
+    <p class="reveal reveal-d2">Базовый гардероб и акцентные вещи в чёрно-белой палитре — минимум шума, максимум стиля.</p>
+  </div>
+  <div class="cat-grid">
+
+    <div class="cat-card reveal">
+      <!-- ФОТО ТОВАРА: чтобы поставить реальное фото худи, замените блок ниже на
+           <img src="/images/hoodie.jpg" alt="Худи Qnex Shop" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;"> -->
+      <div class="cat-photo">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M23 9c2.5 2.5 6 3.5 9 3.5s6.5-1 9-3.5l10 9-6 6.5-3.5-3V55H19.5V21.5l-3.5 3L10 18l13-9Z"/>
+            <path d="M25 12.5c1.5 3 4 4.5 7 4.5s5.5-1.5 7-4.5"/>
+          </svg>
+        </div>
+      </div>
+      <h3>Худи</h3>
+      <p>Плотный хлопок, свободный крой, чёрно-белая палитра.</p>
     </div>
 
-    <!-- ================= VIEW: ГЛАВНАЯ ================= -->
-    <section id="view-home" class="view-section active">
-        <div class="container">
-            <div class="hero">
-                <div class="hero-grid">
-                    <div class="hero-text reveal">
-                        <div class="eyebrow">Монохромная эстетика</div>
-                        <h1 class="display">Build Your <em>Wish</em></h1>
-                        <p class="hero-sub">
-                            Базовый гардероб и акцентные вещи в чёрно-белой палитре — минимум шума, максимум стиля. Худи, футболки, верхняя одежда и аксессуары.
-                        </p>
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn btn-primary" onclick="switchView('catalog')">В Каталог</button>
-                        </div>
-                    </div>
-                    <div class="hero-images reveal reveal-d2">
-                        <!-- Плейсхолдеры для фото одежды, чтобы было сразу понятно направление магазина -->
-                        <div class="hero-img"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80" alt="Qnex Hoodie"></div>
-                        <div class="hero-img"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=600&q=80" alt="Qnex T-Shirt"></div>
-                    </div>
-                </div>
-            </div>
+    <div class="cat-card reveal reveal-d1">
+      <!-- ФОТО ТОВАРА: замените на <img src="/images/tshirt.jpg" alt="Футболка Qnex Shop" ...> -->
+      <div class="cat-photo">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M24 10 14 16l4 8 4-2v33h20V22l4 2 4-8-10-6c0 3.5-3 6-8 6s-8-2.5-8-6Z"/>
+          </svg>
         </div>
+      </div>
+      <h3>Футболки</h3>
+      <p>База гардероба — чистые силуэты, плотная ткань.</p>
+    </div>
 
-        <div class="marquee-wrap">
-            <div class="marquee">
-                <span>✦ QNEX SHOP ✦ ДОСТАВКА ПО УЗБЕКИСТАНУ ✦ МОНОХРОМНЫЙ СТИЛЬ ✦ ПРЕМИУМ ХЛОПОК ✦ WORLDWIDE DELIVERY ✦</span>
-                <span aria-hidden="true">✦ QNEX SHOP ✦ ДОСТАВКА ПО УЗБЕКИСТАНУ ✦ МОНОХРОМНЫЙ СТИЛЬ ✦ ПРЕМИУМ ХЛОПОК ✦ WORLDWIDE DELIVERY ✦</span>
-            </div>
+    <div class="cat-card reveal reveal-d2">
+      <!-- ФОТО ТОВАРА: замените на <img src="/images/pants.jpg" alt="Штаны Qnex Shop" ...> -->
+      <div class="cat-photo">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M20 9h24l2 11-2.5 2 2.5 33h-9.5l-4-26-4 26H19l2.5-33L19 20l1-11Z"/>
+            <path d="M20 9c0-3 2.5-5.5 5.5-5.5h13c3 0 5.5 2.5 5.5 5.5"/>
+          </svg>
         </div>
+      </div>
+      <h3>Штаны</h3>
+      <p>Свободный и зауженный крой на каждый день.</p>
+    </div>
 
-        <div class="container">
-            <div class="section-title reveal">
-                <div class="eyebrow">Ассортимент</div>
-                <h2 class="display" style="font-size: 32px; margin-top: 10px;">Что мы продаем</h2>
-            </div>
-            <div class="cat-grid reveal reveal-d1">
-                <div class="cat-card" onclick="switchView('catalog')">
-                    <i class="fas fa-user-ninja"></i>
-                    <h3>Худи</h3>
-                    <p>Плотный хлопок, свободный крой.</p>
-                </div>
-                <div class="cat-card" onclick="switchView('catalog')">
-                    <i class="fas fa-tshirt"></i>
-                    <h3>Футболки</h3>
-                    <p>База гардероба — чистые силуэты.</p>
-                </div>
-                <div class="cat-card" onclick="switchView('catalog')">
-                    <i class="fas fa-vest"></i>
-                    <h3>Верхняя одежда</h3>
-                    <p>Куртки и ветровки для смены сезона.</p>
-                </div>
-                <div class="cat-card" onclick="switchView('catalog')">
-                    <i class="fas fa-glasses"></i>
-                    <h3>Аксессуары</h3>
-                    <p>Детали, которые завершают образ.</p>
-                </div>
-            </div>
-
-            <div class="delivery-info reveal">
-                <div class="delivery-item">
-                    <i class="fas fa-location-dot"></i>
-                    <strong>По Узбекистану</strong>
-                    <span>Доставка от 1 до 7 дней</span>
-                </div>
-                <div class="delivery-item">
-                    <i class="fas fa-earth-americas"></i>
-                    <strong>По всему миру</strong>
-                    <span>Доставка от 7 до 14 дней</span>
-                </div>
-            </div>
+    <div class="cat-card reveal reveal-d3">
+      <!-- ФОТО ТОВАРА: замените на <img src="/images/accessories.jpg" alt="Аксессуары Qnex Shop" ...> -->
+      <div class="cat-photo">
+        <div class="icon-wrap">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M18 27c0-8 6-14 14-14s14 6 14 14"/>
+            <path d="M12 27h40l-3 26H15l-3-26Z"/>
+          </svg>
         </div>
-    </section>
+      </div>
+      <h3>Аксессуары</h3>
+      <p>Кепки, сумки и детали, которые завершают образ.</p>
+    </div>
 
-    <!-- ================= VIEW: КАТАЛОГ ================= -->
-    <section id="view-catalog" class="view-section">
-        <div class="container">
-            <div class="section-title">
-                <h2 class="display" style="font-size: 40px;">Каталог</h2>
-            </div>
-            
-            <div class="catalog-controls">
-                <input type="text" class="search-input" placeholder="Поиск товаров...">
-                <div style="display: flex; gap: 10px; overflow-x: auto;">
-                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Все</button>
-                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Худи</button>
-                    <button class="btn btn-outline" style="padding: 10px 20px; font-size: 11px;">Футболки</button>
-                </div>
-            </div>
+  </div>
+  <div class="cat-cta reveal"><a href="/">Открыть полный каталог →</a></div>
+</section>
 
-            <!-- Сетка товаров (Место для интеграции вашей Firebase базы) -->
-            <div class="products-grid" id="catalog-products">
-                <!-- Демо карточка 1 -->
-                <div class="product-card">
-                    <div class="product-img"><img src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=400&q=80" alt="Black Hoodie"></div>
-                    <div class="product-tag">Худи</div>
-                    <h3 class="product-title">Basic Black Hoodie</h3>
-                    <div class="product-price">350 000 UZS</div>
-                    <button class="buy-btn">Смотреть детальнее</button>
-                </div>
-                
-                <!-- Демо карточка 2 -->
-                <div class="product-card">
-                    <div class="product-img"><img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=400&q=80" alt="T-Shirt"></div>
-                    <div class="product-tag">Футболки</div>
-                    <h3 class="product-title">Oversize T-Shirt</h3>
-                    <div class="product-price">180 000 UZS</div>
-                    <button class="buy-btn">Смотреть детальнее</button>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- TRUST -->
+<section>
+  <div class="trust-grid">
+    <div class="trust-card reveal">
+      <div class="big">1–7 дней</div>
+      <p>Доставка по Узбекистану</p>
+    </div>
+    <div class="trust-card reveal reveal-d1">
+      <div class="big">7–14 дней</div>
+      <p>Доставка по всему миру</p>
+    </div>
+    <div class="trust-card reveal reveal-d2">
+      <div class="big">EST. 2021</div>
+      <p>🇺🇿 Основан в Узбекистане</p>
+    </div>
+  </div>
+  <div class="brand-line reveal">
+    <p>«Мы убираем лишний шум, чтобы предложить вам чистый, неподдельный стиль»</p>
+  </div>
+</section>
 
-    <footer>
-        <div class="container">
-            <p>Qnex Shop © 2026. Монохромная эстетика.</p>
-        </div>
-    </footer>
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="eyebrow reveal">Скидка активна</div>
+  <h2 class="display reveal reveal-d1">Стиль ждёт.</h2>
+  <p class="reveal reveal-d2">Код вводить не нужно — просто напишите нам, и мы применим <b>скидку 10% на первый товар</b> в вашем заказе.</p>
+  <div class="final-actions reveal reveal-d3">
+    <a href="/" class="btn btn-primary">Смотреть каталог</a>
+    <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline tg-link"><i class="fab fa-telegram-plane"></i> Telegram</a>
+    <a href="https://ig.me/m/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline"><i class="fab fa-instagram"></i> Instagram</a>
+  </div>
+</section>
 
-    <script>
-        // --- Управление темами ---
-        const root = document.documentElement;
-        const toggle = document.getElementById('themeToggle');
-        
-        function setTheme(theme) {
-            root.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-        }
-        
-        toggle.addEventListener('click', () => {
-            const isLight = root.getAttribute('data-theme') === 'light';
-            setTheme(isLight ? 'dark' : 'light');
-        });
-        
-        // Устанавливаем сохраненную тему
-        if (localStorage.getItem('theme') === 'light') {
-            setTheme('light');
-        }
+<footer>
+  <div class="foot-note">
+    Скидка 10% действует на первый товар в заказе для тех, кто пришёл по QR-коду Qnex Shop, и оформляется вручную при заказе через Telegram или Instagram. Qnex Shop, 2026.
+  </div>
+  <div class="foot-social">
+    <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" aria-label="Telegram" class="tg-link"><i class="fab fa-telegram-plane"></i></a>
+    <a href="https://instagram.com/qnex_shop" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.tiktok.com/@qnex_shop" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+  </div>
+</footer>
 
-        // --- Управление View (Главная / Каталог) ---
-        function switchView(viewName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+<!-- STICKY BAR -->
+<div class="sticky-bar" id="stickyBar">
+  <div class="sticky-copy"><span>Ваша скидка</span><b>−10% на первый товар</b></div>
+  <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="sticky-cta tg-link"><i class="fab fa-telegram-plane"></i> Написать</a>
+  <button class="sticky-dismiss" id="stickyDismiss" aria-label="Скрыть"><i class="fas fa-xmark"></i></button>
+</div>
 
-            document.getElementById(`view-${viewName}`).classList.add('active');
-            
-            const navLink = document.getElementById(`nav-${viewName}`);
-            if (navLink) navLink.classList.add('active');
-            
-            window.scrollTo(0, 0);
-        }
+<div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
 
-        // --- Боковое меню ---
-        const menuOverlay = document.getElementById('menu-overlay');
-        function openMenu() { menuOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-        function closeMenu() { menuOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // --- Плавные анимации при скролле ---
-        const revealEls = document.querySelectorAll('.reveal');
-        if ('IntersectionObserver' in window) {
-            const io = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) { 
-                        e.target.classList.add('in-view'); 
-                        io.unobserve(e.target); 
-                    }
-                });
-            }, { threshold: 0.15 });
-            revealEls.forEach(el => io.observe(el));
-        } else {
-            revealEls.forEach(el => el.classList.add('in-view'));
-        }
+  /* PREFILL TELEGRAM LINKS */
+  var tgMsg = 'Здравствуйте! Я пришёл по QR-коду Qnex Shop и хочу получить скидку 10% на первый товар.';
+  document.querySelectorAll('.tg-link').forEach(function(a){
+    a.href = 'https://t.me/qnex_shop?text=' + encodeURIComponent(tgMsg);
+  });
 
-      
-       const firebaseConfig = {
-            apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
-            authDomain: "gifts-d8f30.firebaseapp.com",
-            projectId: "gifts-d8f30"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        // Здесь вы можете продолжить логику загрузки товаров из БД (функция loadProductsCache и т.д.)
-        */
-    </script>
+  /* TOP SOCIAL MARQUEE — mirrors the main site component */
+  var socialItem = function(){
+    return '<a href="https://t.me/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> МЫ В TELEGRAM</a>' +
+           '<a href="https://instagram.com/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> МЫ В INSTAGRAM</a>' +
+           '<a href="https://www.tiktok.com/@qnex_shop" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> МЫ В TIKTOK</a>';
+  };
+  document.getElementById('marqueeTop').innerHTML = socialItem() + socialItem();
+  document.querySelectorAll('#marqueeTop a.tg-link, #marqueeTop a[href^="https://t.me"]').forEach(function(a){
+    a.href = 'https://t.me/qnex_shop?text=' + encodeURIComponent(tgMsg);
+  });
+
+  /* THEME TOGGLE */
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  toggle.addEventListener('click', function(){
+    var isLight = root.getAttribute('data-theme') === 'light';
+    root.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  });
+
+  /* SCROLL REVEAL */
+  var revealEls = document.querySelectorAll('.reveal:not(.in-view)');
+  if('IntersectionObserver' in window && !reduceMotion){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in-view'); io.unobserve(e.target); }
+      });
+    }, {threshold:.15});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in-view'); });
+  }
+
+  /* STICKY BAR VISIBILITY */
+  var stickyBar = document.getElementById('stickyBar');
+  var heroEl = document.querySelector('.hero');
+  var dismissed = false;
+  var ticking = false;
+  function onScroll(){
+    if(ticking || dismissed) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var heroBottom = heroEl.getBoundingClientRect().bottom;
+      if(heroBottom < 0){ stickyBar.classList.add('visible'); }
+      else { stickyBar.classList.remove('visible'); }
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  document.getElementById('stickyDismiss').addEventListener('click', function(){
+    dismissed = true;
+    stickyBar.classList.remove('visible');
+  });
+
+  /* CONFETTI */
+  var confettiLayer = document.getElementById('confettiLayer');
+  var confettiColors = ['#f5f5f3','#c9c9c4','#8f8f87','#0a0a0a'];
+  function burstConfetti(count){
+    if(reduceMotion) return;
+    for(var i=0;i<count;i++){
+      var piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      var left = 50 + (Math.random()*40-20);
+      piece.style.left = left + 'vw';
+      piece.style.background = confettiColors[Math.floor(Math.random()*confettiColors.length)];
+      piece.style.width = (5+Math.random()*5)+'px';
+      piece.style.height = (10+Math.random()*8)+'px';
+      var dur = 2.4 + Math.random()*1.6;
+      piece.style.animationDuration = dur+'s';
+      piece.style.opacity = String(.7+Math.random()*.3);
+      confettiLayer.appendChild(piece);
+      (function(p, d){ setTimeout(function(){ p.remove(); }, d*1000+100); })(piece, dur);
+    }
+  }
+  window.addEventListener('load', function(){
+    setTimeout(function(){ burstConfetti(reduceMotion ? 0 : 24); }, 500);
+  });
+  document.querySelectorAll('.btn-primary').forEach(function(btn){
+    btn.addEventListener('click', function(){ burstConfetti(14); });
+  });
+})();
+</script>
 </body>
 </html>
