@@ -348,7 +348,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
       <p class="offer-note reveal reveal-d4">Скидка действует 24 часа с момента перехода на сайт — не откладывайте на потом.</p>
 
       <div class="offer-actions reveal reveal-d4">
-        <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-primary tg-link">
+        <a href="https://t.me/qnex_admin" target="_blank" rel="noopener" class="btn btn-primary tg-link">
           <i class="fab fa-telegram-plane"></i> Telegram
         </a>
         <a href="https://ig.me/m/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline">
@@ -451,7 +451,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
   <p class="reveal reveal-d2">Код вводить не нужно — просто напишите нам, и мы применим <b>скидку 10% на первый товар</b> при оформлении.</p>
   <div class="final-actions reveal reveal-d3">
     <a href="/" class="btn btn-primary">Смотреть каталог</a>
-    <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline tg-link"><i class="fab fa-telegram-plane"></i> Telegram</a>
+    <a href="https://t.me/qnex_admin" target="_blank" rel="noopener" class="btn btn-outline tg-link"><i class="fab fa-telegram-plane"></i> Telegram</a>
     <a href="https://ig.me/m/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline"><i class="fab fa-instagram"></i> Instagram</a>
   </div>
 </section>
@@ -461,7 +461,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
     Скидка 10% действует на первый товар и оформляется вручную при заказе через Telegram или Instagram. Qnex Shop, 2026.
   </div>
   <div class="foot-social">
-    <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" aria-label="Telegram" class="tg-link"><i class="fab fa-telegram-plane"></i></a>
+    <a href="https://t.me/qnex_admin" target="_blank" rel="noopener" aria-label="Telegram" class="tg-link"><i class="fab fa-telegram-plane"></i></a>
     <a href="https://instagram.com/qnex_shop" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
     <a href="https://www.tiktok.com/@qnex_shop" target="_blank" rel="noopener" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
   </div>
@@ -470,7 +470,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 <!-- STICKY BAR -->
 <div class="sticky-bar" id="stickyBar">
   <div class="sticky-copy"><span>Ваша скидка</span><b>−10% на первый товар</b></div>
-  <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="sticky-cta tg-link"><i class="fab fa-telegram-plane"></i> Написать</a>
+  <a href="https://t.me/qnex_admin" target="_blank" rel="noopener" class="sticky-cta tg-link"><i class="fab fa-telegram-plane"></i> Написать</a>
   <button class="sticky-dismiss" id="stickyDismiss" aria-label="Скрыть"><i class="fas fa-xmark"></i></button>
 </div>
 
@@ -489,13 +489,13 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 
   /* TOP SOCIAL MARQUEE */
   var socialItem = function(){
-    return '<a href="https://t.me/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> МЫ В TELEGRAM</a>' +
+    return '<a href="https://t.me/qnex_admin" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> МЫ В TELEGRAM</a>' +
            '<a href="https://instagram.com/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> МЫ В INSTAGRAM</a>' +
            '<a href="https://www.tiktok.com/@qnex_shop" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i> МЫ В TIKTOK</a>';
   };
   document.getElementById('marqueeTop').innerHTML = socialItem() + socialItem();
   document.querySelectorAll('#marqueeTop a.tg-link, #marqueeTop a[href^="https://t.me"]').forEach(function(a){
-    a.href = 'https://t.me/qnex_shop?text=' + encodeURIComponent(tgMsg);
+    a.href = 'https://t.me/qnex_admin?text=' + encodeURIComponent(tgMsg);
   });
 
   /* THEME TOGGLE */
