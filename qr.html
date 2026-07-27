@@ -11,6 +11,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <style>
 /* ============ TOKENS ============ */
 :root{
@@ -189,7 +194,7 @@ section{position:relative;z-index:2;padding:100px 0;}
 }
 .cat-photo img{
   width:100%; height:100%; object-fit:cover;
-  transition:transform .6s var(--ease);
+  transition:transform .6s var(--ease), opacity .4s ease;
 }
 .cat-card:hover .cat-photo img{
   transform:scale(1.08);
@@ -309,8 +314,8 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 <!-- PRODUCT MARQUEE -->
 <div class="marquee-wrap">
   <div class="marquee2" id="marquee">
-    <span><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦</span>
-    <span aria-hidden="true"><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ БЕЗ ПРОМОКОДОВ ✦</span>
+    <span><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦</span>
+    <span aria-hidden="true"><b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦ <b>ХУДИ</b> ✦ <b>ФУТБОЛКИ</b> ✦ <b>ШТАНЫ</b> ✦ <b>АКСЕССУАРЫ</b> ✦ −20% НА ПЕРВЫЙ ТОВАР ✦</span>
   </div>
 </div>
 
@@ -327,8 +332,8 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
     </div>
     <div class="offer-copy">
       <div class="eyebrow reveal">Ваш бонус</div>
-      <h2 class="display reveal reveal-d1">Скидка активна. Код не нужен.</h2>
-      <p class="reveal reveal-d2"><b>20% скидка на первый товар</b> уже закреплена за вами — ничего вводить не нужно. Выберите вещи, а мы оформим заказ с учетом бонуса.</p>
+      <h2 class="display reveal reveal-d1">Скидка активна.</h2>
+      <p class="reveal reveal-d2"><b>20% скидка на первый товар</b> уже закреплена за вами. Выберите вещи, а мы оформим заказ с учетом бонуса.</p>
 
       <div class="mini-steps reveal reveal-d3">
         <div class="mini-step">
@@ -431,7 +436,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 <section class="final-cta">
   <div class="eyebrow reveal">Скидка активна</div>
   <h2 class="display reveal reveal-d1">Стиль ждёт.</h2>
-  <p class="reveal reveal-d2">Код вводить не нужно — просто напишите нам, и мы применим <b>скидку 20% на первый заказ</b> при оформлении.</p>
+  <p class="reveal reveal-d2">Просто напишите нам, и мы применим <b>скидку 20% на первый заказ</b> при оформлении.</p>
   <div class="final-actions reveal reveal-d3">
     <a href="/" class="btn btn-primary">Смотреть каталог</a>
     <a href="https://t.me/qnexadmin" target="_blank" rel="noopener" class="btn btn-outline tg-link"><i class="fab fa-telegram-plane"></i> Telegram</a>
@@ -462,6 +467,68 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 <script>
 (function(){
   "use strict";
+
+  /* ============ FIREBASE INITIALIZATION ============ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyDX8BiSqlghdgOj4_zPSyPgATfHVV5DNQI",
+    authDomain: "gifts-d8f30.firebaseapp.com",
+    projectId: "gifts-d8f30"
+  };
+
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Загрузка случайных изображений из коллекции Firebase
+    async function fetchRandomCatalogImages() {
+      const collectionsToTry = ['products', 'items', 'goods', 'catalog'];
+      let docs = [];
+
+      for (const col of collectionsToTry) {
+        try {
+          const snapshot = await db.collection(col).get();
+          if (!snapshot.empty) {
+            snapshot.forEach(doc => docs.push(doc.data()));
+            break;
+          }
+        } catch(e) {
+          console.warn("Пропуск коллекции:", col, e);
+        }
+      }
+
+      if (docs.length === 0) return;
+
+      // Извлекаем ссылки на фото из разных возможных полей объекта
+      const imageUrls = [];
+      docs.forEach(data => {
+        const url = data.image || data.imageUrl || data.img || 
+                    (Array.isArray(data.images) && data.images[0]) || 
+                    (Array.isArray(data.photos) && data.photos[0]);
+        if (url) imageUrls.push(url);
+      });
+
+      if (imageUrls.length === 0) return;
+
+      // Перемешиваем массив фото
+      const shuffled = imageUrls.sort(() => 0.5 - Math.random());
+      
+      // Подставляем случайные фото в карточки каталога
+      const catImgs = document.querySelectorAll('.cat-photo img');
+      catImgs.forEach((imgEl, index) => {
+        const randomSrc = shuffled[index % shuffled.length];
+        if (randomSrc) {
+          imgEl.style.opacity = '0';
+          setTimeout(() => {
+            imgEl.src = randomSrc;
+            imgEl.style.opacity = '1';
+          }, 200);
+        }
+      });
+    }
+
+    fetchRandomCatalogImages();
+  }
+
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* PREFILL TELEGRAM LINKS */
