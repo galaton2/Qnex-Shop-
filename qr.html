@@ -4,15 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
-<title>QNEX SHOP — скидка 10% на первый товар по QR</title>
-<meta name="description" content="Вы отсканировали QR-код Qnex Shop — интернет-магазина монохромной одежды: худи, футболки, штаны и аксессуары. Скидка 10% на первый товар уже активна, без промокодов.">
+<title>QNEX SHOP — скидка 10% на первый товар</title>
+<meta name="description" content="Qnex Shop — интернет-магазин одежды в монохромной эстетике: худи, футболки, штаны и аксессуары. Скидка 10% на первый товар уже активна.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230a0a0a'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='34' font-weight='900' fill='%23f4f2ec' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* ============ TOKENS — same system as the main Qnex Shop site ============ */
+/* ============ TOKENS ============ */
 :root{
   --bg:#0a0a0a; --text:#f5f5f3; --border:#f5f5f3;
   --hover-bg:#f5f5f3; --hover-text:#0a0a0a;
@@ -51,7 +51,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important;}
 }
 
-/* ============ TOP MARQUEE — identical component to the main site ============ */
+/* ============ TOP MARQUEE ============ */
 .marquee-wrapper{width:100%;overflow:hidden;border-bottom:1px solid var(--border);padding:10px 0;white-space:nowrap;background:var(--bg);position:relative;z-index:41;}
 .marquee-content{display:inline-block;animation:marquee 24s linear infinite;}
 .marquee-content a{color:var(--text);font-size:12px;margin:0 26px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;font-family:var(--font-body);display:inline-flex;align-items:center;gap:8px;transition:opacity .25s;}
@@ -104,8 +104,8 @@ header{
 .scan-line{font-family:var(--font-body);font-size:11px;letter-spacing:.28em;text-transform:uppercase;opacity:.65;margin-bottom:20px;height:16px;display:flex;align-items:center;gap:10px;font-weight:700;}
 .scan-dot{width:6px;height:6px;border-radius:50%;background:#8fd47a;box-shadow:0 0 8px #8fd47a;animation:pulse-dot 1.4s ease-in-out infinite;flex-shrink:0;}
 @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.25;}}
-.scan-text{border-right:2px solid var(--text);white-space:nowrap;overflow:hidden;width:0;animation:type 1.15s steps(19,end) .3s forwards, caret .8s step-end infinite .3s;}
-@keyframes type{to{width:19ch;}}
+.scan-text{border-right:2px solid var(--text);white-space:nowrap;overflow:hidden;width:0;animation:type 1s steps(14,end) .3s forwards, caret .8s step-end infinite .3s;}
+@keyframes type{to{width:14ch;}}
 @keyframes caret{50%{border-color:transparent;}}
 
 .hero h1{font-size:clamp(34px,9vw,68px);max-width:760px;}
@@ -132,7 +132,7 @@ header{
 @keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,8px);}}
 .scroll-cue svg{width:14px;height:14px;}
 
-/* ============ PRODUCT MARQUEE (mid page) ============ */
+/* ============ PRODUCT MARQUEE ============ */
 .marquee-wrap{position:relative;z-index:2;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--gray-bg);overflow:hidden;padding:14px 0;}
 .marquee2{display:flex;width:max-content;animation:scroll-x 24s linear infinite;}
 .marquee2 span{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;padding:0 26px;white-space:nowrap;opacity:.55;display:flex;align-items:center;gap:26px;}
@@ -288,11 +288,11 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 
 <!-- HERO -->
 <section class="hero">
-  <div class="scan-line"><span class="scan-dot"></span><span class="scan-text">QR-КОД РАСПОЗНАН</span></div>
+  <div class="scan-line"><span class="scan-dot"></span><span class="scan-text">СКИДКА АКТИВНА</span></div>
   <h1 class="display reveal in-view reveal-d1">Добро пожаловать <em>в Qnex Shop</em></h1>
   <p class="hero-sub reveal in-view reveal-d2">
-    Вы отсканировали QR-код <b>Qnex Shop</b> — магазина одежды в монохромной эстетике: худи, футболки, штаны и аксессуары.
-    В подарок вам — <b>скидка 10% на первый товар</b>. Без промокодов: просто напишите нам, и мы применим её сами.
+    Интернет-магазин одежды в монохромной эстетике: худи, футболки, штаны и аксессуары.<br>
+    Дарим <b>скидку 10% на первый товар</b>. Без промокодов — просто напишите нам, и мы оформим заказ.
   </p>
   <div class="founded-row reveal in-view reveal-d3">
     <span>🇺🇿 Основан в Узбекистане</span><span class="dot"></span><span>EST. 2021</span><span class="dot"></span><span>Монохромная эстетика</span>
@@ -324,28 +324,28 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
       </div>
     </div>
     <div class="offer-copy">
-      <div class="eyebrow reveal">Ваш бонус за QR</div>
+      <div class="eyebrow reveal">Ваш бонус</div>
       <h2 class="display reveal reveal-d1">Скидка активна. Код не нужен.</h2>
-      <p class="reveal reveal-d2"><b>10% скидка на первый товар</b> в вашем заказе уже закреплена за визитом по QR — ничего вводить не нужно. Выберите вещи и напишите нам, мы применим её вручную.</p>
+      <p class="reveal reveal-d2"><b>10% скидка на первый товар</b> уже закреплена за вами — ничего вводить не нужно. Выберите вещи, а мы оформим заказ с учетом бонуса.</p>
 
       <div class="mini-steps reveal reveal-d3">
         <div class="mini-step">
           <div class="mn">01</div>
           <div>
-            <h4>Выберите вещи в каталоге</h4>
+            <h4>Выберите вещи</h4>
             <p>Худи, футболки, штаны или аксессуары в монохромной палитре.</p>
           </div>
         </div>
         <div class="mini-step">
           <div class="mn">02</div>
           <div>
-            <h4>Напишите нам в Telegram или Instagram</h4>
-            <p>Скажите, что пришли по QR — применим скидку 10% на первый товар вручную.</p>
+            <h4>Напишите нам</h4>
+            <p>Оформим заказ в Telegram или Instagram с применением скидки.</p>
           </div>
         </div>
       </div>
 
-      <p class="offer-note reveal reveal-d4">Скидка действует 24 часа с момента сканирования — не откладывайте сообщение на потом.</p>
+      <p class="offer-note reveal reveal-d4">Скидка действует 24 часа с момента перехода на сайт — не откладывайте на потом.</p>
 
       <div class="offer-actions reveal reveal-d4">
         <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-primary tg-link">
@@ -369,8 +369,6 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
   <div class="cat-grid">
 
     <div class="cat-card reveal">
-      <!-- ФОТО ТОВАРА: чтобы поставить реальное фото худи, замените блок ниже на
-           <img src="/images/hoodie.jpg" alt="Худи Qnex Shop" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;"> -->
       <div class="cat-photo">
         <div class="icon-wrap">
           <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
@@ -384,7 +382,6 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
     </div>
 
     <div class="cat-card reveal reveal-d1">
-      <!-- ФОТО ТОВАРА: замените на <img src="/images/tshirt.jpg" alt="Футболка Qnex Shop" ...> -->
       <div class="cat-photo">
         <div class="icon-wrap">
           <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
@@ -397,7 +394,6 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
     </div>
 
     <div class="cat-card reveal reveal-d2">
-      <!-- ФОТО ТОВАРА: замените на <img src="/images/pants.jpg" alt="Штаны Qnex Shop" ...> -->
       <div class="cat-photo">
         <div class="icon-wrap">
           <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
@@ -411,7 +407,6 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
     </div>
 
     <div class="cat-card reveal reveal-d3">
-      <!-- ФОТО ТОВАРА: замените на <img src="/images/accessories.jpg" alt="Аксессуары Qnex Shop" ...> -->
       <div class="cat-photo">
         <div class="icon-wrap">
           <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
@@ -453,7 +448,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 <section class="final-cta">
   <div class="eyebrow reveal">Скидка активна</div>
   <h2 class="display reveal reveal-d1">Стиль ждёт.</h2>
-  <p class="reveal reveal-d2">Код вводить не нужно — просто напишите нам, и мы применим <b>скидку 10% на первый товар</b> в вашем заказе.</p>
+  <p class="reveal reveal-d2">Код вводить не нужно — просто напишите нам, и мы применим <b>скидку 10% на первый товар</b> при оформлении.</p>
   <div class="final-actions reveal reveal-d3">
     <a href="/" class="btn btn-primary">Смотреть каталог</a>
     <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" class="btn btn-outline tg-link"><i class="fab fa-telegram-plane"></i> Telegram</a>
@@ -463,7 +458,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
 
 <footer>
   <div class="foot-note">
-    Скидка 10% действует на первый товар в заказе для тех, кто пришёл по QR-коду Qnex Shop, и оформляется вручную при заказе через Telegram или Instagram. Qnex Shop, 2026.
+    Скидка 10% действует на первый товар и оформляется вручную при заказе через Telegram или Instagram. Qnex Shop, 2026.
   </div>
   <div class="foot-social">
     <a href="https://t.me/qnex_shop" target="_blank" rel="noopener" aria-label="Telegram" class="tg-link"><i class="fab fa-telegram-plane"></i></a>
@@ -487,12 +482,12 @@ footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:40
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* PREFILL TELEGRAM LINKS */
-  var tgMsg = 'Здравствуйте! Я пришёл по QR-коду Qnex Shop и хочу получить скидку 10% на первый товар.';
+  var tgMsg = 'Здравствуйте! Хочу сделать заказ и получить скидку 10% на первый товар.';
   document.querySelectorAll('.tg-link').forEach(function(a){
     a.href = 'https://t.me/qnex_shop?text=' + encodeURIComponent(tgMsg);
   });
 
-  /* TOP SOCIAL MARQUEE — mirrors the main site component */
+  /* TOP SOCIAL MARQUEE */
   var socialItem = function(){
     return '<a href="https://t.me/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-telegram-plane"></i> МЫ В TELEGRAM</a>' +
            '<a href="https://instagram.com/qnex_shop" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> МЫ В INSTAGRAM</a>' +
