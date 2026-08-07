@@ -89,23 +89,16 @@
         .nav-link:hover::after, .nav-link.active::after { width: 100%; }
         .nav-link:hover { opacity: 0.7; }
         
-        #currency-btn {
-            font-weight: 900;
-            color: var(--bg);
-            background: var(--text);
-            padding: 6px 12px;
-            border-radius: var(--radius-btn);
-            transition: all 0.3s ease;
+        /* CURRENCY TOGGLE BUTTON */
+        .currency-toggle-btn {
+            background: var(--text); color: var(--bg); border: 1px solid var(--text);
+            padding: 8px 14px; border-radius: var(--radius-btn); cursor: pointer;
+            font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            font-family: var(--font-body); display: flex; align-items: center; gap: 8px;
+            transition: 0.3s; margin-left: 10px;
         }
-        #currency-btn::after { display: none; }
-        #currency-btn:hover {
-            opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255,255,255,0.2);
-        }
-        [data-theme="light"] #currency-btn:hover {
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        .currency-toggle-btn i { font-size: 15px; }
+        .currency-toggle-btn:hover { background: var(--bg); color: var(--text); transform: translateY(-2px); }
 
         /* VIEWS */
         .view-section { display: none; animation: fadeIn 0.5s ease; }
@@ -326,7 +319,7 @@
         .switch-opt:not(.active):hover { background: var(--gray-bg); }
         .settings-note { margin-top: auto; font-size: 11px; opacity: 0.45; line-height: 1.6; }
 
-        /* CUSTOM ALERT MODAL */
+        /* CUSTOM ALERT MODAL (Replaces browser alert) */
         .custom-alert-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
             display: flex; align-items: center; justify-content: center;
@@ -429,6 +422,7 @@
             .modal-media { height: 45vh; }
             .modal-info-inner { padding: 24px; }
             .modal-panel { max-height: 90vh; }
+            .currency-toggle-btn { padding: 6px 10px; font-size: 12px; margin-left: 0; }
         }
     </style>
 </head>
@@ -443,8 +437,9 @@
         <nav>
             <button class="nav-link active" id="nav-home" onclick="switchView('home')" data-i18n="nav_home">Home</button>
             <button class="nav-link" id="nav-catalog" onclick="switchView('catalog')" data-i18n="nav_catalog">Catalog</button>
-            <!-- Добавлена кнопка переключения валюты -->
-            <button class="nav-link" id="currency-btn" onclick="toggleCurrency()">USD</button>
+            <button class="currency-toggle-btn" id="currency-toggle" onclick="toggleCurrency()">
+                <i class="fas fa-wallet"></i> <span id="curr-label">UZS</span>
+            </button>
         </nav>
     </header>
 
@@ -618,43 +613,37 @@
             tiktok: `https://www.tiktok.com/@${SOCIALS.tiktokUsername}`
         };
 
-        // --- CURRENCY CONVERTER SETUP ---
-        const EXCHANGE_RATE = 12600; // Установите актуальный курс обмена (Сум за 1 доллар)
-        let currentCurrency = localStorage.getItem('currency') || 'USD';
-        
-        function formatPrice(usdPrice) {
-            const price = parseFloat(usdPrice) || 0;
-            if (currentCurrency === 'UZS') {
-                const uzsPrice = Math.round(price * EXCHANGE_RATE);
-                // Форматируем число (например: 625 000 UZS)
-                return uzsPrice.toLocaleString('ru-RU') + ' UZS';
-            }
-            return '$ ' + price;
+        // --- CURRENCY LOGIC ---
+        const EXCHANGE_RATE = 12600; // Пример курса: 1 USD = 12600 UZS
+        let currentCurrency = localStorage.getItem('currency') || 'UZS';
+
+        function updateCurrencyUI() {
+            document.getElementById('curr-label').innerText = currentCurrency;
         }
 
         function toggleCurrency() {
             currentCurrency = currentCurrency === 'USD' ? 'UZS' : 'USD';
             localStorage.setItem('currency', currentCurrency);
-            document.getElementById('currency-btn').innerText = currentCurrency;
+            updateCurrencyUI();
             
-            // Обновляем цены на витринах
+            // Re-render components holding prices
             renderLatest();
             renderCatalog();
             
-            // Обновляем цену в модалке, если она открыта
-            if (document.getElementById('product-modal-overlay').classList.contains('open')) {
-                if (currentOpenProductId) {
-                    const product = allProducts.find(p => p.id === currentOpenProductId);
-                    if (product) {
-                        document.getElementById('modal-price').innerText = formatPrice(product.price);
-                        document.getElementById('modal-buy-tg').href = telegramBuyLink(product);
-                    }
-                }
+            // Update modal price if it is currently open
+            if (document.getElementById('product-modal-overlay').classList.contains('open') && window.currentOpenProductId) {
+                const p = allProducts.find(x => x.id === window.currentOpenProductId);
+                if (p) document.getElementById('modal-price').innerText = formatPrice(p.price);
             }
         }
 
-        // Initialize currency button text
-        document.getElementById('currency-btn').innerText = currentCurrency;
+        function formatPrice(priceUSD) {
+            const num = parseFloat(priceUSD) || 0;
+            if (currentCurrency === 'UZS') {
+                return (num * EXCHANGE_RATE).toLocaleString('ru-RU') + ' UZS';
+            }
+            return '$ ' + num;
+        }
 
         // --- TRANSLATIONS ---
         const translations = {
@@ -907,7 +896,6 @@
 
         function createCardHTML(product) {
             const titleStr = escapeHtml(product.title || translations[currentLang].untitled);
-            const priceStr = formatPrice(product.price); // Применяем конвертацию!
             const catStr = escapeHtml(catLabel(product.category));
             const images = (product.images && product.images.length > 0) ? product.images : (product.img ? [product.img] : []);
 
@@ -936,7 +924,7 @@
                     </div>
                     ${catStr ? `<div class="product-cat-tag">${catStr}</div>` : ''}
                     <div class="product-title">${titleStr}</div>
-                    <div class="product-price">${priceStr}</div>
+                    <div class="product-price">${formatPrice(product.price)}</div>
                     <button class="buy-btn" onclick="event.stopPropagation(); openProductDetail('${product.id}')">${translations[currentLang].buy_btn}</button>
                 </div>
             `;
@@ -988,21 +976,19 @@
         document.getElementById('sort-select').addEventListener('change', (e) => { sortMode = e.target.value; renderCatalog(); });
 
         function telegramBuyLink(product) {
-            const formattedPrice = formatPrice(product.price); // Применяем конвертацию к ссылке на заказ
+            const priceStr = formatPrice(product.price);
             const title = product.title || '';
             const msg = currentLang === 'ru'
-                ? `Здравствуйте! Хочу заказать: ${title} — ${formattedPrice}`
-                : `Hi! I'd like to order: ${title} — ${formattedPrice}`;
+                ? `Здравствуйте! Хочу заказать: ${title} — ${priceStr}`
+                : `Hi! I'd like to order: ${title} — ${priceStr}`;
             return `${SOCIAL_LINKS.telegram}?text=${encodeURIComponent(msg)}`;
         }
-
-        let currentOpenProductId = null; // Храним ID открытого товара
 
         function openProductDetail(id) {
             const product = allProducts.find(p => p.id === id);
             if (!product) return;
             
-            currentOpenProductId = id;
+            window.currentOpenProductId = id;
 
             const images = (product.images && product.images.length > 0)
                 ? product.images : (product.img ? [product.img] : []);
@@ -1028,7 +1014,7 @@
 
             document.getElementById('modal-category').innerText = catLabel(product.category);
             document.getElementById('modal-title').innerText = product.title || translations[currentLang].untitled;
-            document.getElementById('modal-price').innerText = formatPrice(product.price); // Форматированная цена
+            document.getElementById('modal-price').innerText = formatPrice(product.price);
             document.getElementById('modal-buy-tg').href = telegramBuyLink(product);
             document.getElementById('modal-buy-ig').href = SOCIAL_LINKS.instagramDM;
 
@@ -1038,7 +1024,7 @@
         }
 
         function closeProductDetail() {
-            currentOpenProductId = null;
+            window.currentOpenProductId = null;
             document.getElementById('product-modal-overlay').classList.remove('open');
             syncBodyScrollLock();
         }
@@ -1072,6 +1058,10 @@
 
         const cached = loadProductsCache();
         if (cached && cached.length) { allProducts = cached; dataLoaded = true; }
+        
+        // Initialize UI Currency
+        updateCurrencyUI();
+        
         renderLatest(); renderCatalog(); renderCategoryBar();
 
         function showLoadError() {
