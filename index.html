@@ -89,18 +89,6 @@
         .nav-link:hover::after, .nav-link.active::after { width: 100%; }
         .nav-link:hover { opacity: 0.7; }
         
-        /* CURRENCY TOGGLE BUTTON */
-        .header-left { display: flex; align-items: center; gap: 14px; }
-        .currency-toggle-btn {
-            background: var(--text); color: var(--bg); border: 1px solid var(--text);
-            padding: 8px 14px; border-radius: var(--radius-btn); cursor: pointer;
-            font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-            font-family: var(--font-body); display: flex; align-items: center; gap: 8px;
-            transition: 0.3s; flex-shrink: 0;
-        }
-        .currency-toggle-btn i { font-size: 15px; }
-        .currency-toggle-btn:hover { background: var(--bg); color: var(--text); transform: translateY(-2px); }
-
         /* VIEWS */
         .view-section { display: none; animation: fadeIn 0.5s ease; }
         .view-section.active { display: block; }
@@ -413,8 +401,6 @@
         @media (max-width: 640px) {
             .side-menu-btn { right: 12px; top: auto; bottom: 92px; transform: none; width: 46px; height: 46px; font-size: 15px; }
             header { padding: 15px 18px; }
-            .header-left { gap: 8px; }
-            .logo { font-size: 16px; letter-spacing: 2px; }
             .hero-banner h1 { font-size: 30px; }
             .hero-banner { padding: 70px 18px 56px; }
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -425,8 +411,6 @@
             .modal-media { height: 45vh; }
             .modal-info-inner { padding: 24px; }
             .modal-panel { max-height: 90vh; }
-            .currency-toggle-btn { padding: 6px 9px; font-size: 11px; }
-            .currency-toggle-btn i { font-size: 13px; }
         }
     </style>
 </head>
@@ -437,12 +421,7 @@
     </div>
 
     <header>
-        <div class="header-left">
-            <div class="logo" onclick="switchView('home')">QNEX SHOP</div>
-            <button class="currency-toggle-btn" id="currency-toggle" onclick="toggleCurrency()">
-                <i class="fas fa-wallet"></i> <span id="curr-label">UZS</span>
-            </button>
-        </div>
+        <div class="logo" onclick="switchView('home')">QNEX SHOP</div>
         <nav>
             <button class="nav-link active" id="nav-home" onclick="switchView('home')" data-i18n="nav_home">Home</button>
             <button class="nav-link" id="nav-catalog" onclick="switchView('catalog')" data-i18n="nav_catalog">Catalog</button>
@@ -558,6 +537,13 @@
                     <div class="switch-opt" id="lang-opt-en" onclick="setLang('en')">EN</div>
                 </div>
             </div>
+            <div class="settings-row">
+                <span data-i18n="settings_currency">Currency</span>
+                <div class="switch-toggle">
+                    <div class="switch-opt" id="curr-opt-UZS" onclick="setCurrency('UZS')">UZS</div>
+                    <div class="switch-opt" id="curr-opt-USD" onclick="setCurrency('USD')">USD</div>
+                </div>
+            </div>
             <p class="settings-note" data-i18n="settings_note">Your preferences are saved on this device.</p>
         </div>
     </div>
@@ -621,16 +607,15 @@
 
         // --- CURRENCY LOGIC ---
         const EXCHANGE_RATE = 12600; // Пример курса: 1 USD = 12600 UZS
-        // По умолчанию всегда сум (UZS). Валюта переключается только вручную кнопкой,
-        // выбор сохраняется в localStorage и используется, только если это явно 'USD'.
-        let currentCurrency = localStorage.getItem('currency') === 'USD' ? 'USD' : 'UZS';
+        let currentCurrency = localStorage.getItem('currency') || 'UZS';
 
         function updateCurrencyUI() {
-            document.getElementById('curr-label').innerText = currentCurrency;
+            document.getElementById('curr-opt-UZS').classList.toggle('active', currentCurrency === 'UZS');
+            document.getElementById('curr-opt-USD').classList.toggle('active', currentCurrency === 'USD');
         }
 
-        function toggleCurrency() {
-            currentCurrency = currentCurrency === 'USD' ? 'UZS' : 'USD';
+        function setCurrency(curr) {
+            currentCurrency = curr;
             localStorage.setItem('currency', currentCurrency);
             updateCurrencyUI();
             
@@ -676,6 +661,7 @@
                 delivery_alert: "We deliver across Uzbekistan (1–7 days) and worldwide (7–14 days). Message us on Telegram or Instagram for details!",
                 untitled: "Untitled",
                 settings_title: "Menu", settings_theme: "Theme", settings_lang: "Language",
+                settings_currency: "Currency",
                 settings_dark: "Dark", settings_light: "Light",
                 settings_note: "Your preferences are saved on this device."
             },
@@ -700,6 +686,7 @@
                 delivery_alert: "Мы доставляем по Узбекистану (1–7 дней) и всему миру (7–14 дней). Напишите нам в Telegram или Instagram для деталей!",
                 untitled: "Без названия",
                 settings_title: "Меню", settings_theme: "Тема", settings_lang: "Язык",
+                settings_currency: "Валюта",
                 settings_dark: "Тёмная", settings_light: "Светлая",
                 settings_note: "Настройки сохраняются на этом устройстве."
             }
