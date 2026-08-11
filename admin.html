@@ -7,6 +7,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <!-- Chart.js for stats line graph -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
@@ -232,24 +233,51 @@
                 text-align: left; font-weight: bold; text-transform: uppercase; font-size: 12px; opacity: 0.7;
             }
         }
+        /* LOGIN SCREEN */
+        #login-screen {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
+        }
+        .login-box {
+            width: 100%; max-width: 380px; border: 1px solid var(--border);
+            padding: 40px 30px; box-sizing: border-box;
+        }
+        .login-box h1 {
+            font-size: 22px; text-align: center; margin-bottom: 8px;
+        }
+        .login-box .login-sub {
+            text-align: center; font-size: 12px; opacity: 0.7; margin: 0 0 30px 0;
+        }
+        .login-error {
+            display: none; background: rgba(255,68,68,0.1); border: 1px solid #ff4444;
+            color: #ff4444; padding: 10px 12px; font-size: 12px; font-weight: bold;
+            margin-bottom: 18px; text-align: center;
+        }
+        .login-box .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <script>
-        // --- 1. СИСТЕМА БЕЗОПАСНОСТИ ---
-        const SECRET_KEY = "qnex"; 
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.get('key') === SECRET_KEY) {
-            localStorage.setItem('qnex_admin_access', SECRET_KEY);
-            window.history.replaceState({}, document.title, window.location.pathname); 
-        } else if (localStorage.getItem('qnex_admin_access') !== SECRET_KEY) {
-            alert("Access Denied! Device not whitelisted.");
-            window.location.href = "index.html";
-        }
-    </script>
+    <!-- ================= LOGIN SCREEN (Firebase Authentication) ================= -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 data-i18n="login_title">QNEX ADMIN</h1>
+            <p class="login-sub" data-i18n="login_sub">Sign in to manage the store</p>
+            <p class="login-error" id="login-error"></p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label data-i18n="login_email">Email</label>
+                    <input type="email" id="login-email" required autocomplete="username" placeholder="admin@qnex.shop">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="login_password">Password</label>
+                    <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn" id="login-btn" data-i18n="login_btn">Log In</button>
+            </form>
+        </div>
+    </div>
 
-    <div class="container">
+    <div class="container" id="admin-app" style="display:none;">
         <header>
             <div>
                 <h1>QNEX ADMIN</h1>
@@ -259,6 +287,7 @@
                 <button class="action-btn" onclick="toggleLang()" id="lang-btn">RU</button>
                 <button class="action-btn" onclick="toggleTheme()" data-i18n="invert_theme">Invert Theme</button>
                 <a href="index.html" class="action-btn" data-i18n="go_store">Go to Store →</a>
+                <button class="action-btn" onclick="logout()" data-i18n="logout">Log Out</button>
             </div>
         </header>
 
@@ -564,7 +593,12 @@
                 tbl_client: "Client", tbl_contact: "Contact", tbl_sum: "Sum", tbl_cost: "Cost", tbl_profit: "Profit", tbl_status: "Status", tbl_date: "Date", tbl_action: "Action",
                 st_Processing: "Processing", st_Paid: "Paid", st_AwaitingGoods: "Awaiting Goods", st_Shipped: "Shipped", st_Completed: "Completed", st_Cancelled: "Cancelled",
                 del_btn: "Delete", edit_btn: "Edit", msg_prod_added: "Product successfully added!", msg_order_added: "Order successfully added!", msg_prod_updated: "Product updated!",
-                size_hint_ok: "images", size_hint_warn: "Large payload — consider fewer/smaller photos"
+                size_hint_ok: "images", size_hint_warn: "Large payload — consider fewer/smaller photos",
+                login_title: "QNEX ADMIN", login_sub: "Sign in to manage the store", login_email: "Email", login_password: "Password",
+                login_btn: "Log In", login_btn_loading: "Signing in...", logout: "Log Out",
+                err_invalid_email: "Invalid email format.", err_user_not_found: "No account found for this email.",
+                err_wrong_password: "Incorrect password.", err_invalid_credential: "Invalid email or password.",
+                err_too_many_requests: "Too many attempts. Try again later.", err_generic: "Login failed. Please try again."
             },
             ru: {
                 subtitle: "Аналитика и Управление", invert_theme: "Сменить тему", go_store: "В магазин →",
@@ -586,7 +620,12 @@
                 tbl_client: "Клиент", tbl_contact: "Контакт", tbl_sum: "Сумма", tbl_cost: "Расход", tbl_profit: "Профит", tbl_status: "Статус", tbl_date: "Дата", tbl_action: "Действие",
                 st_Processing: "В обработке", st_Paid: "Оплачен", st_AwaitingGoods: "Ждёт товар", st_Shipped: "Отправлен", st_Completed: "Завершён", st_Cancelled: "Отменён",
                 del_btn: "Удалить", edit_btn: "Изменить", msg_prod_added: "Успешно добавлено!", msg_order_added: "Заказ успешно добавлен!", msg_prod_updated: "Товар обновлён!",
-                size_hint_ok: "фото", size_hint_warn: "Большой объём — добавьте меньше/легче фото"
+                size_hint_ok: "фото", size_hint_warn: "Большой объём — добавьте меньше/легче фото",
+                login_title: "QNEX ADMIN", login_sub: "Войдите для управления магазином", login_email: "Email", login_password: "Пароль",
+                login_btn: "Войти", login_btn_loading: "Вход...", logout: "Выйти",
+                err_invalid_email: "Неверный формат email.", err_user_not_found: "Аккаунт с таким email не найден.",
+                err_wrong_password: "Неверный пароль.", err_invalid_credential: "Неверный email или пароль.",
+                err_too_many_requests: "Слишком много попыток. Попробуйте позже.", err_generic: "Не удалось войти. Попробуйте снова."
             }
         };
 
@@ -640,9 +679,68 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
         db.enablePersistence({ synchronizeTabs: true }).catch(err => {
             console.warn('Firestore persistence unavailable:', err.code);
         });
+
+        // --- AUTHENTICATION (Firebase Auth: signInWithEmailAndPassword) ---
+        const loginScreen = document.getElementById('login-screen');
+        const adminApp = document.getElementById('admin-app');
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+
+        function authErrorMessage(code) {
+            const map = {
+                'auth/invalid-email': 'err_invalid_email',
+                'auth/user-not-found': 'err_user_not_found',
+                'auth/wrong-password': 'err_wrong_password',
+                'auth/invalid-credential': 'err_invalid_credential',
+                'auth/too-many-requests': 'err_too_many_requests'
+            };
+            const key = map[code] || 'err_generic';
+            return translations[currentLang][key];
+        }
+
+        // Show/hide the panel based on current auth state
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loginScreen.style.display = 'none';
+                adminApp.style.display = 'block';
+            } else {
+                adminApp.style.display = 'none';
+                loginScreen.style.display = 'flex';
+            }
+        });
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            loginError.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.innerText = translations[currentLang].login_btn_loading;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    // onAuthStateChanged fires automatically and reveals the panel
+                    loginForm.reset();
+                })
+                .catch(err => {
+                    loginError.innerText = authErrorMessage(err.code);
+                    loginError.style.display = 'block';
+                })
+                .finally(() => {
+                    loginBtn.disabled = false;
+                    loginBtn.innerText = translations[currentLang].login_btn;
+                });
+        });
+
+        window.logout = () => {
+            auth.signOut();
+        };
 
         // --- DATA ARRAYS ---
         let allOrders = [];
